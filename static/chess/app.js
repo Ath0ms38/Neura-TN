@@ -974,16 +974,19 @@ function saveEvalCode() {
     } catch {
         // localStorage unavailable, ignore
     }
-    // Visual feedback
-    const status = document.getElementById("eval-status");
-    status.textContent = "Sauvegarde !";
-    status.className = "eval-status valid";
+    // Visual feedback on the button itself
+    const btn = document.getElementById("btn-save");
+    const original = btn.textContent;
+    btn.textContent = "Sauvegarde !";
+    btn.style.background = "var(--success)";
+    btn.style.borderColor = "var(--success)";
+    btn.style.color = "#fff";
     setTimeout(() => {
-        if (status.textContent === "Sauvegarde !") {
-            status.textContent = "";
-            status.className = "eval-status";
-        }
-    }, 2000);
+        btn.textContent = original;
+        btn.style.background = "";
+        btn.style.borderColor = "";
+        btn.style.color = "";
+    }, 1500);
 }
 
 function loadSavedEvalCode() {
@@ -994,6 +997,23 @@ function loadSavedEvalCode() {
         // localStorage unavailable
     }
     return null;
+}
+
+function restoreEvalCode() {
+    const saved = loadSavedEvalCode();
+    if (saved) {
+        document.getElementById("eval-editor").value = saved;
+        // Switch back to editor if viewing doc
+        if (docVisible) {
+            toggleDocPanel();
+        }
+        validateEval();
+    } else {
+        const btn = document.getElementById("btn-load");
+        const original = btn.textContent;
+        btn.textContent = "Rien a charger";
+        setTimeout(() => { btn.textContent = original; }, 1500);
+    }
 }
 
 // ============================================================
@@ -1026,6 +1046,7 @@ document.getElementById("btn-new").addEventListener("click", () => newGame());
 document.getElementById("btn-undo").addEventListener("click", undoMove);
 document.getElementById("btn-validate").addEventListener("click", validateEval);
 document.getElementById("btn-save").addEventListener("click", saveEvalCode);
+document.getElementById("btn-load").addEventListener("click", restoreEvalCode);
 document.getElementById("btn-doc").addEventListener("click", toggleDocPanel);
 
 // Preset buttons
