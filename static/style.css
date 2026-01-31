@@ -1,0 +1,356 @@
+/* ============ Reset & Base ============ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0f1117;
+    --bg-secondary: #1a1d27;
+    --bg-card: #222639;
+    --text-primary: #e8eaed;
+    --text-secondary: #9aa0b2;
+    --accent: #6c63ff;
+    --accent-glow: rgba(108, 99, 255, 0.3);
+    --success: #4caf50;
+    --border: #2d3250;
+    --bar-bg: #2a2d3e;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ============ Header ============ */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.mode-switch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mode-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: color 0.3s;
+    font-weight: 500;
+}
+
+.mode-label.active {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Toggle switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 28px;
+    transition: 0.3s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--accent);
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(24px);
+}
+
+/* ============ Main Layout ============ */
+main {
+    display: grid;
+    grid-template-columns: 300px 1fr 280px;
+    gap: 20px;
+    padding: 20px 24px;
+    height: calc(100vh - 61px);
+    min-height: 600px;
+}
+
+.panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.panel h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+}
+
+.panel h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 16px 0 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============ Input Panel ============ */
+.input-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.canvas-wrapper {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 262px;
+    height: 262px;
+    background: #000;
+}
+
+#draw-canvas {
+    display: block;
+    width: 260px;
+    height: 260px;
+    cursor: crosshair;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.btn-group button {
+    flex: 1;
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-group button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+#btn-predict {
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+}
+
+#btn-predict:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.info-label {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-height: 1.2em;
+}
+
+/* ============ Visualization Panel ============ */
+.viz-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#viz-container {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#network-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ============ Output Panel ============ */
+.output-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.prediction-number {
+    font-size: 5rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-align: center;
+    line-height: 1;
+    margin: 8px 0;
+    text-shadow: 0 0 20px var(--accent-glow);
+    min-height: 80px;
+}
+
+/* Probability bars */
+.prob-chart {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.prob-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prob-label {
+    width: 18px;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.prob-bar-bg {
+    flex: 1;
+    height: 22px;
+    background: var(--bar-bg);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.prob-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    min-width: 0;
+}
+
+.prob-bar.top {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+}
+
+.prob-value {
+    width: 42px;
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============ SVG styles ============ */
+.layer-label {
+    fill: var(--text-secondary);
+    font-size: 11px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    text-anchor: middle;
+}
+
+.layer-sublabel {
+    fill: var(--text-secondary);
+    font-size: 9px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    text-anchor: middle;
+    opacity: 0.7;
+}
+
+.node {
+    stroke: var(--border);
+    stroke-width: 1;
+}
+
+.connection {
+    stroke: var(--accent);
+    stroke-width: 0.7;
+    opacity: 0.12;
+}
+
+.connection.active {
+    opacity: 0.8;
+    stroke: var(--accent);
+}
+
+/* Loading spinner */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.loading.show {
+    display: block;
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 1100px) {
+    main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: auto;
+    }
+
+    .viz-panel {
+        min-height: 500px;
+    }
+}

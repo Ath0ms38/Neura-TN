@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Neural Network Visualizer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>MNIST Neural Network Visualizer</h1>
+        <div class="mode-switch">
+            <span id="nn-label" class="mode-label active">Neural Network</span>
+            <label class="switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="slider"></span>
+            </label>
+            <span id="cnn-label" class="mode-label">CNN</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Left panel: Input -->
+        <section class="panel input-panel">
+            <h2>Input</h2>
+            <div class="canvas-wrapper">
+                <canvas id="draw-canvas" width="28" height="28"></canvas>
+            </div>
+            <div class="btn-group">
+                <button id="btn-sample">Random Sample</button>
+                <button id="btn-clear">Clear</button>
+            </div>
+            <div id="true-label" class="info-label"></div>
+        </section>
+
+        <!-- Center: Network Visualization -->
+        <section class="panel viz-panel">
+            <h2>Network Visualization</h2>
+            <div id="viz-container">
+                <svg id="network-svg"></svg>
+            </div>
+        </section>
+
+        <!-- Right panel: Output -->
+        <section class="panel output-panel">
+            <h2>Prediction</h2>
+            <div id="prediction-display" class="prediction-number">?</div>
+            <h3>Probabilities</h3>
+            <div id="prob-chart" class="prob-chart"></div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
