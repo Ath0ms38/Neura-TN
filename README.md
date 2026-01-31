@@ -16,6 +16,27 @@ A web application for visualizing and interacting with neural networks trained o
 - Docker installed on your system
 - Docker Compose (optional but recommended)
 
+### Quick Start with Pre-built Image
+
+Pull and run the latest pre-built image from GitHub Container Registry:
+
+```bash
+docker run -d -p 5000:5000 ghcr.io/ath0ms38/neura-tn:latest
+```
+
+Or use Docker Compose with the pre-built image:
+
+```yaml
+services:
+  neura-tn:
+    image: ghcr.io/ath0ms38/neura-tn:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+```
+
 ### Option 1: Using Docker Compose (Recommended)
 
 1. Build and start the application:

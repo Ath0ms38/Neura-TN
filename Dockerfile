@@ -12,13 +12,14 @@ RUN pip install --no-cache-dir --timeout=300 \
     pip install --no-cache-dir --timeout=300 flask numpy
 
 # Copy application code
-COPY train.py app.py ./
+COPY train.py app.py entrypoint.sh ./
 COPY static/ static/
 
-# Create models directory
-RUN mkdir -p models data
+# Create models and data directories
+RUN mkdir -p models data && \
+    chmod +x entrypoint.sh
 
 EXPOSE 5000
 
-# Train models on first run if they don't exist, then start the app
-CMD ["sh", "-c", "test -f models/nn_model.pth || python train.py && python app.py"]
+# Use entrypoint script to train models if needed and start the app
+ENTRYPOINT ["./entrypoint.sh"]

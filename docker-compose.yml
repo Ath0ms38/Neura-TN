@@ -2,8 +2,13 @@ version: '3.8'
 
 services:
   neura-tn:
+    # Use pre-built image from GitHub Container Registry (comment out 'build' line)
+    # image: ghcr.io/ath0ms38/neura-tn:latest
+    
+    # Or build from source (comment out 'image' line above)
     build: .
     image: neura-tn:latest
+    
     container_name: neura-tn
     ports:
       - "5000:5000"
