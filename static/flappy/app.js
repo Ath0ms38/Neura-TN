@@ -3,14 +3,14 @@
 // ============ Constants ============
 const SCREEN_W = 500, SCREEN_H = 800;
 const BASE_Y = 730;
-const GRAVITY = 3;
-const JUMP_STRENGTH = -10.5;
-const TERMINAL_VEL = 16;
-const PIPE_GAP = 200;
-const PIPE_SPEED = 5;
+let GRAVITY = 3;
+let JUMP_STRENGTH = -10.5;
+let TERMINAL_VEL = 16;
+let PIPE_GAP = 200;
+let PIPE_SPEED = 5;
 const PIPE_SPAWN_X = 600;
 const BIRD_START_X = 230, BIRD_START_Y = 350;
-const POP_SIZE = 100;
+let POP_SIZE = 100;
 const MAX_GENS = 50;
 const TARGET_FPS = 30;
 
@@ -213,23 +213,42 @@ class Pipe {
     }
 }
 
+// ============ Parameter Reading ============
+function readGameParams() {
+    const el = (id, def) => {
+        const e = document.getElementById(id);
+        return e ? parseFloat(e.value) : def;
+    };
+    GRAVITY = el("param-gravity", 3);
+    JUMP_STRENGTH = el("param-jump-strength", -10.5);
+    TERMINAL_VEL = el("param-terminal-vel", 16);
+    PIPE_GAP = el("param-pipe-gap", 200);
+    PIPE_SPEED = el("param-pipe-speed", 5);
+    POP_SIZE = Math.round(el("param-pop-size", 100));
+}
+
 // ============ Game Logic ============
 function initGeneration() {
     if (!population) {
+        readGameParams();
+        const el = (id, def) => {
+            const e = document.getElementById(id);
+            return e ? parseFloat(e.value) : def;
+        };
         population = new NEAT.Population({
             populationSize: POP_SIZE,
             numInputs: 6,
             numOutputs: 1,
-            compatibilityThreshold: 1.5,
-            elitism: 2,
-            survivalThreshold: 0.2,
-            maxStagnation: 8,
+            compatibilityThreshold: el("param-compat-threshold", 1.5),
+            elitism: el("param-elitism", 2),
+            survivalThreshold: el("param-survival-threshold", 0.2),
+            maxStagnation: el("param-max-stagnation", 8),
             speciesElitism: 3,
             mutationConfig: {
-                weightMutateRate: 0.8,
-                addNodeRate: 0.35,
-                addConnRate: 0.6,
-                toggleRate: 0.02,
+                weightMutateRate: el("param-weight-mutate", 0.8),
+                addNodeRate: el("param-add-node", 0.35),
+                addConnRate: el("param-add-conn", 0.6),
+                toggleRate: el("param-toggle-rate", 0.02),
             },
         });
     }

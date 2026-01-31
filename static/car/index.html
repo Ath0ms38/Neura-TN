@@ -20,6 +20,7 @@
             <button id="btn-tool-erase" class="tool-btn">Effacer</button>
             <button id="btn-tool-start" class="tool-btn">Depart</button>
             <button id="btn-tool-checkpoint" class="tool-btn">Checkpoint</button>
+            <button id="btn-tool-delete-cp" class="tool-btn">Supprimer CP</button>
             <button id="btn-undo-cp" class="tool-btn">Annuler CP</button>
             <div class="brush-size-group">
                 <label>Pinceau :</label>
@@ -62,9 +63,84 @@
                 <p><strong>2. Effacer :</strong> Supprimez la route en repeignant l'herbe.</p>
                 <p><strong>3. Depart :</strong> Cliquez sur la route pour placer la position de depart.</p>
                 <p><strong>4. Checkpoint :</strong> Cliquez un point de depart, puis un point d'arrivee pour tracer une ligne de checkpoint. Ajoutez-les dans l'ordre du circuit.</p>
-                <p><strong>5. Entrainer :</strong> Une fois votre piste dotee d'un depart et d'au moins 2 checkpoints, cliquez sur "Entrainer" pour lancer l'IA.</p>
+                <p><strong>5. Supprimer CP :</strong> Cliquez sur un checkpoint pour le supprimer.</p>
+                <p><strong>6. Entrainer :</strong> Une fois votre piste dotee d'un depart et d'au moins 2 checkpoints, cliquez sur "Entrainer" pour lancer l'IA.</p>
                 <p class="hint">Clic droit pour effacer dans n'importe quel mode.</p>
             </div>
+
+            <!-- Car parameters (shown during editing) -->
+            <details id="editor-car-params" class="param-section" open>
+                <summary>Parametres voiture</summary>
+                <div class="param-grid">
+                    <div class="param-row">
+                        <label for="param-ray-count">Nombre de rayons</label>
+                        <input type="number" id="param-ray-count" value="7" min="3" max="15" step="1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-ray-max">Distance rayons</label>
+                        <input type="number" id="param-ray-max" value="200" min="50" max="500" step="10">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-max-speed">Vitesse max</label>
+                        <input type="number" id="param-max-speed" value="175" min="50" max="500" step="5">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-accel">Acceleration</label>
+                        <input type="number" id="param-accel" value="75" min="10" max="200" step="5">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-turn-speed">Vitesse rotation</label>
+                        <input type="number" id="param-turn-speed" value="150" min="50" max="300" step="5">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-max-frames">Frames max / gen</label>
+                        <input type="number" id="param-max-frames" value="1000" min="200" max="5000" step="100">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Training parameters (shown during editing) -->
+            <details id="editor-neat-params" class="param-section">
+                <summary>Parametres entrainement</summary>
+                <div class="param-grid">
+                    <div class="param-row">
+                        <label for="param-pop-size">Taille population</label>
+                        <input type="number" id="param-pop-size" value="150" min="10" max="500" step="10">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-compat-threshold">Seuil compatibilite</label>
+                        <input type="number" id="param-compat-threshold" value="2.0" min="0.5" max="5.0" step="0.1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-elitism">Elitisme</label>
+                        <input type="number" id="param-elitism" value="3" min="0" max="10" step="1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-survival-threshold">Seuil survie</label>
+                        <input type="number" id="param-survival-threshold" value="0.2" min="0.05" max="0.5" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-max-stagnation">Stagnation max</label>
+                        <input type="number" id="param-max-stagnation" value="6" min="2" max="20" step="1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-weight-mutate">Taux mutation poids</label>
+                        <input type="number" id="param-weight-mutate" value="0.8" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-add-node">Taux ajout noeud</label>
+                        <input type="number" id="param-add-node" value="0.2" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-add-conn">Taux ajout connexion</label>
+                        <input type="number" id="param-add-conn" value="0.5" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-toggle-rate">Taux toggle</label>
+                        <input type="number" id="param-toggle-rate" value="0.01" min="0" max="0.1" step="0.005">
+                    </div>
+                </div>
+            </details>
 
             <!-- Simulation panels (shown during training) -->
             <div id="sim-panels" style="display:none;">
@@ -85,8 +161,8 @@
 
                 <div class="info-text">
                     <h2>Comment ca marche</h2>
-                    <p>Chaque voiture utilise 7 rayons pour detecter les bords de la route, alimentant un reseau de neurones qui controle l'acceleration et la direction.</p>
-                    <p><strong>Entrees :</strong> 7 distances de rayons, vitesse, angle</p>
+                    <p>Chaque voiture utilise des rayons pour detecter les bords de la route, alimentant un reseau de neurones qui controle l'acceleration et la direction.</p>
+                    <p><strong>Entrees :</strong> distances de rayons, vitesse, angle</p>
                     <p><strong>Sorties :</strong> accelerer/freiner, tourner gauche/droite</p>
                     <p><strong>Fitness :</strong> checkpoints passes + progression</p>
                     <p class="manual-hint"><strong>Mode manuel :</strong> Fleches du clavier pour conduire</p>

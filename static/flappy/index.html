@@ -45,12 +45,83 @@
                 <svg id="nn-svg" viewBox="0 0 300 200"></svg>
             </div>
 
+            <!-- Game parameters -->
+            <details class="param-section" open>
+                <summary>Parametres jeu</summary>
+                <div class="param-grid">
+                    <div class="param-row">
+                        <label for="param-gravity">Gravite</label>
+                        <input type="number" id="param-gravity" value="3" min="0.5" max="10" step="0.5">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-jump-strength">Force saut</label>
+                        <input type="number" id="param-jump-strength" value="-10.5" min="-20" max="-3" step="0.5">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-terminal-vel">Vitesse terminale</label>
+                        <input type="number" id="param-terminal-vel" value="16" min="5" max="30" step="1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-pipe-gap">Ecart tuyaux</label>
+                        <input type="number" id="param-pipe-gap" value="200" min="80" max="400" step="10">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-pipe-speed">Vitesse tuyaux</label>
+                        <input type="number" id="param-pipe-speed" value="5" min="1" max="15" step="0.5">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Training parameters -->
+            <details class="param-section">
+                <summary>Parametres entrainement</summary>
+                <div class="param-grid">
+                    <div class="param-row">
+                        <label for="param-pop-size">Taille population</label>
+                        <input type="number" id="param-pop-size" value="100" min="10" max="500" step="10">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-compat-threshold">Seuil compatibilite</label>
+                        <input type="number" id="param-compat-threshold" value="1.5" min="0.5" max="5.0" step="0.1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-elitism">Elitisme</label>
+                        <input type="number" id="param-elitism" value="2" min="0" max="10" step="1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-survival-threshold">Seuil survie</label>
+                        <input type="number" id="param-survival-threshold" value="0.2" min="0.05" max="0.5" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-max-stagnation">Stagnation max</label>
+                        <input type="number" id="param-max-stagnation" value="8" min="2" max="20" step="1">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-weight-mutate">Taux mutation poids</label>
+                        <input type="number" id="param-weight-mutate" value="0.8" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-add-node">Taux ajout noeud</label>
+                        <input type="number" id="param-add-node" value="0.35" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-add-conn">Taux ajout connexion</label>
+                        <input type="number" id="param-add-conn" value="0.6" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="param-row">
+                        <label for="param-toggle-rate">Taux toggle</label>
+                        <input type="number" id="param-toggle-rate" value="0.02" min="0" max="0.1" step="0.005">
+                    </div>
+                </div>
+            </details>
+
             <div class="info-text">
                 <h2>Comment ca marche</h2>
-                <p>100 oiseaux par generation, chacun controle par un reseau de neurones. Les meilleurs se reproduisent pour creer la generation suivante via l'algorithme NEAT.</p>
+                <p>Des oiseaux par generation, chacun controle par un reseau de neurones. Les meilleurs se reproduisent pour creer la generation suivante via l'algorithme NEAT.</p>
                 <p><strong>Entrees :</strong> position du tuyau, emplacement de l'ouverture, position de l'oiseau</p>
                 <p><strong>Sortie :</strong> sauter ou non</p>
                 <p><strong>Fitness :</strong> +0.1/frame en vie, +5/tuyau passe</p>
+                <p class="hint">Modifiez les parametres puis cliquez "Reinitialiser" pour appliquer.</p>
             </div>
         </section>
     </main>

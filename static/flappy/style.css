@@ -233,6 +233,93 @@ main {
 
 .info-text p:last-child { margin-bottom: 0; }
 
+/* ============ Parameter Panels ============ */
+.param-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.param-section summary {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.param-section summary::before {
+    content: "\25B6";
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+}
+
+.param-section[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.param-section summary::-webkit-details-marker {
+    display: none;
+}
+
+.param-section summary:hover {
+    color: var(--accent);
+}
+
+.param-grid {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.param-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.param-row label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.param-row input[type="number"] {
+    width: 72px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    text-align: right;
+    -moz-appearance: textfield;
+}
+
+.param-row input[type="number"]::-webkit-inner-spin-button,
+.param-row input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+}
+
+.param-row input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.hint {
+    opacity: 0.6;
+    font-style: italic;
+}
+
 /* ============ Responsive ============ */
 @media (max-width: 900px) {
     main {

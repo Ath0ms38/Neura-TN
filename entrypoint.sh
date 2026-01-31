@@ -6,12 +6,12 @@ set -e
 # Check if models exist
 if [ ! -f "models/nn_model.pth" ] || [ ! -f "models/cnn_model.pth" ]; then
     echo "Models not found. Training models..."
-    python train.py
+    uv run python train.py
     echo "Training complete!"
 else
     echo "Models found. Skipping training."
 fi
 
-# Start the Flask application
+# Start the application with Gunicorn
 echo "Starting Neura-TN on http://0.0.0.0:5000"
-exec python app.py
+exec uv run gunicorn --bind 0.0.0.0:5000 --workers 1 --threads 2 --timeout 120 app:app

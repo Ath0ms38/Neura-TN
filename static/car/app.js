@@ -5,13 +5,25 @@ const CW = 1000, CH = 600;
 const GRASS_COLOR = [0, 200, 0];
 const ROAD_COLOR = [128, 128, 128];
 const CAR_W = 13, CAR_H = 23;
-const MAX_SPEED = 175, MIN_SPEED = 0, ACCELERATION = 75, TURN_SPEED = 150;
-const DRIFT_FACTOR = 0.8, DRIFT_THRESHOLD = 87.5, DRIFT_FRICTION = 0.95;
-const RAY_ANGLES = [-67.5, -45, -22.5, 0, 22.5, 45, 67.5];
-const RAY_MAX = 200;
-const POP_SIZE = 150;
-const MAX_FRAMES = 1000;
+let MAX_SPEED = 175, MIN_SPEED = 0, ACCELERATION = 75, TURN_SPEED = 150;
+let DRIFT_FACTOR = 0.8, DRIFT_THRESHOLD = 87.5, DRIFT_FRICTION = 0.95;
+let RAY_COUNT = 7;
+let RAY_MAX = 200;
+let POP_SIZE = 150;
+let MAX_FRAMES = 1000;
 const DT = 1 / 60;
+
+function generateRayAngles(count) {
+    const fov = 135;
+    if (count === 1) return [0];
+    const angles = [];
+    for (let i = 0; i < count; i++) {
+        angles.push(-fov / 2 + (fov / (count - 1)) * i);
+    }
+    return angles;
+}
+
+let rayAngles = generateRayAngles(RAY_COUNT);
 
 // ============ Canvas Setup ============
 const canvas = document.getElementById("game-canvas");
@@ -27,7 +39,7 @@ let startPos = null;
 let startAngle = -90;
 
 // -- Editor state --
-let editorTool = "road"; // "road", "erase", "start", "checkpoint"
+let editorTool = "road"; // "road", "erase", "start", "checkpoint", "delete-cp"
 let brushSize = 30;
 let painting = false;
 let lastMx = -1, lastMy = -1;
@@ -173,13 +185,24 @@ function renderEditor() {
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     const statusParts = [];
-    const toolNames = { road: "Route", erase: "Gomme", start: "Depart", checkpoint: "Checkpoint" };
+    const toolNames = { road: "Route", erase: "Gomme", start: "Depart", checkpoint: "Checkpoint", "delete-cp": "Supprimer CP" };
     statusParts.push(`Outil : ${toolNames[editorTool] || editorTool}`);
     if (startPos) statusParts.push("Depart : place");
     else statusParts.push("Depart : non place");
     statusParts.push(`Checkpoints : ${checkpoints.length}`);
     ctx.fillText(statusParts.join("  |  "), 10, CH - 15);
     ctx.textBaseline = "alphabetic";
+}
+
+// -- Helpers --
+function pointToSegDist(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return Math.sqrt((px - ax) ** 2 + (py - ay) ** 2);
+    let t = ((px - ax) * dx + (py - ay) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    const projX = ax + t * dx, projY = ay + t * dy;
+    return Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
 }
 
 // -- Editor mouse events --
@@ -215,6 +238,18 @@ function onEditorMouseDown(e) {
                 order: checkpoints.length,
             });
             cpTempStart = null;
+            renderEditor();
+        }
+    } else if (editorTool === "delete-cp") {
+        let minDist = Infinity, minIdx = -1;
+        for (let i = 0; i < checkpoints.length; i++) {
+            const cp = checkpoints[i];
+            const d = pointToSegDist(x, y, cp.start[0], cp.start[1], cp.end[0], cp.end[1]);
+            if (d < minDist) { minDist = d; minIdx = i; }
+        }
+        if (minIdx >= 0 && minDist < 20) {
+            checkpoints.splice(minIdx, 1);
+            for (let i = 0; i < checkpoints.length; i++) checkpoints[i].order = i;
             renderEditor();
         }
     }
@@ -273,7 +308,7 @@ function isGrass(x, y) {
 function castRays(x, y, angle) {
     const distances = [];
     const endpoints = [];
-    for (const rayAngle of RAY_ANGLES) {
+    for (const rayAngle of rayAngles) {
         const totalAngle = (angle + rayAngle) * Math.PI / 180;
         const dx = -Math.sin(totalAngle);
         const dy = -Math.cos(totalAngle);
@@ -421,20 +456,24 @@ class Car {
 // ---- Simulation Logic ----
 function initGeneration() {
     if (!population && !manualMode) {
+        const el = (id, def) => {
+            const e = document.getElementById(id);
+            return e ? parseFloat(e.value) : def;
+        };
         population = new NEAT.Population({
             populationSize: POP_SIZE,
-            numInputs: 9,
+            numInputs: rayAngles.length + 2,
             numOutputs: 2,
-            compatibilityThreshold: 2.0,
-            elitism: 3,
-            survivalThreshold: 0.2,
-            maxStagnation: 6,
+            compatibilityThreshold: el("param-compat-threshold", 2.0),
+            elitism: el("param-elitism", 3),
+            survivalThreshold: el("param-survival-threshold", 0.2),
+            maxStagnation: el("param-max-stagnation", 6),
             speciesElitism: 2,
             mutationConfig: {
-                weightMutateRate: 0.8,
-                addNodeRate: 0.2,
-                addConnRate: 0.5,
-                toggleRate: 0.01,
+                weightMutateRate: el("param-weight-mutate", 0.8),
+                addNodeRate: el("param-add-node", 0.2),
+                addConnRate: el("param-add-conn", 0.5),
+                toggleRate: el("param-toggle-rate", 0.01),
             },
         });
     }
@@ -569,7 +608,8 @@ function renderNN() {
     const layers = [inputNodes, ...(hiddenNodes.length > 0 ? [hiddenNodes] : []), outputNodes];
     const layerSpacing = W / (layers.length + 1);
     const nodePositions = new Map();
-    const inputLabels = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "Spd", "Ang", "Bias"];
+    const inputLabels = [...Array(rayAngles.length).keys()].map(i => `R${i + 1}`);
+    inputLabels.push("Spd", "Ang", "Bias");
     const outputLabels = ["Accel", "Dir"];
 
     for (let li = 0; li < layers.length; li++) {
@@ -667,6 +707,26 @@ function pauseSim() {
 }
 
 // ============================================================
+// PARAMETER READING
+// ============================================================
+
+function readCarParams() {
+    const el = (id, def) => {
+        const e = document.getElementById(id);
+        return e ? parseFloat(e.value) : def;
+    };
+    RAY_COUNT = Math.round(el("param-ray-count", 7));
+    MAX_SPEED = el("param-max-speed", 175);
+    ACCELERATION = el("param-accel", 75);
+    TURN_SPEED = el("param-turn-speed", 150);
+    RAY_MAX = el("param-ray-max", 200);
+    MAX_FRAMES = Math.round(el("param-max-frames", 1000));
+    POP_SIZE = Math.round(el("param-pop-size", 150));
+    DRIFT_THRESHOLD = MAX_SPEED / 2;
+    rayAngles = generateRayAngles(RAY_COUNT);
+}
+
+// ============================================================
 // MODE SWITCHING
 // ============================================================
 
@@ -681,6 +741,8 @@ function enterEditor() {
     document.getElementById("editor-controls").style.display = "flex";
     document.getElementById("sim-controls").style.display = "none";
     document.getElementById("editor-help").style.display = "";
+    document.getElementById("editor-car-params").style.display = "";
+    document.getElementById("editor-neat-params").style.display = "";
     document.getElementById("sim-panels").style.display = "none";
     canvas.style.cursor = "crosshair";
 
@@ -698,6 +760,7 @@ function enterSimulation() {
         return;
     }
 
+    readCarParams();
     detachEditorEvents();
     mode = "simulation";
     updateTrackImageData();
@@ -705,6 +768,8 @@ function enterSimulation() {
     document.getElementById("editor-controls").style.display = "none";
     document.getElementById("sim-controls").style.display = "flex";
     document.getElementById("editor-help").style.display = "none";
+    document.getElementById("editor-car-params").style.display = "none";
+    document.getElementById("editor-neat-params").style.display = "none";
     document.getElementById("sim-panels").style.display = "";
     canvas.style.cursor = "default";
 
@@ -734,6 +799,7 @@ document.querySelectorAll(".tool-btn").forEach(btn => {
             "btn-tool-erase": "erase",
             "btn-tool-start": "start",
             "btn-tool-checkpoint": "checkpoint",
+            "btn-tool-delete-cp": "delete-cp",
         };
         if (toolMap[btn.id]) {
             editorTool = toolMap[btn.id];
