@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird NEAT - Neura'TN</title>
+    <link rel="stylesheet" href="/static/flappy/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <a href="/" class="back-link">&larr; Accueil</a>
+            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+        </div>
+        <h1>Flappy Bird NEAT</h1>
+        <div class="controls">
+            <button id="btn-start">Demarrer</button>
+            <button id="btn-reset">Reinitialiser</button>
+            <div class="speed-group">
+                <label>Vitesse :</label>
+                <button class="speed-btn active" data-speed="1">1x</button>
+                <button class="speed-btn" data-speed="3">3x</button>
+                <button class="speed-btn" data-speed="10">10x</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="game-panel">
+            <canvas id="game-canvas" width="500" height="800"></canvas>
+        </section>
+
+        <section class="info-panel">
+            <div class="stats">
+                <h2>Statistiques</h2>
+                <div class="stat-row"><span class="stat-label">Generation</span><span id="stat-gen" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">En vie</span><span id="stat-alive" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Score</span><span id="stat-score" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Meilleure fitness</span><span id="stat-best" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Especes</span><span id="stat-species" class="stat-value">0</span></div>
+            </div>
+
+            <div class="nn-viz">
+                <h2>Cerveau du meilleur oiseau</h2>
+                <svg id="nn-svg" viewBox="0 0 300 200"></svg>
+            </div>
+
+            <div class="info-text">
+                <h2>Comment ca marche</h2>
+                <p>100 oiseaux par generation, chacun controle par un reseau de neurones. Les meilleurs se reproduisent pour creer la generation suivante via l'algorithme NEAT.</p>
+                <p><strong>Entrees :</strong> position du tuyau, emplacement de l'ouverture, position de l'oiseau</p>
+                <p><strong>Sortie :</strong> sauter ou non</p>
+                <p><strong>Fitness :</strong> +0.1/frame en vie, +5/tuyau passe</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/neat.js"></script>
+    <script src="/static/flappy/app.js"></script>
+</body>
+</html>

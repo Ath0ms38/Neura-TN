@@ -121,6 +121,21 @@ def index():
     return send_from_directory("static", "index.html")
 
 
+@app.route("/mnist")
+def mnist():
+    return send_from_directory("static/mnist", "index.html")
+
+
+@app.route("/flappy")
+def flappy():
+    return send_from_directory("static/flappy", "index.html")
+
+
+@app.route("/car")
+def car():
+    return send_from_directory("static/car", "index.html")
+
+
 @app.route("/static/<path:path>")
 def serve_static(path):
     return send_from_directory("static", path)
@@ -187,5 +202,5 @@ def model_info(model_type):
 
 
 if __name__ == "__main__":
-    print("Starting MNIST Visualizer on http://localhost:5000")
+    print("Starting Neura'TN on http://localhost:5000")
     app.run(host="0.0.0.0", port=5000, debug=False)

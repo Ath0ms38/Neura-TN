@@ -1,56 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MNIST Neural Network Visualizer</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Neura'TN - Demos de Reseaux de Neurones</title>
+    <link rel="stylesheet" href="/static/landing.css">
 </head>
 <body>
-    <!-- Header -->
     <header>
-        <h1>MNIST Neural Network Visualizer</h1>
-        <div class="mode-switch">
-            <span id="nn-label" class="mode-label active">Neural Network</span>
-            <label class="switch">
-                <input type="checkbox" id="mode-toggle">
-                <span class="slider"></span>
-            </label>
-            <span id="cnn-label" class="mode-label">CNN</span>
+        <div class="header-brand">
+            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+            <h1>Neura'TN</h1>
         </div>
+        <p class="subtitle">Demonstrations interactives de reseaux de neurones</p>
     </header>
 
     <main>
-        <!-- Left panel: Input -->
-        <section class="panel input-panel">
-            <h2>Input</h2>
-            <div class="canvas-wrapper">
-                <canvas id="draw-canvas" width="28" height="28"></canvas>
-            </div>
-            <div class="btn-group">
-                <button id="btn-sample">Random Sample</button>
-                <button id="btn-clear">Clear</button>
-            </div>
-            <div id="true-label" class="info-label"></div>
-        </section>
+        <div class="card-grid">
+            <!-- MNIST Visualizer -->
+            <a href="/mnist" class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 80 80" width="80" height="80">
+                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#FFAB40" stroke-width="2"/>
+                        <text x="40" y="52" text-anchor="middle" fill="#FFAB40" font-size="36" font-weight="bold">7</text>
+                    </svg>
+                </div>
+                <h2>Visualiseur MNIST</h2>
+                <p>Dessinez des chiffres et observez un reseau de neurones ou un CNN les classifier en temps reel. Visualisez les activations de chaque couche.</p>
+                <div class="tags">
+                    <span class="tag">PyTorch</span>
+                    <span class="tag">CNN</span>
+                    <span class="tag">Inference en direct</span>
+                </div>
+                <span class="card-btn">Lancer</span>
+            </a>
 
-        <!-- Center: Network Visualization -->
-        <section class="panel viz-panel">
-            <h2>Network Visualization</h2>
-            <div id="viz-container">
-                <svg id="network-svg"></svg>
-            </div>
-        </section>
+            <!-- Flappy Bird NEAT -->
+            <a href="/flappy" class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 80 80" width="80" height="80">
+                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#85D5E6" stroke-width="2"/>
+                        <ellipse cx="40" cy="38" rx="16" ry="13" fill="#FFAB40"/>
+                        <circle cx="47" cy="34" r="3" fill="#0E2A47"/>
+                        <path d="M52 37 L62 35 L52 39Z" fill="#e85d4a"/>
+                        <path d="M28 32 Q24 22 36 30" fill="#85D5E6" stroke="#85D5E6" stroke-width="1"/>
+                    </svg>
+                </div>
+                <h2>Flappy Bird NEAT</h2>
+                <p>Observez des reseaux de neurones evoluer pour jouer a Flappy Bird. 100 oiseaux par generation apprennent par neuroevolution.</p>
+                <div class="tags">
+                    <span class="tag">NEAT</span>
+                    <span class="tag">Evolution</span>
+                    <span class="tag">Temps reel</span>
+                </div>
+                <span class="card-btn">Lancer</span>
+            </a>
 
-        <!-- Right panel: Output -->
-        <section class="panel output-panel">
-            <h2>Prediction</h2>
-            <div id="prediction-display" class="prediction-number">?</div>
-            <h3>Probabilities</h3>
-            <div id="prob-chart" class="prob-chart"></div>
-        </section>
+            <!-- NEAT Car Driving -->
+            <a href="/car" class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 80 80" width="80" height="80">
+                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#0097A7" stroke-width="2"/>
+                        <rect x="30" y="25" width="12" height="24" rx="3" fill="#85D5E6" transform="rotate(-30, 36, 37)"/>
+                        <line x1="36" y1="37" x2="56" y2="20" stroke="#FFAB40" stroke-width="1.5" opacity="0.7"/>
+                        <line x1="36" y1="37" x2="58" y2="35" stroke="#FFAB40" stroke-width="1.5" opacity="0.7"/>
+                        <line x1="36" y1="37" x2="50" y2="52" stroke="#FFAB40" stroke-width="1.5" opacity="0.7"/>
+                        <ellipse cx="40" cy="55" rx="25" ry="8" fill="none" stroke="#78909C" stroke-width="4" opacity="0.3"/>
+                    </svg>
+                </div>
+                <h2>Conduite NEAT</h2>
+                <p>Des voitures IA apprennent a naviguer sur un circuit grace au raycasting et a la neuroevolution. Creez votre propre piste.</p>
+                <div class="tags">
+                    <span class="tag">NEAT</span>
+                    <span class="tag">Raycasting</span>
+                    <span class="tag">Physique</span>
+                </div>
+                <span class="card-btn">Lancer</span>
+            </a>
+        </div>
     </main>
-
-    <script src="/static/app.js"></script>
 </body>
 </html>
