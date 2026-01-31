@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  neura-tn:
+    build: .
+    image: neura-tn:latest
+    container_name: neura-tn
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
