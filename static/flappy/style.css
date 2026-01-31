@@ -320,6 +320,24 @@ main {
     font-style: italic;
 }
 
+/* ============ NN Input Toggles ============ */
+.nn-input-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.nn-input-toggle input[type="checkbox"] {
+    accent-color: var(--accent);
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+}
+
 /* ============ Responsive ============ */
 @media (max-width: 900px) {
     main {

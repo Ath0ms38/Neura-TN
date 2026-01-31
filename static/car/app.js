@@ -7,23 +7,171 @@ const ROAD_COLOR = [128, 128, 128];
 const CAR_W = 13, CAR_H = 23;
 let MAX_SPEED = 175, MIN_SPEED = 0, ACCELERATION = 75, TURN_SPEED = 150;
 let DRIFT_FACTOR = 0.8, DRIFT_THRESHOLD = 87.5, DRIFT_FRICTION = 0.95;
-let RAY_COUNT = 7;
 let RAY_MAX = 200;
 let POP_SIZE = 150;
 let MAX_FRAMES = 1000;
 const DT = 1 / 60;
 
-function generateRayAngles(count) {
-    const fov = 135;
+function generateRayAngles(count, fov) {
+    fov = fov || 135;
     if (count === 1) return [0];
     const angles = [];
     for (let i = 0; i < count; i++) {
-        angles.push(-fov / 2 + (fov / (count - 1)) * i);
+        angles.push(parseFloat((-fov / 2 + (fov / (count - 1)) * i).toFixed(1)));
     }
     return angles;
 }
 
-let rayAngles = generateRayAngles(RAY_COUNT);
+let rayConfigAngles = generateRayAngles(7, 135);
+let rayAngles = [...rayConfigAngles];
+
+// ============ Ray Preview ============
+function renderRayPreview() {
+    const cvs = document.getElementById("ray-preview");
+    if (!cvs) return;
+    const rc = cvs.getContext("2d");
+    const W = cvs.width, H = cvs.height;
+    rc.clearRect(0, 0, W, H);
+
+    // Background
+    rc.fillStyle = "#0E2A47";
+    rc.fillRect(0, 0, W, H);
+
+    const cx = W / 2, cy = H / 2 + 10;
+    const rayLen = Math.min(W, H) * 0.4;
+
+    // Draw rays
+    for (let i = 0; i < rayConfigAngles.length; i++) {
+        const ang = rayConfigAngles[i] * Math.PI / 180;
+        const ex = cx + Math.sin(ang) * rayLen;
+        const ey = cy - Math.cos(ang) * rayLen;
+
+        // Ray line
+        rc.strokeStyle = "rgba(76, 175, 80, 0.6)";
+        rc.lineWidth = 1.5;
+        rc.beginPath();
+        rc.moveTo(cx, cy);
+        rc.lineTo(ex, ey);
+        rc.stroke();
+
+        // Endpoint dot
+        rc.fillStyle = "#e85d4a";
+        rc.beginPath();
+        rc.arc(ex, ey, 3, 0, Math.PI * 2);
+        rc.fill();
+
+        // Label
+        const lx = cx + Math.sin(ang) * (rayLen + 12);
+        const ly = cy - Math.cos(ang) * (rayLen + 12);
+        rc.fillStyle = "#78909C";
+        rc.font = "9px Arial, sans-serif";
+        rc.textAlign = "center";
+        rc.textBaseline = "middle";
+        rc.fillText(`R${i + 1}`, lx, ly);
+    }
+
+    // Draw car body
+    const carW = 14, carH = 24;
+    rc.fillStyle = "#5dade2";
+    rc.fillRect(cx - carW / 2, cy - carH / 2, carW, carH);
+    // Windshield
+    rc.fillStyle = "rgba(255,255,255,0.5)";
+    rc.fillRect(cx - carW / 2 + 2, cy - carH / 2, carW - 4, 5);
+
+    // Direction indicator
+    rc.fillStyle = "rgba(255,255,255,0.3)";
+    rc.beginPath();
+    rc.moveTo(cx, cy - carH / 2 - 8);
+    rc.lineTo(cx - 4, cy - carH / 2 - 2);
+    rc.lineTo(cx + 4, cy - carH / 2 - 2);
+    rc.closePath();
+    rc.fill();
+
+    // FOV arc
+    if (rayConfigAngles.length >= 2) {
+        const sorted = [...rayConfigAngles].sort((a, b) => a - b);
+        const minAng = sorted[0] * Math.PI / 180;
+        const maxAng = sorted[sorted.length - 1] * Math.PI / 180;
+        // Canvas arc: 0 is right, goes clockwise. Convert from our system.
+        const arcStart = -Math.PI / 2 + minAng;
+        const arcEnd = -Math.PI / 2 + maxAng;
+        rc.strokeStyle = "rgba(255, 171, 64, 0.25)";
+        rc.lineWidth = 1;
+        rc.beginPath();
+        rc.arc(cx, cy, rayLen + 2, arcStart, arcEnd);
+        rc.stroke();
+    }
+}
+
+// ============ Ray Configuration UI ============
+function buildRayConfigUI() {
+    const container = document.getElementById("ray-list");
+    if (!container) return;
+    container.innerHTML = "";
+    for (let i = 0; i < rayConfigAngles.length; i++) {
+        const row = document.createElement("div");
+        row.className = "ray-row";
+
+        const label = document.createElement("span");
+        label.className = "ray-label";
+        label.textContent = `R${i + 1}`;
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.className = "ray-angle-input";
+        input.value = rayConfigAngles[i];
+        input.step = "0.5";
+        input.min = "-180";
+        input.max = "180";
+        input.addEventListener("change", () => {
+            const idx = Array.from(container.children).indexOf(row);
+            rayConfigAngles[idx] = parseFloat(input.value) || 0;
+            renderRayPreview();
+        });
+
+        const unit = document.createElement("span");
+        unit.className = "ray-unit";
+        unit.textContent = "\u00B0";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "ray-remove-btn";
+        removeBtn.title = "Supprimer";
+        removeBtn.textContent = "\u00D7";
+        removeBtn.addEventListener("click", () => {
+            const idx = Array.from(container.children).indexOf(row);
+            rayConfigAngles.splice(idx, 1);
+            buildRayConfigUI();
+        });
+
+        row.appendChild(label);
+        row.appendChild(input);
+        row.appendChild(unit);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+    }
+    renderRayPreview();
+}
+
+function addRay() {
+    const last = rayConfigAngles.length > 0 ? rayConfigAngles[rayConfigAngles.length - 1] : 0;
+    rayConfigAngles.push(parseFloat((last + 10).toFixed(1)));
+    buildRayConfigUI();
+}
+
+function autoDistributeRays() {
+    const fovEl = document.getElementById("param-fov");
+    const fov = fovEl ? parseFloat(fovEl.value) : 135;
+    const count = rayConfigAngles.length;
+    rayConfigAngles = generateRayAngles(count, fov);
+    buildRayConfigUI();
+}
+
+function readRayAngles() {
+    const inputs = document.querySelectorAll("#ray-list .ray-angle-input");
+    rayConfigAngles = Array.from(inputs).map(inp => parseFloat(inp.value) || 0);
+    rayAngles = [...rayConfigAngles];
+}
 
 // ============ Canvas Setup ============
 const canvas = document.getElementById("game-canvas");
@@ -715,7 +863,7 @@ function readCarParams() {
         const e = document.getElementById(id);
         return e ? parseFloat(e.value) : def;
     };
-    RAY_COUNT = Math.round(el("param-ray-count", 7));
+    readRayAngles();
     MAX_SPEED = el("param-max-speed", 175);
     ACCELERATION = el("param-accel", 75);
     TURN_SPEED = el("param-turn-speed", 150);
@@ -723,7 +871,6 @@ function readCarParams() {
     MAX_FRAMES = Math.round(el("param-max-frames", 1000));
     POP_SIZE = Math.round(el("param-pop-size", 150));
     DRIFT_THRESHOLD = MAX_SPEED / 2;
-    rayAngles = generateRayAngles(RAY_COUNT);
 }
 
 // ============================================================
@@ -741,6 +888,7 @@ function enterEditor() {
     document.getElementById("editor-controls").style.display = "flex";
     document.getElementById("sim-controls").style.display = "none";
     document.getElementById("editor-help").style.display = "";
+    document.getElementById("editor-ray-config").style.display = "";
     document.getElementById("editor-car-params").style.display = "";
     document.getElementById("editor-neat-params").style.display = "";
     document.getElementById("sim-panels").style.display = "none";
@@ -768,6 +916,7 @@ function enterSimulation() {
     document.getElementById("editor-controls").style.display = "none";
     document.getElementById("sim-controls").style.display = "flex";
     document.getElementById("editor-help").style.display = "none";
+    document.getElementById("editor-ray-config").style.display = "none";
     document.getElementById("editor-car-params").style.display = "none";
     document.getElementById("editor-neat-params").style.display = "none";
     document.getElementById("sim-panels").style.display = "";
@@ -822,6 +971,10 @@ document.getElementById("brush-size").addEventListener("input", (e) => {
 
 document.getElementById("btn-launch").addEventListener("click", enterSimulation);
 
+// Ray config buttons
+document.getElementById("btn-add-ray").addEventListener("click", addRay);
+document.getElementById("btn-auto-rays").addEventListener("click", autoDistributeRays);
+
 // Simulation controls
 document.getElementById("btn-start").addEventListener("click", () => {
     running ? pauseSim() : startSim();
@@ -861,5 +1014,6 @@ window.addEventListener("keyup", (e) => { keys[e.key] = false; });
 // ============================================================
 
 initTrackCanvas();
+buildRayConfigUI();
 attachEditorEvents();
 renderEditor();

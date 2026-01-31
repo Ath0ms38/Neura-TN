@@ -213,6 +213,30 @@ class Pipe {
     }
 }
 
+// ============ NN Input Definitions ============
+const AVAILABLE_INPUTS = [
+    { id: "pipex", label: "PipeX", compute: (bird, pipe, midGap) => pipe.x / SCREEN_W },
+    { id: "topy", label: "TopY", compute: (bird, pipe, midGap) => pipe.height / SCREEN_H },
+    { id: "boty", label: "BotY", compute: (bird, pipe, midGap) => pipe.bottom / SCREEN_H },
+    { id: "ydiff", label: "Ydiff", compute: (bird, pipe, midGap) => (bird.y - midGap) / SCREEN_H },
+    { id: "xdiff", label: "Xdiff", compute: (bird, pipe, midGap) => (bird.x - pipe.x) / SCREEN_W },
+    { id: "birdy", label: "BirdY", compute: (bird, pipe, midGap) => bird.y / SCREEN_H },
+    { id: "vel", label: "Vel", compute: (bird, pipe, midGap) => {
+        let disp = bird.vel * bird.tickCount + 0.5 * GRAVITY * bird.tickCount * bird.tickCount;
+        if (disp > TERMINAL_VEL) disp = TERMINAL_VEL;
+        return disp / TERMINAL_VEL;
+    }},
+];
+
+let activeInputs = AVAILABLE_INPUTS.filter(inp => inp.id !== "vel"); // vel unchecked by default
+
+function getEnabledInputs() {
+    return AVAILABLE_INPUTS.filter(inp => {
+        const el = document.getElementById(`input-${inp.id}`);
+        return el ? el.checked : true;
+    });
+}
+
 // ============ Parameter Reading ============
 function readGameParams() {
     const el = (id, def) => {
@@ -231,13 +255,14 @@ function readGameParams() {
 function initGeneration() {
     if (!population) {
         readGameParams();
+        activeInputs = getEnabledInputs();
         const el = (id, def) => {
             const e = document.getElementById(id);
             return e ? parseFloat(e.value) : def;
         };
         population = new NEAT.Population({
             populationSize: POP_SIZE,
-            numInputs: 6,
+            numInputs: activeInputs.length,
             numOutputs: 1,
             compatibilityThreshold: el("param-compat-threshold", 1.5),
             elitism: el("param-elitism", 2),
@@ -285,14 +310,7 @@ function gameTick() {
 
         // Neural network decision
         const midGap = pipe.height + PIPE_GAP / 2;
-        const inputs = [
-            pipe.x / SCREEN_W,
-            pipe.height / SCREEN_H,
-            pipe.bottom / SCREEN_H,
-            (bird.y - midGap) / SCREEN_H,
-            (bird.x - pipe.x) / SCREEN_W,
-            bird.y / SCREEN_H,
-        ];
+        const inputs = activeInputs.map(inp => inp.compute(bird, pipe, midGap));
 
         const output = bird.genome.activate(inputs);
         if (output[0] > 0.5) bird.jump();
@@ -429,7 +447,7 @@ function renderNN() {
 
     const nodePositions = new Map();
 
-    const inputLabels = ["PipeX", "TopY", "BotY", "Ydiff", "Xdiff", "BirdY", "Bias"];
+    const inputLabels = [...activeInputs.map(inp => inp.label), "Bias"];
 
     for (let li = 0; li < layers.length; li++) {
         const layer = layers[li];

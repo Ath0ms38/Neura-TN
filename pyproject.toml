@@ -9,6 +9,7 @@ dependencies = [
     "flask>=3.1",
     "numpy>=2.0",
     "gunicorn>=23.0",
+    "chess>=1.10",
 ]
 
 [tool.uv.sources]

@@ -5,10 +5,15 @@ import random
 import numpy as np
 import torch
 import torch.nn.functional as F
+import chess
 from flask import Flask, jsonify, request, send_from_directory
 from torchvision import datasets, transforms
 
 from train import SimpleNN, SimpleCNN
+from chess_engine import (
+    DEFAULT_EVAL_CODE, board_to_array, get_legal_moves_uci,
+    get_game_status, find_best_move, compile_user_eval, execute_eval,
+)
 
 app = Flask(__name__, static_folder="static")
 
@@ -136,6 +141,11 @@ def car():
     return send_from_directory("static/car", "index.html")
 
 
+@app.route("/chess")
+def chess_page():
+    return send_from_directory("static/chess", "index.html")
+
+
 @app.route("/static/<path:path>")
 def serve_static(path):
     return send_from_directory("static", path)
@@ -199,6 +209,121 @@ def model_info(model_type):
             ],
         }
     return jsonify(info)
+
+
+# --------------- Chess API ---------------
+
+@app.route("/api/chess/new", methods=["POST"])
+def chess_new():
+    data = request.get_json() or {}
+    fen = data.get("fen")
+    try:
+        board = chess.Board(fen) if fen else chess.Board()
+    except ValueError:
+        return jsonify({"error": "FEN invalide"}), 400
+
+    return jsonify({
+        "fen": board.fen(),
+        "board": board_to_array(board),
+        "legal_moves": get_legal_moves_uci(board),
+        "turn": "white" if board.turn == chess.WHITE else "black",
+        "status": get_game_status(board),
+        "default_eval": DEFAULT_EVAL_CODE,
+    })
+
+
+@app.route("/api/chess/move", methods=["POST"])
+def chess_move():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Donnees manquantes"}), 400
+
+    fen = data.get("fen")
+    user_move_uci = data.get("user_move")
+    eval_code = data.get("eval_code", DEFAULT_EVAL_CODE)
+    depth = min(int(data.get("depth", 3)), 4)
+
+    try:
+        board = chess.Board(fen)
+    except (ValueError, TypeError):
+        return jsonify({"error": "FEN invalide"}), 400
+
+    # Apply user move
+    try:
+        move = chess.Move.from_uci(user_move_uci)
+        if move not in board.legal_moves:
+            return jsonify({"error": "Coup illegal"}), 400
+        user_move_san = board.san(move)
+        board.push(move)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Coup invalide"}), 400
+
+    fen_after_user = board.fen()
+
+    # Check game over after user move
+    status = get_game_status(board)
+    if status != "playing":
+        return jsonify({
+            "user_move_san": user_move_san,
+            "ai_move": None,
+            "ai_move_san": None,
+            "fen_after_user": fen_after_user,
+            "fen_after_ai": None,
+            "board": board_to_array(board),
+            "legal_moves": [],
+            "turn": "black" if board.turn == chess.BLACK else "white",
+            "status": status,
+            "tree": None,
+            "eval_error": None,
+            "stats": None,
+        })
+
+    # AI plays
+    result = find_best_move(board, eval_code, depth)
+
+    if result["ai_move"]:
+        ai_move = chess.Move.from_uci(result["ai_move"])
+        board.push(ai_move)
+
+    return jsonify({
+        "user_move_san": user_move_san,
+        "ai_move": result["ai_move"],
+        "ai_move_san": result["ai_move_san"],
+        "fen_after_user": fen_after_user,
+        "fen_after_ai": board.fen(),
+        "board": board_to_array(board),
+        "legal_moves": get_legal_moves_uci(board),
+        "turn": "white" if board.turn == chess.WHITE else "black",
+        "status": get_game_status(board),
+        "tree": result["tree"],
+        "eval_error": result["eval_error"],
+        "stats": result["stats"],
+    })
+
+
+@app.route("/api/chess/validate-eval", methods=["POST"])
+def chess_validate_eval():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Donnees manquantes"}), 400
+
+    eval_code = data.get("eval_code", "")
+    fen = data.get("fen")
+
+    try:
+        board = chess.Board(fen) if fen else chess.Board()
+    except (ValueError, TypeError):
+        board = chess.Board()
+
+    eval_fn, error = compile_user_eval(eval_code)
+    if error:
+        return jsonify({"valid": False, "score": None, "error": error})
+
+    score, exec_error = execute_eval(eval_fn, board)
+    if exec_error:
+        return jsonify({"valid": False, "score": None, "error": exec_error})
+
+    return jsonify({"valid": True, "score": round(score, 1), "error": None})
 
 
 if __name__ == "__main__":

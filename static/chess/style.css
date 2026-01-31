@@ -1,0 +1,628 @@
+/* ============ Reset & Base ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg-primary: #001633;
+    --bg-secondary: #0A2540;
+    --bg-card: #0E2A47;
+    --text-primary: #FFFFFF;
+    --text-secondary: #78909C;
+    --accent: #FFAB40;
+    --accent-glow: rgba(255, 171, 64, 0.25);
+    --accent2: #85D5E6;
+    --success: #0097A7;
+    --border: #1A3A5C;
+    --sq-light: #B58863;
+    --sq-dark: #6F4E37;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: Arial, 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ============ Header ============ */
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.back-link:hover { color: var(--accent); }
+
+header {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    gap: 20px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    flex: 1;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.controls button {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.depth-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.depth-group label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-right: 4px;
+}
+
+.depth-btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.depth-btn.active {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: var(--bg-primary) !important;
+}
+
+/* ============ Main Layout ============ */
+main {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    height: calc(100vh - 53px - 300px);
+    min-height: 500px;
+}
+
+/* ============ Board Panel ============ */
+.board-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    gap: 12px;
+}
+
+.board-panel h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+}
+
+/* ============ Board Labels ============ */
+.board-outer {
+    display: flex;
+    gap: 4px;
+    align-items: stretch;
+}
+
+.board-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.rank-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 400px;
+    padding: 0 4px;
+}
+
+.rank-labels span {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 50px;
+    height: 50px;
+}
+
+.file-labels {
+    display: grid;
+    grid-template-columns: repeat(8, 50px);
+    width: 400px;
+    padding-top: 2px;
+}
+
+.file-labels span {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* ============ Chess Board ============ */
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 50px);
+    grid-template-rows: repeat(8, 50px);
+    width: 400px;
+    height: 400px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    line-height: 1;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.15s;
+    overflow: hidden;
+}
+
+.square.light { background: var(--sq-light); }
+.square.dark { background: var(--sq-dark); }
+
+.square:hover {
+    filter: brightness(1.15);
+}
+
+.square.selected {
+    background: rgba(255, 171, 64, 0.55) !important;
+}
+
+.square.last-move {
+    background: rgba(133, 213, 230, 0.25) !important;
+}
+
+.square.check {
+    background: rgba(232, 93, 74, 0.5) !important;
+}
+
+.square.move-target::after {
+    content: "";
+    width: 28%;
+    height: 28%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+    position: absolute;
+}
+
+.square.capture-target::after {
+    content: "";
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 0, 0, 0.3);
+    background: transparent;
+    position: absolute;
+}
+
+.white-piece {
+    color: #fff;
+    text-shadow: 0 0 2px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4);
+}
+.black-piece {
+    color: #1a1a1a;
+    text-shadow: 0 0 2px rgba(255,255,255,0.15);
+}
+
+/* ============ Game Status ============ */
+.game-status {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
+    min-height: 1.2em;
+    text-align: center;
+}
+
+.game-status.error {
+    color: #e85d4a;
+}
+
+/* ============ Move History ============ */
+.move-history {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    width: 400px;
+    max-height: 120px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.move-history .move-pair {
+    display: inline;
+}
+
+.move-history .move-num {
+    color: var(--text-secondary);
+    opacity: 0.6;
+    margin-right: 2px;
+}
+
+.move-history .move-white {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-right: 6px;
+}
+
+.move-history .move-black {
+    color: var(--accent2);
+    font-weight: 500;
+    margin-right: 10px;
+}
+
+/* ============ Editor Panel ============ */
+.editor-panel {
+    padding: 16px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.editor-panel h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============ Preset Buttons ============ */
+.preset-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.preset-group label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.preset-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+/* ============ Code Editor ============ */
+.eval-editor-wrapper {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#eval-editor {
+    width: 100%;
+    height: 320px;
+    background: #0a0e14;
+    color: #b3b1ad;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    resize: vertical;
+    tab-size: 4;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+}
+
+#eval-editor:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.editor-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.editor-actions button {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.editor-actions button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.eval-status {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.eval-status.valid {
+    color: var(--success);
+    background: rgba(0, 151, 167, 0.1);
+}
+
+.eval-status.invalid {
+    color: #e85d4a;
+    background: rgba(232, 93, 74, 0.1);
+}
+
+/* ============ Stats ============ */
+.stats {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.stat-row:last-child { border-bottom: none; }
+
+.stat-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============ Info Text ============ */
+.info-text {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.info-text p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+.info-text p:last-child { margin-bottom: 0; }
+
+/* ============ Thinking Overlay ============ */
+.thinking-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 22, 51, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    z-index: 10;
+}
+
+.thinking-text {
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 600;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* ============ Tree Section ============ */
+.tree-section {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    min-height: 300px;
+}
+
+.tree-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.tree-header h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tree-header button {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tree-header button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.tree-legend {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.tree-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-swatch {
+    width: 14px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1.5px solid;
+}
+
+.legend-swatch.max-node {
+    background: #1a2a40;
+    border-color: var(--accent);
+}
+
+.legend-swatch.min-node {
+    background: #0a2a3a;
+    border-color: var(--accent2);
+}
+
+.legend-swatch.best-path {
+    background: #2a3a20;
+    border-color: var(--accent);
+    border-width: 2.5px;
+}
+
+.legend-swatch.pruned {
+    background: #0a1520;
+    border-color: #555;
+    border-style: dashed;
+}
+
+.tree-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 450px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.tree-container.collapsed {
+    display: none;
+}
+
+#tree-svg {
+    min-width: 100%;
+}
+
+.tree-empty {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 40px 0;
+    opacity: 0.6;
+}
+
+/* ============ Board Wrapper ============ */
+.board-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 900px) {
+    main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        height: auto;
+    }
+    .board-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+    .chess-board {
+        width: min(400px, 90vw);
+        height: min(400px, 90vw);
+    }
+    .move-history { width: min(400px, 90vw); }
+}

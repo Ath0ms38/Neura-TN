@@ -12,7 +12,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Copy application code
-COPY train.py app.py entrypoint.sh ./
+COPY train.py app.py chess_engine.py entrypoint.sh ./
 COPY static/ static/
 
 # Create models and data directories
