@@ -61,8 +61,85 @@
                     <button class="preset-btn" data-preset="endgame">Fin de partie</button>
                 </div>
                 <textarea id="eval-editor" spellcheck="false"></textarea>
+                <div id="doc-panel" class="doc-panel" style="display:none;">
+                    <div class="doc-content">
+                    <h3>Objet board (chess.Board)</h3>
+                    <dl>
+                        <dt>board.piece_map()</dt>
+                        <dd>Dict {case: piece} de toutes les pieces sur l'echiquier.</dd>
+                        <dt>board.piece_at(square)</dt>
+                        <dd>Retourne la piece a la case donnee, ou None.</dd>
+                        <dt>board.piece_type_at(square)</dt>
+                        <dd>Retourne le type de piece (int) a la case, ou None.</dd>
+                        <dt>board.color_at(square)</dt>
+                        <dd>Retourne la couleur (True=blanc, False=noir) a la case, ou None.</dd>
+                        <dt>board.is_checkmate()</dt>
+                        <dd>True si la position est un echec et mat.</dd>
+                        <dt>board.is_check()</dt>
+                        <dd>True si le roi du joueur actif est en echec.</dd>
+                        <dt>board.is_stalemate()</dt>
+                        <dd>True si la position est un pat.</dd>
+                        <dt>board.is_insufficient_material()</dt>
+                        <dd>True si le materiel est insuffisant pour mater.</dd>
+                        <dt>board.can_claim_draw()</dt>
+                        <dd>True si une nulle peut etre reclamee (repetition, 50 coups).</dd>
+                        <dt>board.legal_moves</dt>
+                        <dd>Generateur des coups legaux. Utiliser: len(list(board.legal_moves))</dd>
+                        <dt>board.turn</dt>
+                        <dd>True si c'est aux blancs de jouer, False pour les noirs.</dd>
+                        <dt>board.fullmove_number</dt>
+                        <dd>Numero du coup actuel (commence a 1).</dd>
+                        <dt>board.has_kingside_castling_rights(color)</dt>
+                        <dd>True si le roque cote roi est disponible.</dd>
+                        <dt>board.has_queenside_castling_rights(color)</dt>
+                        <dd>True si le roque cote dame est disponible.</dd>
+                        <dt>board.pieces(piece_type, color)</dt>
+                        <dd>Ensemble des cases contenant ce type de piece de cette couleur.</dd>
+                    </dl>
+
+                    <h3>Types de pieces</h3>
+                    <dl>
+                        <dt>chess.PAWN = 1</dt><dd>Pion</dd>
+                        <dt>chess.KNIGHT = 2</dt><dd>Cavalier</dd>
+                        <dt>chess.BISHOP = 3</dt><dd>Fou</dd>
+                        <dt>chess.ROOK = 4</dt><dd>Tour</dd>
+                        <dt>chess.QUEEN = 5</dt><dd>Dame</dd>
+                        <dt>chess.KING = 6</dt><dd>Roi</dd>
+                    </dl>
+
+                    <h3>Couleurs</h3>
+                    <dl>
+                        <dt>chess.WHITE = True</dt><dd>Blancs</dd>
+                        <dt>chess.BLACK = False</dt><dd>Noirs</dd>
+                    </dl>
+
+                    <h3>Utilitaires de cases</h3>
+                    <dl>
+                        <dt>chess.square_rank(square)</dt>
+                        <dd>Rang de la case (0-7, 0 = rangee 1).</dd>
+                        <dt>chess.square_file(square)</dt>
+                        <dd>Colonne de la case (0-7, 0 = colonne a).</dd>
+                        <dt>chess.square(file, rank)</dt>
+                        <dd>Cree une case a partir de la colonne et du rang.</dd>
+                        <dt>chess.E4, chess.D4, ...</dt>
+                        <dd>Constantes pour les cases (A1=0, B1=1, ..., H8=63).</dd>
+                    </dl>
+
+                    <h3>Objet piece</h3>
+                    <dl>
+                        <dt>piece.piece_type</dt>
+                        <dd>Type de la piece (1-6, voir ci-dessus).</dd>
+                        <dt>piece.color</dt>
+                        <dd>Couleur (True=blanc, False=noir).</dd>
+                        <dt>piece.symbol()</dt>
+                        <dd>Symbole FEN: 'P','N','B','R','Q','K' (blanc), 'p','n','b','r','q','k' (noir).</dd>
+                    </dl>
+                    </div>
+                </div>
                 <div class="editor-actions">
                     <button id="btn-validate">Valider la fonction</button>
+                    <button id="btn-save">Sauvegarder</button>
+                    <button id="btn-doc">Documentation</button>
                     <span id="eval-status" class="eval-status"></span>
                 </div>
             </div>

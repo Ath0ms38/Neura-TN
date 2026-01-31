@@ -657,8 +657,9 @@ async function newGame(fen) {
         if (!fen) {
             moveHistory = [];
             fenHistory = [];
-            // Set default eval code
-            document.getElementById("eval-editor").value = data.default_eval || "";
+            // Restore saved eval code, or use default
+            const saved = loadSavedEvalCode();
+            document.getElementById("eval-editor").value = saved || data.default_eval || "";
         }
 
         renderBoard();
@@ -961,12 +962,71 @@ const EVAL_PRESETS = {
 };
 
 // ============================================================
+// SAVE / LOAD EVAL FUNCTION
+// ============================================================
+
+const STORAGE_KEY = "chess_eval_code";
+
+function saveEvalCode() {
+    const code = document.getElementById("eval-editor").value;
+    try {
+        localStorage.setItem(STORAGE_KEY, code);
+    } catch {
+        // localStorage unavailable, ignore
+    }
+    // Visual feedback
+    const status = document.getElementById("eval-status");
+    status.textContent = "Sauvegarde !";
+    status.className = "eval-status valid";
+    setTimeout(() => {
+        if (status.textContent === "Sauvegarde !") {
+            status.textContent = "";
+            status.className = "eval-status";
+        }
+    }, 2000);
+}
+
+function loadSavedEvalCode() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return saved;
+    } catch {
+        // localStorage unavailable
+    }
+    return null;
+}
+
+// ============================================================
+// DOCUMENTATION PANEL
+// ============================================================
+
+let docVisible = false;
+
+function toggleDocPanel() {
+    docVisible = !docVisible;
+    const editor = document.getElementById("eval-editor");
+    const panel = document.getElementById("doc-panel");
+    const btn = document.getElementById("btn-doc");
+    if (docVisible) {
+        editor.style.display = "none";
+        panel.style.display = "";
+        btn.textContent = "Editeur";
+    } else {
+        editor.style.display = "";
+        panel.style.display = "none";
+        btn.textContent = "Documentation";
+    }
+}
+
+// ============================================================
 // EVENT LISTENERS
 // ============================================================
 
 document.getElementById("btn-new").addEventListener("click", () => newGame());
 document.getElementById("btn-undo").addEventListener("click", undoMove);
 document.getElementById("btn-validate").addEventListener("click", validateEval);
+document.getElementById("btn-save").addEventListener("click", saveEvalCode);
+document.getElementById("btn-doc").addEventListener("click", toggleDocPanel);
 
 // Preset buttons
 document.querySelectorAll(".preset-btn").forEach(btn => {

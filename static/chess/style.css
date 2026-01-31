@@ -424,6 +424,62 @@ main {
     background: rgba(232, 93, 74, 0.1);
 }
 
+/* ============ Doc Panel ============ */
+.doc-panel {
+    width: 100%;
+    height: 320px;
+    background: #0a0e14;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.doc-content h3 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 12px 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.doc-content h3:first-child {
+    margin-top: 0;
+}
+
+.doc-content dl {
+    margin: 0;
+}
+
+.doc-content dt {
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--accent2);
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.doc-content dd {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    margin-left: 12px;
+    margin-bottom: 2px;
+    line-height: 1.4;
+}
+
+/* ============ Save Feedback ============ */
+.editor-actions .save-feedback {
+    font-size: 0.78rem;
+    color: var(--success);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.editor-actions .save-feedback.visible {
+    opacity: 1;
+}
+
 /* ============ Stats ============ */
 .stats {
     background: var(--bg-secondary);
