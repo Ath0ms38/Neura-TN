@@ -1,23 +1,25 @@
 FROM python:3.12-slim
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
 WORKDIR /app
 
 # Copy dependency files first for layer caching
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 
-# Install dependencies
-RUN uv sync --frozen --no-dev
+# Install dependencies using pip with PyTorch CPU version
+RUN pip install --no-cache-dir --timeout=300 \
+    torch==2.5.1+cpu torchvision==0.20.1+cpu \
+    --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir --timeout=300 flask numpy
 
 # Copy application code
-COPY train.py app.py ./
+COPY train.py app.py entrypoint.sh ./
 COPY static/ static/
 
-# Train models at build time
-RUN uv run python train.py
+# Create models and data directories
+RUN mkdir -p models data && \
+    chmod +x entrypoint.sh
 
 EXPOSE 5000
 
-CMD ["uv", "run", "python", "app.py"]
+# Use entrypoint script to train models if needed and start the app
+ENTRYPOINT ["./entrypoint.sh"]
