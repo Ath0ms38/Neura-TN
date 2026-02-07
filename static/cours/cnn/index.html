@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours : Reseaux Convolutifs (CNN) - Neura'TN</title>
+    <link rel="stylesheet" href="/static/cours/cnn/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <a href="/" class="back-link">&larr; Accueil</a>
+            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+            <h1>Reseaux Convolutifs</h1>
+        </div>
+        <div class="header-right">
+            <nav class="section-nav" id="section-nav"></nav>
+            <div class="challenge-counter" id="challenge-counter">
+                <span class="counter-icon">&#9733;</span>
+                <span id="counter-text">0/6</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section id="hero" class="course-section hero-section">
+            <canvas id="hero-canvas"></canvas>
+            <div class="hero-content">
+                <h2>Les Reseaux Convolutifs</h2>
+                <p class="hero-subtitle">Comment une machine apprend-elle a voir ?</p>
+                <p class="hero-intro">Decouvrez pas a pas le fonctionnement des CNN : de l'image numerique jusqu'a la reconnaissance de formes. Completez les 6 defis interactifs pour tester vos connaissances.</p>
+                <a href="#image" class="scroll-hint">Commencer &darr;</a>
+            </div>
+        </section>
+
+        <!-- Section 1: L'Image Numerique -->
+        <section id="image" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">01</span>L'Image Numerique</h2>
+                <p>Pour un ordinateur, une image n'est qu'une <strong>grille de nombres</strong>. Chaque case de la grille s'appelle un <strong>pixel</strong>.</p>
+                <p><strong>Niveaux de gris :</strong> Chaque pixel = un nombre entre <code>0</code> (noir) et <code>255</code> (blanc). L'image est donc une matrice 2D : <em>hauteur &times; largeur</em>.</p>
+                <p><strong>Images couleur (RGB) :</strong> Chaque pixel a <strong>3 canaux</strong> (Rouge, Vert, Bleu). L'image devient un volume 3D : <em>hauteur &times; largeur &times; 3</em>.</p>
+                <p>Exemple : une image <code>28&times;28</code> en couleur = <code>28&times;28&times;3 = 2352 nombres</code>.</p>
+                <p>C'est a partir de ces simples nombres que le CNN va apprendre a reconnaitre des formes !</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="func-selector">
+                        <button class="toggle-btn active" id="btn-view-gray">Niveaux de gris</button>
+                        <button class="toggle-btn" id="btn-view-rgb">RGB (couleur)</button>
+                    </div>
+                    <canvas id="pixel-grid-canvas" width="400" height="400"></canvas>
+                    <div id="pixel-info" class="step-text">Survolez la grille pour voir les valeurs des pixels</div>
+                    <div id="channel-info" class="channel-selector" style="display:none">
+                        <button class="channel-btn active" id="btn-ch-all">Tous</button>
+                        <button class="channel-btn" id="btn-ch-r">Rouge</button>
+                        <button class="channel-btn" id="btn-ch-g">Vert</button>
+                        <button class="channel-btn" id="btn-ch-b">Bleu</button>
+                    </div>
+                    <div class="step-text" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;">
+                        <input type="checkbox" id="show-values-checkbox" style="cursor: pointer;">
+                        <label for="show-values-checkbox" style="cursor: pointer; user-select: none;">Afficher les valeurs dans les pixels</label>
+                    </div>
+                    <div class="challenge-box" id="challenge-1">
+                        <div class="challenge-header">
+                            <span class="challenge-icon">&#9733;</span>
+                            <span class="challenge-title">Defi 1</span>
+                            <span class="challenge-status" id="ch1-status"></span>
+                        </div>
+                        <p class="challenge-text">En mode <strong>niveaux de gris</strong>, calculez la <strong>moyenne</strong> des pixels surlignés en orange (arrondissez a l'entier).</p>
+                        <div class="calc-challenge-container">
+                            <div class="calc-step">
+                                <span class="calc-label">Moyenne =</span>
+                                <input type="number" id="ch1-input" placeholder="?">
+                                <button id="ch1-check">OK</button>
+                                <span class="calc-result" id="ch1-result"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: La Convolution -->
+        <section id="convolution" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">02</span>La Convolution</h2>
+                <p>La <strong>convolution</strong> est l'operation centrale des CNN. Elle consiste a faire glisser un petit <em>noyau</em> (kernel) sur l'image.</p>
+                <p>A chaque position, on <strong>multiplie</strong> les valeurs du noyau par celles de l'image en dessous, puis on fait la <strong>somme</strong>. Le resultat est un nombre dans la grille de sortie.</p>
+                <p>Suivez l'animation etape par etape pour voir comment le noyau parcourt l'image et produit une nouvelle grille :</p>
+                <div class="formula-display">sortie(i,j) = &Sigma; noyau &middot; image</div>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="conv-demo-layout">
+                        <div class="conv-area">
+                            <div class="conv-label">Entree (6&times;6)</div>
+                            <canvas id="conv-input-canvas" width="300" height="300"></canvas>
+                        </div>
+                        <div class="kernel-area">
+                            <div class="conv-label">Noyau (3&times;3)</div>
+                            <div class="kernel-display" id="kernel-display"></div>
+                        </div>
+                        <div class="conv-area">
+                            <div class="conv-label">Sortie (4&times;4)</div>
+                            <canvas id="conv-output-canvas" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div id="conv-step-text" class="step-text">Cliquez sur "Etape suivante" pour demarrer</div>
+                    <div class="step-controls">
+                        <button id="btn-conv-step" class="ctrl-btn">Etape suivante</button>
+                        <button id="btn-conv-auto" class="ctrl-btn accent">Tout calculer</button>
+                        <button id="btn-conv-reset" class="ctrl-btn secondary">Reinitialiser</button>
+                    </div>
+                    <div class="challenge-box" id="challenge-2">
+                        <div class="challenge-header">
+                            <span class="challenge-icon">&#9733;</span>
+                            <span class="challenge-title">Defi 2</span>
+                            <span class="challenge-status" id="ch2-status"></span>
+                        </div>
+                        <p class="challenge-text">Calculez le resultat de la convolution a la position surlignee en <strong>orange</strong>.</p>
+                        <div class="calc-challenge-container">
+                            <div class="calc-step">
+                                <span class="calc-label" id="ch2-label">sortie(?,?) =</span>
+                                <input type="number" id="ch2-input" placeholder="?">
+                                <button id="ch2-check">OK</button>
+                                <span class="calc-result" id="ch2-result"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Les Filtres -->
+        <section id="filtres" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">03</span>Les Filtres</h2>
+                <p>Le choix du <strong>noyau</strong> determine ce que la convolution detecte. Differents noyaux agissent comme des <em>filtres</em> :</p>
+                <ul class="concept-list">
+                    <li><strong>Identite</strong> : ne change rien a l'image</li>
+                    <li><strong>Flou</strong> : moyenne les pixels voisins, lisse l'image</li>
+                    <li><strong>Bords</strong> : detecte les contours horizontaux ou verticaux</li>
+                    <li><strong>Nettete</strong> : accentue les details et les contrastes</li>
+                </ul>
+                <p>Dans un CNN, le reseau <strong>apprend automatiquement</strong> les meilleurs filtres pour sa tache !</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="func-selector">
+                        <button class="func-btn active" data-filter="identity">Identite</button>
+                        <button class="func-btn" data-filter="blur">Flou</button>
+                        <button class="func-btn" data-filter="edge-h">Bord H</button>
+                        <button class="func-btn" data-filter="edge-v">Bord V</button>
+                        <button class="func-btn" data-filter="sharpen">Nettete</button>
+                    </div>
+                    <div class="filter-layout">
+                        <div class="filter-area">
+                            <div class="conv-label">Original</div>
+                            <canvas id="filter-original" width="240" height="240"></canvas>
+                        </div>
+                        <div class="kernel-area">
+                            <div class="conv-label">Noyau</div>
+                            <div class="kernel-display" id="filter-kernel"></div>
+                        </div>
+                        <div class="filter-area">
+                            <div class="conv-label">Resultat</div>
+                            <canvas id="filter-result" width="240" height="240"></canvas>
+                        </div>
+                    </div>
+                    <div class="challenge-box" id="challenge-3">
+                        <div class="challenge-header">
+                            <span class="challenge-icon">&#9733;</span>
+                            <span class="challenge-title">Defi 3</span>
+                            <span class="challenge-status" id="ch3-status"></span>
+                        </div>
+                        <p class="challenge-text">Associez chaque image filtree au bon filtre.</p>
+                        <div id="filter-quiz" class="quiz-container"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Le Pooling -->
+        <section id="pooling" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">04</span>Le Pooling</h2>
+                <p>Apres la convolution, on applique souvent un <strong>pooling</strong> (sous-echantillonnage) pour reduire la taille spatiale.</p>
+                <p>Le <em>Max Pooling 2&times;2</em> parcourt la grille par blocs de <code>2&times;2</code> et garde la <strong>valeur maximale</strong> de chaque bloc.</p>
+                <p><strong>Important :</strong> Le pooling <strong>ne change PAS le nombre de canaux</strong>, seulement la taille spatiale.</p>
+                <p>Effets du pooling :</p>
+                <ul class="concept-list">
+                    <li><strong>Reduit la taille spatiale</strong> : <code>28&times;28&times;32</code> &rarr; <code>14&times;14&times;32</code> (divise par 2 largeur et hauteur, garde 32 canaux)</li>
+                    <li><strong>Invariance locale</strong> : un petit deplacement du motif ne change pas la sortie</li>
+                    <li><strong>Reduit le calcul</strong> : moins de pixels a traiter dans les couches suivantes</li>
+                </ul>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="func-selector">
+                        <button class="toggle-btn active" id="btn-max-pool">Max Pooling</button>
+                        <button class="toggle-btn" id="btn-avg-pool">Average Pooling</button>
+                    </div>
+                    <div class="pooling-layout">
+                        <div class="pool-area">
+                            <div class="conv-label">Entree (6&times;6)</div>
+                            <canvas id="pool-input-canvas" width="300" height="300"></canvas>
+                        </div>
+                        <div class="pool-area">
+                            <div class="conv-label">Sortie (3&times;3)</div>
+                            <canvas id="pool-output-canvas" width="150" height="150"></canvas>
+                        </div>
+                    </div>
+                    <div class="step-controls">
+                        <button id="btn-pool-step" class="ctrl-btn">Etape suivante</button>
+                        <button id="btn-pool-auto" class="ctrl-btn accent">Tout calculer</button>
+                        <button id="btn-pool-reset" class="ctrl-btn secondary">Reinitialiser</button>
+                    </div>
+                    <div class="challenge-box" id="challenge-4">
+                        <div class="challenge-header">
+                            <span class="challenge-icon">&#9733;</span>
+                            <span class="challenge-title">Defi 4</span>
+                            <span class="challenge-status" id="ch4-status"></span>
+                        </div>
+                        <p class="challenge-text">Quel est le resultat du <strong>Max Pooling</strong> pour le bloc surligné en orange ?</p>
+                        <div class="calc-challenge-container">
+                            <div class="calc-step">
+                                <span class="calc-label" id="ch4-label">max(?, ?, ?, ?) =</span>
+                                <input type="number" id="ch4-input" placeholder="?">
+                                <button id="ch4-check">OK</button>
+                                <span class="calc-result" id="ch4-result"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Les Feature Maps -->
+        <section id="features" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">05</span>Les Feature Maps</h2>
+                <p>En pratique, un CNN applique <strong>plusieurs filtres</strong> en parallele a chaque couche de convolution. Chaque filtre produit une <em>feature map</em> (carte de caracteristiques).</p>
+                <p><strong>Regle importante :</strong> Le nombre de canaux en sortie = nombre de filtres appliques. Si on applique <strong>32 filtres</strong>, on obtient <strong>32 feature maps</strong>, donc <code>hauteur &times; largeur &times; 32</code>.</p>
+                <p>Exemple : <code>28&times;28&times;1</code> (image N&B) &rarr; <strong>Conv avec 32 filtres</strong> &rarr; <code>28&times;28&times;32</code> (32 canaux).</p>
+                <p>Ci-contre : 1 image &rarr; 3 filtres &rarr; 3 feature maps. Cliquez sur une feature map pour voir son filtre.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="feature-maps-layout">
+                        <div class="fm-input-side">
+                            <div class="conv-label">Image originale</div>
+                            <canvas id="fm-original" width="200" height="200"></canvas>
+                        </div>
+                        <div class="fm-arrow-col">
+                            <svg viewBox="0 0 60 200" width="60" height="200">
+                                <defs>
+                                    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                        <polygon points="0 0, 8 3, 0 6" fill="#78909C"/>
+                                    </marker>
+                                </defs>
+                                <line x1="5" y1="100" x2="50" y2="30" stroke="#FFAB40" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.6"/>
+                                <line x1="5" y1="100" x2="50" y2="100" stroke="#85D5E6" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.6"/>
+                                <line x1="5" y1="100" x2="50" y2="170" stroke="#0097A7" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.6"/>
+                            </svg>
+                        </div>
+                        <div class="fm-output-side">
+                            <div class="fm-map-item" data-idx="0">
+                                <div class="conv-label" style="color:#FFAB40">Bords Horizontaux</div>
+                                <canvas id="fm-map-0" width="140" height="140"></canvas>
+                            </div>
+                            <div class="fm-map-item" data-idx="1">
+                                <div class="conv-label" style="color:#85D5E6">Bords Verticaux</div>
+                                <canvas id="fm-map-1" width="140" height="140"></canvas>
+                            </div>
+                            <div class="fm-map-item" data-idx="2">
+                                <div class="conv-label" style="color:#0097A7">Nettete</div>
+                                <canvas id="fm-map-2" width="140" height="140"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="feature-info" class="step-text">Cliquez sur une feature map pour voir le noyau utilise</div>
+                    <div class="kernel-area" id="fm-kernel-area" style="display:none">
+                        <div class="conv-label" id="fm-kernel-label">Noyau</div>
+                        <div class="kernel-display" id="fm-kernel-display"></div>
+                    </div>
+                    <div class="fm-volume-label">
+                        <span>3 filtres &rarr; volume de sortie : <strong>largeur &times; hauteur &times; 3</strong></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: L'Architecture Complete -->
+        <section id="architecture" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">06</span>L'Architecture Complete</h2>
+                <p>Un CNN complet enchaine plusieurs etapes :</p>
+                <ol class="concept-list">
+                    <li><strong>Convolution + ReLU</strong> : extrait des caracteristiques</li>
+                    <li><strong>Pooling</strong> : reduit la taille, garde l'essentiel</li>
+                    <li>On repete 1-2 pour approfondir la detection</li>
+                    <li><strong>Aplatir</strong> (Flatten) : transforme le volume 3D en vecteur</li>
+                    <li><strong>Couche Dense</strong> (FC) : classification finale</li>
+                </ol>
+                <p>Le schema ci-contre montre l'architecture exacte du CNN utilise dans le projet <strong>MNIST</strong> de cette plateforme.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <svg id="arch-svg" viewBox="0 0 700 300"></svg>
+                    <div class="step-controls">
+                        <button id="btn-arch-animate" class="ctrl-btn accent">Animer</button>
+                        <button id="btn-arch-reset" class="ctrl-btn secondary">Reinitialiser</button>
+                    </div>
+                    <div class="challenge-box" id="challenge-5">
+                        <div class="challenge-header">
+                            <span class="challenge-icon">&#9733;</span>
+                            <span class="challenge-title">Defi 5</span>
+                            <span class="challenge-status" id="ch5-status"></span>
+                        </div>
+                        <p class="challenge-text">Remettez les couches dans le <strong>bon ordre</strong> en cliquant dessus une par une.</p>
+                        <div id="layer-sort-container" class="sort-container"></div>
+                        <div class="sort-controls">
+                            <button id="btn-sort-check" class="ctrl-btn" style="display:none;">Verifier</button>
+                            <button id="btn-sort-reset" class="ctrl-btn secondary" style="display:none;">Recommencer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Un Exemple Reel -->
+        <section id="real-example" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">07</span>Un Exemple Reel</h2>
+                <p>Maintenant, voyons comment le <strong>vrai CNN entraine sur MNIST</strong> traite un chiffre reel !</p>
+                <p>A gauche : <strong>les filtres appris</strong> par la premiere couche de convolution (Conv1). Le reseau a appris automatiquement ces 8 filtres (parmi 32 au total) pendant l'entrainement.</p>
+                <p>A droite : <strong>un chiffre reel</strong> du dataset MNIST et sa classification par le CNN.</p>
+                <p>Remarquez comment certains filtres detectent des <em>bords verticaux</em>, d'autres des <em>bords horizontaux</em>, des <em>coins</em>, etc. Le reseau a decouvert ces caracteristiques tout seul !</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="real-example-layout">
+                        <div class="filters-side">
+                            <div class="conv-label" style="margin-bottom: 12px;">Filtres appris (Conv1)</div>
+                            <div class="filters-grid" id="filters-grid">
+                                <!-- 8 filters will be rendered here -->
+                            </div>
+                            <div class="step-text" style="margin-top: 8px; font-size: 0.8rem;">
+                                Ces 8 filtres (parmi 32) ont ete appris automatiquement pendant l'entrainement.
+                            </div>
+                        </div>
+                        <div class="example-side">
+                            <div class="conv-label" style="margin-bottom: 12px;">Exemple MNIST</div>
+                            <canvas id="real-digit-canvas" width="200" height="200"></canvas>
+                            <div class="step-text" id="real-digit-info">Chargement...</div>
+                            <div class="prediction-bar">
+                                <div class="pred-label">Prediction CNN :</div>
+                                <div class="pred-value" id="real-prediction">-</div>
+                                <div class="pred-confidence" id="real-confidence">-</div>
+                            </div>
+                            <button class="func-btn" id="btn-load-sample" style="margin-top: 12px; width: 100%;">Charger un autre exemple</button>
+                        </div>
+                    </div>
+                    <div class="challenge-box" id="challenge-6">
+                        <div class="challenge-header">
+                            <span class="challenge-icon">&#9733;</span>
+                            <span class="challenge-title">Defi 6</span>
+                            <span class="challenge-status" id="ch6-status"></span>
+                        </div>
+                        <p class="challenge-text">En observant les 8 filtres ci-dessus, combien detectent principalement des <strong>bords verticaux</strong> ? (Indices : valeurs negatives a gauche, positives a droite)</p>
+                        <div class="calc-challenge-container">
+                            <div class="calc-step">
+                                <span class="calc-label">Nombre de filtres verticaux =</span>
+                                <input type="number" id="ch6-input" placeholder="?" min="0" max="8">
+                                <button id="ch6-check">OK</button>
+                                <span class="calc-result" id="ch6-result"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion" class="course-section conclusion-section">
+            <div class="conclusion-content">
+                <h2>Recapitulatif</h2>
+                <div class="recap-grid">
+                    <div class="recap-card" data-challenge="1">
+                        <span class="recap-num">01</span>
+                        <strong>Image</strong>
+                        <p>Une image est une grille de nombres (pixels) de 0 a 255.</p>
+                    </div>
+                    <div class="recap-card" data-challenge="2">
+                        <span class="recap-num">02</span>
+                        <strong>Convolution</strong>
+                        <p>Un noyau glisse sur l'image, multiplie et somme pour extraire des motifs.</p>
+                    </div>
+                    <div class="recap-card" data-challenge="3">
+                        <span class="recap-num">03</span>
+                        <strong>Filtres</strong>
+                        <p>Differents noyaux detectent differentes caracteristiques (bords, flou, nettete).</p>
+                    </div>
+                    <div class="recap-card" data-challenge="4">
+                        <span class="recap-num">04</span>
+                        <strong>Pooling</strong>
+                        <p>Reduit la taille en gardant les valeurs les plus importantes.</p>
+                    </div>
+                    <div class="recap-card">
+                        <span class="recap-num">05</span>
+                        <strong>Feature Maps</strong>
+                        <p>Plusieurs filtres en parallele creent un volume 3D de caracteristiques.</p>
+                    </div>
+                    <div class="recap-card" data-challenge="5">
+                        <span class="recap-num">06</span>
+                        <strong>Architecture</strong>
+                        <p>Conv + Pool repetes, puis aplatir et couche dense pour classifier.</p>
+                    </div>
+                    <div class="recap-card" data-challenge="6">
+                        <span class="recap-num">07</span>
+                        <strong>Exemple Reel</strong>
+                        <p>Le CNN entraine reconnaît les chiffres grace aux filtres appris automatiquement.</p>
+                    </div>
+                </div>
+                <div class="final-score" id="final-score">
+                    <span class="score-icon">&#9733;</span>
+                    <span class="score-text" id="final-score-text">0/6 defis completes</span>
+                </div>
+                <p class="score-message" id="score-message"></p>
+                <div class="next-steps">
+                    <a href="/mnist" class="cta-btn">Tester un vrai CNN &rarr;</a>
+                    <a href="/cours/nn" class="back-link">Cours : Reseaux de Neurones</a>
+                    <a href="/" class="back-link">&larr; Retour a l'accueil</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/cours/cnn/app.js"></script>
+</body>
+</html>

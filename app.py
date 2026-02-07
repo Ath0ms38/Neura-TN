@@ -146,6 +146,21 @@ def chess_page():
     return send_from_directory("static/chess", "index.html")
 
 
+@app.route("/cours/nn")
+def cours_nn():
+    return send_from_directory("static/cours/nn", "index.html")
+
+
+@app.route("/cours/cnn")
+def cours_cnn():
+    return send_from_directory("static/cours/cnn", "index.html")
+
+
+@app.route("/cours/neat")
+def cours_neat():
+    return send_from_directory("static/cours/neat", "index.html")
+
+
 @app.route("/static/<path:path>")
 def serve_static(path):
     return send_from_directory("static", path)
@@ -209,6 +224,25 @@ def model_info(model_type):
             ],
         }
     return jsonify(info)
+
+
+@app.route("/api/cnn-filters")
+def cnn_filters():
+    """Get Conv1 filters (weights) from the trained CNN model."""
+    # Conv1 has shape [32, 1, 3, 3] (32 filters, 1 input channel, 3x3 kernel)
+    conv1_weights = cnn_model.conv1.weight.data.cpu().numpy()
+
+    # Extract first 8 filters for visualization
+    filters = []
+    for i in range(min(8, conv1_weights.shape[0])):
+        # Get the 3x3 kernel for this filter (squeeze out the channel dimension)
+        kernel = conv1_weights[i, 0, :, :].tolist()
+        filters.append({
+            "index": i,
+            "kernel": kernel
+        })
+
+    return jsonify({"filters": filters})
 
 
 # --------------- Chess API ---------------

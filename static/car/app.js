@@ -612,15 +612,15 @@ function initGeneration() {
             populationSize: POP_SIZE,
             numInputs: rayAngles.length + 2,
             numOutputs: 2,
-            compatibilityThreshold: el("param-compat-threshold", 2.0),
+            compatibilityThreshold: el("param-compat-threshold", 0.5),
             elitism: el("param-elitism", 3),
             survivalThreshold: el("param-survival-threshold", 0.2),
             maxStagnation: el("param-max-stagnation", 6),
             speciesElitism: 2,
             mutationConfig: {
                 weightMutateRate: el("param-weight-mutate", 0.8),
-                addNodeRate: el("param-add-node", 0.2),
-                addConnRate: el("param-add-conn", 0.5),
+                addNodeRate: el("param-add-node", 0.03),
+                addConnRate: el("param-add-conn", 0.05),
                 toggleRate: el("param-toggle-rate", 0.01),
             },
         });
@@ -736,7 +736,52 @@ function renderSimulation() {
     ctx.fillText(`En vie : ${cars.filter(c => c.alive).length}/${cars.length}`, 10, 40);
 }
 
-// ---- NN Visualization ----
+// ---- NN Visualization (Improved) ----
+function calculateNodeLayers(nodes, connections) {
+    const layers = new Map();
+
+    // Initialiser les inputs et bias au layer 0
+    for (const node of nodes) {
+        if (node.type === "input" || node.type === "bias") {
+            layers.set(node.id, 0);
+        }
+    }
+
+    // Construire la liste d'adjacence
+    const outgoing = new Map();
+    const incoming = new Map();
+    for (const node of nodes) {
+        outgoing.set(node.id, []);
+        incoming.set(node.id, 0);
+    }
+    for (const conn of connections) {
+        outgoing.get(conn.from).push(conn.to);
+        incoming.set(conn.to, incoming.get(conn.to) + 1);
+    }
+
+    // Tri topologique avec calcul de profondeur
+    const queue = [];
+    for (const node of nodes) {
+        if (incoming.get(node.id) === 0) {
+            queue.push(node.id);
+            if (!layers.has(node.id)) layers.set(node.id, 0);
+        }
+    }
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+        const currentLayer = layers.get(current);
+
+        for (const next of outgoing.get(current)) {
+            const nextLayer = Math.max(layers.get(next) || 0, currentLayer + 1);
+            layers.set(next, nextLayer);
+            incoming.set(next, incoming.get(next) - 1);
+            if (incoming.get(next) === 0) queue.push(next);
+        }
+    }
+    return layers;
+}
+
 function renderNN() {
     const svg = document.getElementById("nn-svg");
     svg.innerHTML = "";
@@ -750,26 +795,37 @@ function renderNN() {
 
     const info = genome.getNetworkInfo();
     const W = 300, H = 220;
-    const inputNodes = info.nodes.filter(n => n.type === "input" || n.type === "bias");
-    const hiddenNodes = info.nodes.filter(n => n.type === "hidden");
-    const outputNodes = info.nodes.filter(n => n.type === "output");
-    const layers = [inputNodes, ...(hiddenNodes.length > 0 ? [hiddenNodes] : []), outputNodes];
-    const layerSpacing = W / (layers.length + 1);
+
+    // Calculer les layers basés sur la profondeur du graphe
+    const nodeLayers = calculateNodeLayers(info.nodes, info.connections);
+    const maxLayer = Math.max(...Array.from(nodeLayers.values()));
+    const layerArrays = [];
+    for (let i = 0; i <= maxLayer; i++) layerArrays.push([]);
+    for (const node of info.nodes) {
+        const layer = nodeLayers.get(node.id);
+        layerArrays[layer].push(node);
+    }
+
+    const numLayers = maxLayer + 1;
+    const layerSpacing = W / (numLayers + 1);
     const nodePositions = new Map();
+
     const inputLabels = [...Array(rayAngles.length).keys()].map(i => `R${i + 1}`);
     inputLabels.push("Spd", "Ang", "Bias");
     const outputLabels = ["Accel", "Dir"];
 
-    for (let li = 0; li < layers.length; li++) {
-        const layer = layers[li];
+    // Positionner les nœuds
+    for (let li = 0; li < layerArrays.length; li++) {
+        const layer = layerArrays[li];
         const cx = layerSpacing * (li + 1);
-        const nodeSpacing = Math.min(18, (H - 20) / layer.length);
+        const nodeSpacing = Math.min(22, (H - 30) / Math.max(layer.length, 1));
         const startY = H / 2 - (layer.length - 1) * nodeSpacing / 2;
         for (let ni = 0; ni < layer.length; ni++) {
             nodePositions.set(layer[ni].id, { x: cx, y: startY + ni * nodeSpacing });
         }
     }
 
+    // Dessiner les connexions
     for (const conn of info.connections) {
         const from = nodePositions.get(conn.from);
         const to = nodePositions.get(conn.to);
@@ -785,6 +841,7 @@ function renderNN() {
         svg.appendChild(line);
     }
 
+    // Dessiner les nœuds
     for (const [id, pos] of nodePositions) {
         const node = info.nodes.find(n => n.id === id);
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -795,21 +852,45 @@ function renderNN() {
         circle.setAttribute("fill", fill); circle.setAttribute("class", "nn-node");
         svg.appendChild(circle);
 
-        const idx = inputNodes.findIndex(n => n.id === id);
-        if (idx >= 0 && inputLabels[idx]) {
+        // Labels inputs
+        if ((node.type === "input" || node.type === "bias") && inputLabels[id]) {
             const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
             text.setAttribute("x", pos.x - 20); text.setAttribute("y", pos.y + 3);
             text.setAttribute("class", "nn-label"); text.setAttribute("text-anchor", "end");
-            text.textContent = inputLabels[idx]; svg.appendChild(text);
+            text.setAttribute("font-size", "11");
+            text.textContent = inputLabels[id]; svg.appendChild(text);
         }
-        const oIdx = outputNodes.findIndex(n => n.id === id);
-        if (oIdx >= 0 && outputLabels[oIdx]) {
+
+        // Labels outputs
+        if (node.type === "output") {
+            const outputNodes = info.nodes.filter(n => n.type === "output");
+            const oIdx = outputNodes.findIndex(n => n.id === id);
+            if (oIdx >= 0 && outputLabels[oIdx]) {
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", pos.x + 14); text.setAttribute("y", pos.y + 3);
+                text.setAttribute("class", "nn-label"); text.setAttribute("text-anchor", "start");
+                text.setAttribute("font-size", "11");
+                text.textContent = outputLabels[oIdx]; svg.appendChild(text);
+            }
+        }
+
+        // Labels hidden nodes
+        if (node.type === "hidden") {
             const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            text.setAttribute("x", pos.x + 14); text.setAttribute("y", pos.y + 3);
-            text.setAttribute("class", "nn-label"); text.setAttribute("text-anchor", "start");
-            text.textContent = outputLabels[oIdx]; svg.appendChild(text);
+            text.setAttribute("x", pos.x); text.setAttribute("y", pos.y - 10);
+            text.setAttribute("class", "nn-label"); text.setAttribute("text-anchor", "middle");
+            text.setAttribute("font-size", "9"); text.setAttribute("fill", "#999");
+            text.textContent = `H${id}`;
+            svg.appendChild(text);
         }
     }
+
+    // Statistiques
+    const statsText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    statsText.setAttribute("x", 5); statsText.setAttribute("y", H - 5);
+    statsText.setAttribute("font-size", "10"); statsText.setAttribute("fill", "#666");
+    statsText.textContent = `${numLayers} layers | ${info.nodes.length} nodes | ${info.connections.length} conns`;
+    svg.appendChild(statsText);
 }
 
 function updateStats() {

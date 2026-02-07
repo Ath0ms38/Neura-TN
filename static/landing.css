@@ -77,6 +77,31 @@ main {
     gap: 24px;
 }
 
+/* ============ Section Titles ============ */
+.landing-section {
+    margin-bottom: 48px;
+}
+
+.landing-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.section-icon {
+    font-size: 1.3rem;
+}
+
 /* ============ Card ============ */
 .card {
     background: var(--bg-secondary);

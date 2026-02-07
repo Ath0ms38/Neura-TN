@@ -471,6 +471,17 @@ const NEAT = (() => {
         evolve() {
             this.speciate();
 
+            // Debug: log species info
+            if (this.generation % 5 === 0) {
+                console.log(`Gen ${this.generation}: ${this.species.length} species`);
+                for (let i = 0; i < this.species.length; i++) {
+                    const s = this.species[i];
+                    const avgNodes = s.members.reduce((sum, m) => sum + m.nodes.length, 0) / s.members.length;
+                    const avgConns = s.members.reduce((sum, m) => sum + m.connections.filter(c => c.enabled).length, 0) / s.members.length;
+                    console.log(`  Species ${i}: ${s.members.length} members, ${avgNodes.toFixed(1)} nodes, ${avgConns.toFixed(1)} conns`);
+                }
+            }
+
             // Adjust fitness and track staleness
             for (const s of this.species) {
                 s.adjustFitness();

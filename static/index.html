@@ -16,7 +16,13 @@
     </header>
 
     <main>
-        <div class="card-grid">
+        <!-- Section Projets -->
+        <section class="landing-section">
+            <h2 class="section-title">
+                <span class="section-icon">&#9881;</span>
+                Projets
+            </h2>
+            <div class="card-grid">
             <!-- MNIST Visualizer -->
             <a href="/mnist" class="card">
                 <div class="card-icon">
@@ -95,7 +101,109 @@
                 </div>
                 <span class="card-btn">Lancer</span>
             </a>
-        </div>
+            </div>
+        </section>
+
+        <!-- Section Cours -->
+        <section class="landing-section">
+            <h2 class="section-title">
+                <span class="section-icon">&#128218;</span>
+                Cours
+            </h2>
+            <div class="card-grid">
+                <!-- Neural Networks Course -->
+                <a href="/cours/nn" class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 80 80" width="80" height="80">
+                            <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#85D5E6" stroke-width="2"/>
+                            <circle cx="22" cy="24" r="5" fill="#85D5E6" opacity="0.8"/>
+                            <circle cx="22" cy="40" r="5" fill="#85D5E6" opacity="0.8"/>
+                            <circle cx="22" cy="56" r="5" fill="#85D5E6" opacity="0.8"/>
+                            <circle cx="42" cy="32" r="5" fill="#FFAB40" opacity="0.9"/>
+                            <circle cx="42" cy="48" r="5" fill="#FFAB40" opacity="0.9"/>
+                            <circle cx="58" cy="40" r="6" fill="#FFAB40"/>
+                            <line x1="27" y1="24" x2="37" y2="32" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
+                            <line x1="27" y1="40" x2="37" y2="32" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
+                            <line x1="27" y1="56" x2="37" y2="48" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
+                            <line x1="27" y1="40" x2="37" y2="48" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
+                            <line x1="47" y1="32" x2="53" y2="40" stroke="#FFAB40" stroke-width="1" opacity="0.5"/>
+                            <line x1="47" y1="48" x2="53" y2="40" stroke="#FFAB40" stroke-width="1" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <h2>Reseaux de Neurones</h2>
+                    <p>Decouvrez comment fonctionnent les reseaux de neurones : neurones, poids, fonctions d'activation, couches et propagation avant. Avec des animations interactives et des defis.</p>
+                    <div class="tags">
+                        <span class="tag">Interactif</span>
+                        <span class="tag">Animations</span>
+                        <span class="tag">Fondamentaux</span>
+                    </div>
+                    <span class="card-btn">Decouvrir</span>
+                </a>
+
+                <!-- CNN Course -->
+                <a href="/cours/cnn" class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 80 80" width="80" height="80">
+                            <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#FFAB40" stroke-width="2"/>
+                            <rect x="18" y="18" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
+                            <rect x="34" y="18" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.8"/>
+                            <rect x="50" y="18" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
+                            <rect x="18" y="34" width="12" height="12" rx="2" fill="#FFAB40" opacity="0.8"/>
+                            <rect x="34" y="34" width="12" height="12" rx="2" fill="#FFAB40"/>
+                            <rect x="50" y="34" width="12" height="12" rx="2" fill="#FFAB40" opacity="0.8"/>
+                            <rect x="18" y="50" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
+                            <rect x="34" y="50" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.8"/>
+                            <rect x="50" y="50" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <h2>Reseaux Convolutifs (CNN)</h2>
+                    <p>Explorez les reseaux convolutifs : pixels, convolution, filtres, pooling et architecture complete. Des demos interactives pour comprendre comment un CNN voit les images.</p>
+                    <div class="tags">
+                        <span class="tag">Interactif</span>
+                        <span class="tag">Vision</span>
+                        <span class="tag">Convolution</span>
+                    </div>
+                    <span class="card-btn">Decouvrir</span>
+                </a>
+
+                <!-- NEAT Course -->
+                <a href="/cours/neat" class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 80 80" width="80" height="80">
+                            <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#0097A7" stroke-width="2"/>
+                            <!-- Input layer (3 nodes) -->
+                            <circle cx="18" cy="25" r="4" fill="#85D5E6" opacity="0.8"/>
+                            <circle cx="18" cy="40" r="4" fill="#85D5E6" opacity="0.8"/>
+                            <circle cx="18" cy="55" r="4" fill="#85D5E6" opacity="0.8"/>
+                            <!-- Hidden layer (varying nodes - evolution!) -->
+                            <circle cx="38" cy="30" r="4" fill="#FFAB40" opacity="0.7"/>
+                            <circle cx="38" cy="45" r="4" fill="#FFAB40" opacity="0.7"/>
+                            <circle cx="38" cy="60" r="3" fill="#FFAB40" opacity="0.5"/>
+                            <!-- Output layer (1 node) -->
+                            <circle cx="58" cy="40" r="5" fill="#0097A7"/>
+                            <!-- Connections (showing evolving topology) -->
+                            <line x1="22" y1="25" x2="34" y2="30" stroke="#85D5E6" stroke-width="1" opacity="0.3"/>
+                            <line x1="22" y1="40" x2="34" y2="30" stroke="#85D5E6" stroke-width="1.5" opacity="0.5"/>
+                            <line x1="22" y1="40" x2="34" y2="45" stroke="#85D5E6" stroke-width="1" opacity="0.3"/>
+                            <line x1="22" y1="55" x2="34" y2="60" stroke="#85D5E6" stroke-width="1" opacity="0.3"/>
+                            <line x1="42" y1="30" x2="54" y2="40" stroke="#FFAB40" stroke-width="1.5" opacity="0.5"/>
+                            <line x1="42" y1="45" x2="54" y2="40" stroke="#FFAB40" stroke-width="1" opacity="0.3"/>
+                            <line x1="42" y1="60" x2="54" y2="40" stroke="#FFAB40" stroke-width="0.5" opacity="0.2"/>
+                            <!-- Evolution indicator (mutation symbol) -->
+                            <text x="63" y="20" fill="#FFAB40" font-size="18" opacity="0.6">⚡</text>
+                        </svg>
+                    </div>
+                    <h2>Neuroevolution NEAT</h2>
+                    <p>Decouvrez comment l'evolution peut creer des reseaux de neurones : mutations, crossover, speciation et innovation. Observez des reseaux evoluer pour resoudre des problemes complexes.</p>
+                    <div class="tags">
+                        <span class="tag">Evolution</span>
+                        <span class="tag">Topologie</span>
+                        <span class="tag">Genetique</span>
+                    </div>
+                    <span class="card-btn">Decouvrir</span>
+                </a>
+            </div>
+        </section>
     </main>
 </body>
 </html>

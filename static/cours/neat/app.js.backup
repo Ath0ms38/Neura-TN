@@ -1,0 +1,1783 @@
+/* ============================================================
+   Neura'TN - Cours : NEAT
+   Interactive scrollytelling with 6 challenges
+   ============================================================ */
+
+// ============ Global State ============
+const challengeState = { completed: new Set(), total: 6 };
+const sectionIds = ["hero", "evolution", "genome", "mutations", "innovation", "speciation", "fitness", "evolution-cycle", "applications", "conclusion"];
+
+// ============ Utilities ============
+function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// Helper to render genome to SVG element
+function renderGenomeToSVG(genome, svg, inputLabels = [], outputLabels = []) {
+    svg.innerHTML = "";
+    if (!genome) return;
+
+    const info = genome.getNetworkInfo();
+    const W = parseFloat(svg.getAttribute("viewBox").split(" ")[2]) || 400;
+    const H = parseFloat(svg.getAttribute("viewBox").split(" ")[3]) || 280;
+
+    // Calculate layers
+    const nodeLayers = calculateNodeLayers(info.nodes, info.connections);
+    const maxLayer = Math.max(...Array.from(nodeLayers.values()));
+    const layerArrays = [];
+    for (let i = 0; i <= maxLayer; i++) layerArrays.push([]);
+    for (const node of info.nodes) {
+        const layer = nodeLayers.get(node.id);
+        layerArrays[layer].push(node);
+    }
+
+    const numLayers = maxLayer + 1;
+    const layerSpacing = W / (numLayers + 1);
+    const nodePositions = new Map();
+
+    // Position nodes
+    for (let li = 0; li < layerArrays.length; li++) {
+        const layer = layerArrays[li];
+        const cx = layerSpacing * (li + 1);
+        const nodeSpacing = Math.min(25, (H - 30) / Math.max(layer.length, 1));
+        const startY = H / 2 - (layer.length - 1) * nodeSpacing / 2;
+
+        for (let ni = 0; ni < layer.length; ni++) {
+            const node = layer[ni];
+            const y = startY + ni * nodeSpacing;
+            nodePositions.set(node.id, { x: cx, y, layer: li });
+        }
+    }
+
+    // Draw connections
+    for (const conn of info.connections) {
+        const from = nodePositions.get(conn.from);
+        const to = nodePositions.get(conn.to);
+        if (!from || !to) continue;
+
+        const w = Math.abs(conn.weight);
+        const color = conn.weight > 0 ? "#4CAF50" : "#F44336";
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", from.x);
+        line.setAttribute("y1", from.y);
+        line.setAttribute("x2", to.x);
+        line.setAttribute("y2", to.y);
+        line.setAttribute("stroke", color);
+        line.setAttribute("stroke-width", Math.min(3, 0.5 + w * 0.5));
+        line.setAttribute("opacity", Math.min(0.9, 0.2 + w * 0.15));
+        svg.appendChild(line);
+    }
+
+    // Draw nodes
+    for (const [id, pos] of nodePositions) {
+        const node = info.nodes.find(n => n.id === id);
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", pos.x);
+        circle.setAttribute("cy", pos.y);
+        circle.setAttribute("r", 7);
+
+        const fill = node.type === "input" || node.type === "bias" ? "#85D5E6" :
+                     node.type === "output" ? "#F44336" : "#FFAB40";
+        circle.setAttribute("fill", fill);
+        svg.appendChild(circle);
+
+        // Labels for inputs and bias
+        if (node.type === "input" || node.type === "bias") {
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", pos.x - 15);
+            text.setAttribute("y", pos.y + 4);
+            text.setAttribute("text-anchor", "end");
+            text.setAttribute("font-size", "10");
+            text.setAttribute("fill", "#CCC");
+
+            // Map node ID to label
+            if (node.type === "bias") {
+                text.textContent = inputLabels[inputLabels.length - 1] || "bias";
+            } else {
+                // For input nodes, use the node ID as index if available
+                const inputNodes = info.nodes.filter(n => n.type === "input");
+                const inputIndex = inputNodes.findIndex(n => n.id === id);
+                text.textContent = inputLabels[inputIndex] || `in${id}`;
+            }
+            svg.appendChild(text);
+        }
+
+        // Labels for outputs
+        if (node.type === "output") {
+            const outputNodes = info.nodes.filter(n => n.type === "output");
+            const oIdx = outputNodes.findIndex(n => n.id === id);
+            if (oIdx >= 0 && outputLabels[oIdx]) {
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", pos.x + 15);
+                text.setAttribute("y", pos.y + 4);
+                text.setAttribute("text-anchor", "start");
+                text.setAttribute("font-size", "10");
+                text.setAttribute("fill", "#CCC");
+                text.textContent = outputLabels[oIdx];
+                svg.appendChild(text);
+            }
+        }
+
+        // Labels for hidden nodes
+        if (node.type === "hidden") {
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", pos.x);
+            text.setAttribute("y", pos.y - 12);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("font-size", "9");
+            text.setAttribute("fill", "#999");
+            text.textContent = `H${id}`;
+            svg.appendChild(text);
+        }
+    }
+}
+
+function completeChallenge(id) {
+    if (challengeState.completed.has(id)) return;
+    challengeState.completed.add(id);
+    const box = document.getElementById(`challenge-${id}`);
+    if (box) {
+        box.classList.add("completed");
+        const status = document.getElementById(`ch${id}-status`);
+        if (status) status.textContent = "\u2714";
+    }
+    updateCounter();
+}
+
+function updateCounter() {
+    const count = challengeState.completed.size;
+    const el = document.getElementById("counter-text");
+    if (el) el.textContent = `${count}/${challengeState.total}`;
+
+    const scoreText = document.getElementById("final-score-text");
+    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} defis completes`;
+
+    const msg = document.getElementById("score-message");
+    if (msg) {
+        if (count === 6) msg.textContent = "Parfait ! Vous maitrisez NEAT !";
+        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques defis a relever.";
+        else if (count >= 1) msg.textContent = "Bon debut ! N'hesitez pas a revenir completer les defis.";
+        else msg.textContent = "Remontez et tentez les defis pour tester vos connaissances !";
+    }
+
+    document.querySelectorAll(".recap-card[data-challenge]").forEach(card => {
+        const chId = parseInt(card.dataset.challenge);
+        card.classList.toggle("done", challengeState.completed.has(chId));
+    });
+}
+
+// ============ Scroll & Navigation ============
+function initScrollSystem() {
+    const nav = document.getElementById("section-nav");
+    sectionIds.forEach((id, i) => {
+        const dot = document.createElement("button");
+        dot.className = "nav-dot";
+        dot.title = id.charAt(0).toUpperCase() + id.slice(1);
+        dot.addEventListener("click", () => {
+            document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+        });
+        nav.appendChild(dot);
+    });
+
+    const dots = nav.querySelectorAll(".nav-dot");
+    const textEls = document.querySelectorAll(".section-text");
+    const visualEls = document.querySelectorAll(".section-visual");
+
+    const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) e.target.classList.add("visible");
+        });
+    }, { threshold: 0.15 });
+
+    textEls.forEach(el => fadeObserver.observe(el));
+    visualEls.forEach(el => fadeObserver.observe(el));
+
+    const secObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const idx = sectionIds.indexOf(e.target.id);
+                dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+            }
+        });
+    }, { threshold: 0.35 });
+
+    sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) secObserver.observe(el);
+    });
+}
+
+// ============ Section 0: Hero Animation ============
+function initHero() {
+    const canvas = document.getElementById("hero-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    let animId;
+    let isVisible = true;
+    let currentGenome = null;
+    let targetGenome = null;
+    let morphProgress = 0;
+    let genomeIndex = 0;
+
+    function resize() {
+        canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+        canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    // Create simple genomes for animation
+    const genomes = [];
+    NEAT.resetInnovation();
+
+    // Gen 1: Simple 3-1 network
+    let g1 = NEAT.Genome.create(3, 1);
+    genomes.push(g1);
+
+    // Gen 2: Add a connection
+    let g2 = g1.clone();
+    for(let i = 0; i < 2; i++) g2.mutateAddConnection();
+    genomes.push(g2);
+
+    // Gen 3: Add nodes
+    let g3 = g2.clone();
+    for(let i = 0; i < 2; i++) {
+        g3.mutateAddNode();
+    }
+    genomes.push(g3);
+
+    // Gen 4: More complexity
+    let g4 = g3.clone();
+    for(let i = 0; i < 3; i++) {
+        g4.mutateAddConnection();
+        g4.mutateAddNode();
+    }
+    genomes.push(g4);
+
+    currentGenome = genomes[0];
+    targetGenome = genomes[1];
+
+    function draw(t) {
+        if (!isVisible) { animId = requestAnimationFrame(draw); return; }
+        const w = canvas.offsetWidth;
+        const h = canvas.offsetHeight;
+        ctx.clearRect(0, 0, w, h);
+
+        // Morph between genomes
+        morphProgress += 0.003;
+        if (morphProgress >= 1) {
+            morphProgress = 0;
+            genomeIndex = (genomeIndex + 1) % (genomes.length - 1);
+            currentGenome = genomes[genomeIndex];
+            targetGenome = genomes[genomeIndex + 1];
+        }
+
+        // Draw current genome (simplified visualization)
+        drawGenomeSimple(ctx, currentGenome, w/2, h/2, w * 0.6, h * 0.6);
+
+        animId = requestAnimationFrame(draw);
+    }
+
+    function drawGenomeSimple(ctx, genome, cx, cy, width, height) {
+        const info = genome.getNetworkInfo();
+        const nodeLayers = calculateNodeLayers(info.nodes, info.connections);
+
+        const maxLayer = Math.max(...Array.from(nodeLayers.values()));
+        const layerArrays = [];
+        for (let i = 0; i <= maxLayer; i++) layerArrays.push([]);
+        for (const node of info.nodes) {
+            const layer = nodeLayers.get(node.id);
+            layerArrays[layer].push(node);
+        }
+
+        const nodePositions = {};
+        const layerWidth = width / (layerArrays.length + 1);
+
+        layerArrays.forEach((layer, li) => {
+            const layerHeight = height / (layer.length + 1);
+            layer.forEach((node, ni) => {
+                const x = cx - width/2 + layerWidth * (li + 1);
+                const y = cy - height/2 + layerHeight * (ni + 1);
+                nodePositions[node.id] = { x, y };
+            });
+        });
+
+        // Draw connections
+        info.connections.forEach(conn => {
+            const from = nodePositions[conn.from];
+            const to = nodePositions[conn.to];
+            if (!from || !to) return;
+
+            const alpha = Math.abs(conn.weight) * 0.3;
+            ctx.strokeStyle = conn.weight > 0 ? `rgba(76, 175, 80, ${alpha})` : `rgba(244, 67, 54, ${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+        });
+
+        // Draw nodes
+        Object.entries(nodePositions).forEach(([nodeId, pos]) => {
+            const node = info.nodes.find(n => n.id === parseInt(nodeId));
+            if (!node) return;
+
+            let color = "#85D5E6";
+            if (node.type === "output") color = "#F44336";
+            else if (node.type === "hidden") color = "#FFAB40";
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => { isVisible = e.isIntersecting; });
+    });
+    heroObserver.observe(canvas);
+
+    resize();
+    window.addEventListener("resize", resize);
+    draw(0);
+}
+
+// ============ Section 1: Evolution Comparison ============
+function initEvolution() {
+    const backpropSvg = document.getElementById("backprop-svg");
+    const neuroevoSvg = document.getElementById("neuroevo-svg");
+    if (!backpropSvg || !neuroevoSvg) return;
+
+    // Draw backprop diagram (single network with gradient arrows)
+    backpropSvg.innerHTML = `
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                <polygon points="0 0, 10 3, 0 6" fill="#FFAB40" />
+            </marker>
+        </defs>
+
+        <!-- Network structure -->
+        <circle cx="40" cy="100" r="10" fill="#85D5E6" stroke="#FFF" stroke-width="1.5" />
+        <circle cx="120" cy="70" r="10" fill="#FFAB40" stroke="#FFF" stroke-width="1.5" />
+        <circle cx="120" cy="130" r="10" fill="#FFAB40" stroke="#FFF" stroke-width="1.5" />
+        <circle cx="200" cy="100" r="10" fill="#F44336" stroke="#FFF" stroke-width="1.5" />
+
+        <!-- Connections -->
+        <line x1="50" y1="95" x2="110" y2="75" stroke="#666" stroke-width="2" opacity="0.5" />
+        <line x1="50" y1="105" x2="110" y2="125" stroke="#666" stroke-width="2" opacity="0.5" />
+        <line x1="130" y1="72" x2="190" y2="95" stroke="#666" stroke-width="2" opacity="0.5" />
+        <line x1="130" y1="128" x2="190" y2="105" stroke="#666" stroke-width="2" opacity="0.5" />
+
+        <!-- Gradient arrows -->
+        <path d="M 195 85 Q 150 60 125 65" stroke="#FFAB40" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+        <path d="M 195 115 Q 150 140 125 135" stroke="#FFAB40" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+
+        <!-- Labels -->
+        <text x="120" y="25" text-anchor="middle" fill="#FFAB40" font-size="13" font-weight="bold">Gradient ∇</text>
+        <text x="40" y="85" text-anchor="middle" fill="#FFF" font-size="9">In</text>
+        <text x="200" y="85" text-anchor="middle" fill="#FFF" font-size="9">Out</text>
+    `;
+
+    // Draw neuroevo diagram (population of networks)
+    neuroevoSvg.innerHTML = `
+        <!-- Generation 1: Simple networks (faded) -->
+        <g opacity="0.3">
+            <circle cx="30" cy="50" r="6" fill="#85D5E6" />
+            <circle cx="55" cy="50" r="6" fill="#F44336" />
+            <line x1="36" y1="50" x2="49" y2="50" stroke="#666" stroke-width="1.5" />
+        </g>
+        <g opacity="0.3">
+            <circle cx="80" cy="45" r="6" fill="#85D5E6" />
+            <circle cx="105" cy="45" r="6" fill="#F44336" />
+            <line x1="86" y1="45" x2="99" y2="45" stroke="#666" stroke-width="1.5" />
+        </g>
+        <g opacity="0.3">
+            <circle cx="130" cy="55" r="6" fill="#85D5E6" />
+            <circle cx="155" cy="55" r="6" fill="#F44336" />
+            <line x1="136" y1="55" x2="149" y2="55" stroke="#666" stroke-width="1.5" />
+        </g>
+
+        <!-- Generation 2: More complex (medium opacity) -->
+        <g opacity="0.5">
+            <circle cx="25" cy="95" r="5" fill="#85D5E6" />
+            <circle cx="45" cy="85" r="4" fill="#FFAB40" />
+            <circle cx="45" cy="105" r="4" fill="#FFAB40" />
+            <circle cx="65" cy="95" r="5" fill="#F44336" />
+            <line x1="30" y1="92" x2="41" y2="87" stroke="#666" stroke-width="1" />
+            <line x1="30" y1="98" x2="41" y2="103" stroke="#666" stroke-width="1" />
+            <line x1="49" y1="86" x2="60" y2="92" stroke="#666" stroke-width="1" />
+            <line x1="49" y1="104" x2="60" y2="98" stroke="#666" stroke-width="1" />
+        </g>
+        <g opacity="0.5">
+            <circle cx="85" cy="100" r="5" fill="#85D5E6" />
+            <circle cx="105" cy="90" r="4" fill="#FFAB40" />
+            <circle cx="105" cy="110" r="4" fill="#FFAB40" />
+            <circle cx="125" cy="100" r="5" fill="#F44336" />
+            <line x1="90" y1="97" x2="101" y2="92" stroke="#666" stroke-width="1" />
+            <line x1="90" y1="103" x2="101" y2="108" stroke="#666" stroke-width="1" />
+            <line x1="109" y1="91" x2="120" y2="97" stroke="#666" stroke-width="1" />
+            <line x1="109" y1="109" x2="120" y2="103" stroke="#666" stroke-width="1" />
+        </g>
+
+        <!-- Generation 3: Best evolved (highlighted) -->
+        <g opacity="1">
+            <circle cx="40" cy="150" r="6" fill="#85D5E6" stroke="#4CAF50" stroke-width="2" />
+            <circle cx="65" cy="135" r="5" fill="#FFAB40" stroke="#4CAF50" stroke-width="1.5" />
+            <circle cx="65" cy="150" r="5" fill="#FFAB40" stroke="#4CAF50" stroke-width="1.5" />
+            <circle cx="65" cy="165" r="5" fill="#FFAB40" stroke="#4CAF50" stroke-width="1.5" />
+            <circle cx="90" cy="150" r="6" fill="#F44336" stroke="#4CAF50" stroke-width="2" />
+            <line x1="46" y1="145" x2="60" y2="138" stroke="#4CAF50" stroke-width="1.5" />
+            <line x1="46" y1="150" x2="60" y2="150" stroke="#4CAF50" stroke-width="1.5" />
+            <line x1="46" y1="155" x2="60" y2="163" stroke="#4CAF50" stroke-width="1.5" />
+            <line x1="70" y1="137" x2="84" y2="145" stroke="#4CAF50" stroke-width="1.5" />
+            <line x1="70" y1="150" x2="84" y2="150" stroke="#4CAF50" stroke-width="1.5" />
+            <line x1="70" y1="163" x2="84" y2="155" stroke="#4CAF50" stroke-width="1.5" />
+        </g>
+
+        <!-- Labels -->
+        <text x="120" y="30" text-anchor="middle" fill="#888" font-size="10">Gen 1</text>
+        <text x="120" y="80" text-anchor="middle" fill="#AAA" font-size="10">Gen 2</text>
+        <text x="120" y="130" text-anchor="middle" fill="#4CAF50" font-size="11" font-weight="bold">Gen 3 ✓</text>
+        <text x="145" y="165" text-anchor="start" fill="#4CAF50" font-size="12" font-weight="bold">Meilleur</text>
+    `;
+}
+
+// ============ Section 2: Genome Viewer + Challenge 1 ============
+function initGenome() {
+    const networkSvg = document.getElementById("genome-network-svg");
+    const nodeTbody = document.getElementById("node-tbody");
+    const connectionTbody = document.getElementById("connection-tbody");
+    const explanationEl = document.getElementById("genome-explanation");
+    const stepEl = document.getElementById("genome-step");
+    const progressEl = document.getElementById("genome-progress-fill");
+
+    if (!networkSvg) return;
+
+    // Create example genome
+    NEAT.resetInnovation();
+    const genome = NEAT.Genome.create(3, 2);
+    genome.mutateAddConnection();
+    genome.mutateAddConnection();
+    genome.mutateAddNode();
+    genome.mutateWeights();
+
+    const inputLabels = ["x1", "x2", "x3", "bias"];
+    const outputLabels = ["y1", "y2"];
+
+    // Animation state
+    let currentStep = 0;
+    const maxSteps = genome.nodes.length + genome.connections.length;
+    let isPlaying = false;
+    let playInterval = null;
+
+    function renderAnimatedGenome(step) {
+        networkSvg.innerHTML = "";
+        if (nodeTbody) nodeTbody.innerHTML = "";
+        if (connectionTbody) connectionTbody.innerHTML = "";
+
+        const info = genome.getNetworkInfo();
+        const W = 400, H = 280;
+
+        // Calculate node positions
+        const nodeLayers = calculateNodeLayers(info.nodes, info.connections);
+        const maxLayer = Math.max(...Array.from(nodeLayers.values()));
+        const layerArrays = [];
+        for (let i = 0; i <= maxLayer; i++) layerArrays.push([]);
+        for (const node of info.nodes) {
+            const layer = nodeLayers.get(node.id);
+            layerArrays[layer].push(node);
+        }
+
+        const layerSpacing = W / (layerArrays.length + 1);
+        const nodePositions = new Map();
+
+        for (let li = 0; li < layerArrays.length; li++) {
+            const layer = layerArrays[li];
+            const cx = layerSpacing * (li + 1);
+            const nodeSpacing = Math.min(25, (H - 30) / Math.max(layer.length, 1));
+            const startY = H / 2 - (layer.length - 1) * nodeSpacing / 2;
+
+            for (let ni = 0; ni < layer.length; ni++) {
+                const node = layer[ni];
+                const y = startY + ni * nodeSpacing;
+                nodePositions.set(node.id, { x: cx, y });
+            }
+        }
+
+        const nodesCount = genome.nodes.length;
+        const visibleNodes = Math.min(step + 1, nodesCount);
+        const visibleConnections = Math.max(0, step + 1 - nodesCount);
+
+        // Update explanation text
+        if (step < nodesCount) {
+            const node = genome.nodes[step];
+            const typeNames = { input: "Entrée", output: "Sortie", hidden: "Caché", bias: "Biais" };
+            explanationEl.textContent = `Étape ${step + 1}/${maxSteps} : Ajout du nœud #${node.id} (${typeNames[node.type]}) - Biais: ${node.bias.toFixed(2)}`;
+        } else if (step < maxSteps) {
+            const conn = genome.connections[step - nodesCount];
+            explanationEl.textContent = `Étape ${step + 1}/${maxSteps} : Connexion #${conn.innovation} de ${conn.inNode} → ${conn.outNode} - Poids: ${conn.weight.toFixed(2)}`;
+        } else {
+            explanationEl.textContent = `✓ Génome complet : ${genome.nodes.length} nœuds, ${genome.connections.length} connexions`;
+        }
+
+        stepEl.textContent = `${step}/${maxSteps}`;
+        progressEl.style.width = `${(step / maxSteps) * 100}%`;
+
+        // Draw connections
+        for (let i = 0; i < visibleConnections; i++) {
+            const conn = genome.connections[i];
+            const from = nodePositions.get(conn.inNode);
+            const to = nodePositions.get(conn.outNode);
+            if (!from || !to) continue;
+
+            const w = Math.abs(conn.weight);
+            const color = conn.weight > 0 ? "#4CAF50" : "#F44336";
+            const isActive = (i === visibleConnections - 1);
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", from.x);
+            line.setAttribute("y1", from.y);
+            line.setAttribute("x2", to.x);
+            line.setAttribute("y2", to.y);
+            line.setAttribute("stroke", color);
+            line.setAttribute("stroke-width", isActive ? 4 : Math.min(3, 0.5 + w * 0.5));
+            line.setAttribute("opacity", isActive ? 1 : 0.4);
+            if (isActive) line.setAttribute("stroke-dasharray", "5,5");
+            networkSvg.appendChild(line);
+
+            if (connectionTbody) {
+                const row = document.createElement("tr");
+                const weightColor = conn.weight > 0 ? "#4CAF50" : "#F44336";
+                row.innerHTML = `
+                    <td>${conn.inNode}</td>
+                    <td>${conn.outNode}</td>
+                    <td><span style="color: ${weightColor}; font-weight: bold;">${conn.weight.toFixed(2)}</span></td>
+                    <td><span style="color: ${conn.enabled ? '#4CAF50' : '#666'};">${conn.enabled ? "✓" : "✗"}</span></td>
+                    <td><span style="color: #FFAB40;">#${conn.innovation}</span></td>
+                `;
+                if (isActive) row.style.background = "rgba(255, 171, 64, 0.3)";
+                connectionTbody.appendChild(row);
+            }
+        }
+
+        // Draw nodes
+        for (let i = 0; i < visibleNodes; i++) {
+            const node = genome.nodes[i];
+            const pos = nodePositions.get(node.id);
+            if (!pos) continue;
+
+            const isActive = (i === visibleNodes - 1);
+            const fill = node.type === "input" || node.type === "bias" ? "#85D5E6" :
+                         node.type === "output" ? "#F44336" : "#FFAB40";
+
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", pos.x);
+            circle.setAttribute("cy", pos.y);
+            circle.setAttribute("r", isActive ? 12 : 7);
+            circle.setAttribute("fill", fill);
+            circle.setAttribute("stroke", isActive ? "#FFF" : "none");
+            circle.setAttribute("stroke-width", isActive ? "3" : "0");
+            if (isActive) circle.style.filter = "drop-shadow(0 0 10px " + fill + ")";
+            networkSvg.appendChild(circle);
+
+            // Add labels
+            if (node.type === "input" || node.type === "bias") {
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", pos.x - 15);
+                text.setAttribute("y", pos.y + 4);
+                text.setAttribute("text-anchor", "end");
+                text.setAttribute("font-size", "10");
+                text.setAttribute("fill", "#CCC");
+                text.textContent = node.type === "bias" ? "bias" : inputLabels[node.id] || `in${node.id}`;
+                networkSvg.appendChild(text);
+            } else if (node.type === "output") {
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", pos.x + 15);
+                text.setAttribute("y", pos.y + 4);
+                text.setAttribute("text-anchor", "start");
+                text.setAttribute("font-size", "10");
+                text.setAttribute("fill", "#CCC");
+                const outputIdx = genome.nodes.filter(n => n.type === "output").findIndex(n => n.id === node.id);
+                text.textContent = outputLabels[outputIdx] || `out${node.id}`;
+                networkSvg.appendChild(text);
+            } else if (node.type === "hidden") {
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", pos.x);
+                text.setAttribute("y", pos.y - 15);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("font-size", "9");
+                text.setAttribute("fill", "#999");
+                text.textContent = `H${node.id}`;
+                networkSvg.appendChild(text);
+            }
+
+            if (nodeTbody) {
+                const row = document.createElement("tr");
+                const typeColor = node.type === "output" ? "#F44336" :
+                                  node.type === "hidden" ? "#FFAB40" : "#85D5E6";
+                row.innerHTML = `
+                    <td><strong>${node.id}</strong></td>
+                    <td><span style="color: ${typeColor}; font-weight: bold;">${node.type}</span></td>
+                    <td>${node.bias.toFixed(2)}</td>
+                `;
+                if (isActive) row.style.background = "rgba(255, 171, 64, 0.3)";
+                nodeTbody.appendChild(row);
+            }
+        }
+    }
+
+    // Controls
+    const btnPrev = document.getElementById("btn-genome-prev");
+    const btnNext = document.getElementById("btn-genome-next");
+    const btnPlay = document.getElementById("btn-genome-play");
+    const btnReset = document.getElementById("btn-genome-reset");
+
+    if (btnPrev) btnPrev.addEventListener("click", () => {
+        if (currentStep > 0) {
+            currentStep--;
+            renderAnimatedGenome(currentStep);
+        }
+    });
+
+    if (btnNext) btnNext.addEventListener("click", () => {
+        if (currentStep < maxSteps - 1) {
+            currentStep++;
+            renderAnimatedGenome(currentStep);
+        }
+    });
+
+    if (btnPlay) btnPlay.addEventListener("click", () => {
+        isPlaying = !isPlaying;
+        btnPlay.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+
+        if (isPlaying) {
+            playInterval = setInterval(() => {
+                if (currentStep >= maxSteps - 1) {
+                    currentStep = maxSteps - 1;
+                    isPlaying = false;
+                    btnPlay.textContent = "▶ Play";
+                    clearInterval(playInterval);
+                    renderAnimatedGenome(currentStep);
+                    return;
+                }
+                currentStep++;
+                renderAnimatedGenome(currentStep);
+            }, 1000);
+        } else {
+            clearInterval(playInterval);
+        }
+    });
+
+    if (btnReset) btnReset.addEventListener("click", () => {
+        currentStep = 0;
+        isPlaying = false;
+        if (btnPlay) btnPlay.textContent = "▶ Play";
+        clearInterval(playInterval);
+        renderAnimatedGenome(currentStep);
+    });
+
+    renderAnimatedGenome(currentStep);
+
+    // Challenge 1: Count enabled connections to outputs
+    const outputNodes = genome.nodes.filter(n => n.type === "output").map(n => n.id);
+    const correctAnswer = genome.connections.filter(c => c.enabled && outputNodes.includes(c.outNode)).length;
+
+    const input = document.getElementById("ch1-input");
+    const btn = document.getElementById("ch1-btn");
+    const feedback = document.getElementById("ch1-feedback");
+
+    if (btn && input && feedback) {
+        btn.addEventListener("click", () => {
+            const userAnswer = parseInt(input.value);
+            if (userAnswer === correctAnswer) {
+                feedback.textContent = "✓ Correct !";
+                feedback.style.color = "#4CAF50";
+                completeChallenge(1);
+            } else {
+                feedback.textContent = `✗ Incorrect. Comptez uniquement les connexions activees vers les neurones de sortie.`;
+                feedback.style.color = "#F44336";
+            }
+        });
+    }
+}
+
+// ============ Section 3: Mutations + Challenge 2 ============
+function initMutations() {
+    const svg = document.getElementById("mutation-svg");
+    const log = document.getElementById("mutation-log");
+    if (!svg || !log) return;
+
+    NEAT.resetInnovation();
+    let currentGenome = NEAT.Genome.create(2, 1);
+
+    function render() {
+        const inputLabels = ["A", "B", "bias"];
+        const outputLabels = ["Y"];
+        renderGenomeToSVG(currentGenome, svg, inputLabels, outputLabels);
+
+        const hiddenCount = currentGenome.nodes.filter(n => n.type === "hidden").length;
+        const connectionCount = currentGenome.connections.length;
+
+        // Check challenge 2
+        const ch2Hidden = document.getElementById("ch2-check-hidden");
+        const ch2Connections = document.getElementById("ch2-check-connections");
+
+        if (hiddenCount >= 1) {
+            ch2Hidden.querySelector(".check-icon").textContent = "✓";
+            ch2Hidden.style.color = "#4CAF50";
+        }
+        if (connectionCount >= 8) {
+            ch2Connections.querySelector(".check-icon").textContent = "✓";
+            ch2Connections.style.color = "#4CAF50";
+        }
+
+        if (hiddenCount >= 1 && connectionCount >= 8) {
+            completeChallenge(2);
+        }
+    }
+
+    document.getElementById("btn-mutate-weight").addEventListener("click", () => {
+        currentGenome.mutateWeights();
+        log.textContent = "Mutation de poids appliquee";
+        render();
+    });
+
+    document.getElementById("btn-add-connection").addEventListener("click", () => {
+        const before = currentGenome.connections.length;
+        currentGenome.mutateAddConnection();
+        const after = currentGenome.connections.length;
+        if (after > before) {
+            log.textContent = "Nouvelle connexion ajoutee";
+        } else {
+            log.textContent = "Impossible d'ajouter une connexion (cycle evite)";
+        }
+        render();
+    });
+
+    document.getElementById("btn-add-node").addEventListener("click", () => {
+        const before = currentGenome.nodes.filter(n => n.type === "hidden").length;
+        currentGenome.mutateAddNode();
+        const after = currentGenome.nodes.filter(n => n.type === "hidden").length;
+        if (after > before) {
+            log.textContent = "Nouveau noeud cache ajoute";
+        } else {
+            log.textContent = "Impossible d'ajouter un noeud";
+        }
+        render();
+    });
+
+    document.getElementById("btn-reset-mutation").addEventListener("click", () => {
+        NEAT.resetInnovation();
+        currentGenome = NEAT.Genome.create(2, 1);
+        log.textContent = "Reseau reinitialise";
+        document.getElementById("ch2-check-hidden").querySelector(".check-icon").textContent = "◯";
+        document.getElementById("ch2-check-connections").querySelector(".check-icon").textContent = "◯";
+        document.getElementById("ch2-check-hidden").style.color = "";
+        document.getElementById("ch2-check-connections").style.color = "";
+        render();
+    });
+
+    render();
+}
+
+// ============ Section 4: Innovation & Crossover + Challenge 3 ============
+function initInnovation() {
+    const p1Svg = document.getElementById("parent1-svg");
+    const p2Svg = document.getElementById("parent2-svg");
+    const childSvg = document.getElementById("child-svg");
+    const geneAlignment = document.getElementById("gene-alignment");
+    const quiz = document.getElementById("innovation-quiz");
+    const explanationEl = document.getElementById("crossover-explanation");
+    const stepEl = document.getElementById("crossover-step");
+    const progressEl = document.getElementById("crossover-progress-fill");
+
+    if (!p1Svg || !p2Svg || !childSvg) return;
+
+    NEAT.resetInnovation();
+    const parent1 = NEAT.Genome.create(2, 1);
+    parent1.mutateAddNode();
+    parent1.mutateAddConnection();
+    parent1.mutateAddConnection();
+
+    const parent2 = NEAT.Genome.create(2, 1);
+    parent2.mutateAddConnection();
+    parent2.mutateAddNode();
+
+    parent1.fitness = 8.5;
+    parent2.fitness = 6.2;
+
+    const child = NEAT.Genome.crossover(parent1, parent2);
+
+    const inputLabels = ["A", "B", "bias"];
+    const outputLabels = ["Y"];
+
+    // Gene alignment data
+    const p1Innovations = parent1.connections.map(c => c.innovation);
+    const p2Innovations = parent2.connections.map(c => c.innovation);
+    const allInnovations = [...new Set([...p1Innovations, ...p2Innovations])].sort((a, b) => a - b);
+
+    // Animation state
+    let currentStep = 0;
+    const maxSteps = 5; // 0: intro, 1: P1, 2: P2, 3: alignment, 4: child, 5: complete
+    let isPlaying = false;
+    let playInterval = null;
+
+    function renderAnimatedCrossover(step) {
+        // Clear
+        p1Svg.innerHTML = "";
+        p2Svg.innerHTML = "";
+        childSvg.innerHTML = "";
+        if (geneAlignment) geneAlignment.innerHTML = "";
+
+        // Update progress
+        if (stepEl) stepEl.textContent = `${step}/${maxSteps}`;
+        if (progressEl) progressEl.style.width = `${(step / maxSteps) * 100}%`;
+
+        // Step 0: Introduction
+        if (step === 0) {
+            if (explanationEl) explanationEl.textContent = "Étape 0 : Deux parents vont se reproduire";
+            renderGenomeToSVG(parent1, p1Svg, inputLabels, outputLabels);
+            renderGenomeToSVG(parent2, p2Svg, inputLabels, outputLabels);
+        }
+
+        // Step 1: Highlight Parent 1 (fitter)
+        else if (step === 1) {
+            if (explanationEl) explanationEl.textContent = `Étape 1 : Parent 1 (fitness ${parent1.fitness}) - Le plus fit`;
+            renderGenomeToSVG(parent1, p1Svg, inputLabels, outputLabels);
+            p1Svg.style.border = "3px solid #4CAF50";
+            p1Svg.style.borderRadius = "8px";
+            p1Svg.style.padding = "5px";
+            renderGenomeToSVG(parent2, p2Svg, inputLabels, outputLabels);
+            p2Svg.style.opacity = "0.4";
+        }
+
+        // Step 2: Highlight Parent 2
+        else if (step === 2) {
+            if (explanationEl) explanationEl.textContent = `Étape 2 : Parent 2 (fitness ${parent2.fitness}) - Moins fit`;
+            renderGenomeToSVG(parent1, p1Svg, inputLabels, outputLabels);
+            p1Svg.style.opacity = "0.4";
+            p1Svg.style.border = "none";
+            renderGenomeToSVG(parent2, p2Svg, inputLabels, outputLabels);
+            p2Svg.style.border = "3px solid #FF9800";
+            p2Svg.style.borderRadius = "8px";
+            p2Svg.style.padding = "5px";
+            p2Svg.style.opacity = "1";
+        }
+
+        // Step 3: Show gene alignment
+        else if (step === 3) {
+            if (explanationEl) explanationEl.textContent = "Étape 3 : Alignement des gènes par numéro d'innovation";
+            renderGenomeToSVG(parent1, p1Svg, inputLabels, outputLabels);
+            renderGenomeToSVG(parent2, p2Svg, inputLabels, outputLabels);
+            p1Svg.style.border = "none";
+            p2Svg.style.border = "none";
+            p1Svg.style.opacity = "1";
+            p2Svg.style.opacity = "1";
+
+            if (geneAlignment) {
+                geneAlignment.innerHTML = "<h4 style='color: #FFAB40;'>Alignement des gènes</h4>";
+                allInnovations.forEach(innov => {
+                    const inP1 = p1Innovations.includes(innov);
+                    const inP2 = p2Innovations.includes(innov);
+                    let type = "matching";
+                    let color = "#4CAF50";
+                    let label = "M";
+
+                    if (inP1 && !inP2) {
+                        if (innov > Math.max(...p2Innovations)) {
+                            type = "excess";
+                            color = "#FF9800";
+                            label = "E";
+                        } else {
+                            type = "disjoint";
+                            color = "#FFC107";
+                            label = "D";
+                        }
+                    } else if (!inP1 && inP2) {
+                        if (innov > Math.max(...p1Innovations)) {
+                            type = "excess";
+                            color = "#FF9800";
+                            label = "E";
+                        } else {
+                            type = "disjoint";
+                            color = "#FFC107";
+                            label = "D";
+                        }
+                    }
+
+                    const span = document.createElement("span");
+                    span.style.display = "inline-block";
+                    span.style.margin = "4px";
+                    span.style.padding = "8px 12px";
+                    span.style.background = color;
+                    span.style.borderRadius = "6px";
+                    span.style.fontSize = "12px";
+                    span.style.fontWeight = "bold";
+                    span.style.color = "#000";
+                    span.textContent = `#${innov} (${label})`;
+                    span.title = type.charAt(0).toUpperCase() + type.slice(1);
+                    geneAlignment.appendChild(span);
+                });
+
+                const legend = document.createElement("div");
+                legend.style.marginTop = "10px";
+                legend.style.fontSize = "11px";
+                legend.innerHTML = `
+                    <span style="color: #4CAF50;">■ M = Matching</span>
+                    <span style="color: #FFC107; margin-left: 10px;">■ D = Disjoint</span>
+                    <span style="color: #FF9800; margin-left: 10px;">■ E = Excess</span>
+                `;
+                geneAlignment.appendChild(legend);
+            }
+        }
+
+        // Step 4: Show child being created
+        else if (step === 4) {
+            if (explanationEl) explanationEl.textContent = "Étape 4 : Création de l'enfant (héritage du parent le plus fit)";
+            renderGenomeToSVG(parent1, p1Svg, inputLabels, outputLabels);
+            renderGenomeToSVG(parent2, p2Svg, inputLabels, outputLabels);
+            p1Svg.style.opacity = "0.6";
+            p2Svg.style.opacity = "0.6";
+            renderGenomeToSVG(child, childSvg, inputLabels, outputLabels);
+            childSvg.style.border = "3px solid #FFAB40";
+            childSvg.style.borderRadius = "8px";
+            childSvg.style.padding = "5px";
+        }
+
+        // Step 5: Complete
+        else if (step >= 5) {
+            if (explanationEl) explanationEl.textContent = "✓ Crossover terminé ! L'enfant combine les gènes des deux parents";
+            renderGenomeToSVG(parent1, p1Svg, inputLabels, outputLabels);
+            renderGenomeToSVG(parent2, p2Svg, inputLabels, outputLabels);
+            renderGenomeToSVG(child, childSvg, inputLabels, outputLabels);
+            p1Svg.style.opacity = "1";
+            p2Svg.style.opacity = "1";
+            childSvg.style.border = "none";
+
+            // Show final alignment
+            if (geneAlignment) {
+                geneAlignment.innerHTML = "<h4 style='color: #4CAF50;'>Crossover réussi !</h4>";
+                const summary = document.createElement("p");
+                summary.style.fontSize = "12px";
+                summary.style.color = "#CCC";
+                summary.innerHTML = `Parent 1: ${parent1.connections.length} connexions<br>Parent 2: ${parent2.connections.length} connexions<br>Enfant: ${child.connections.length} connexions`;
+                geneAlignment.appendChild(summary);
+            }
+        }
+    }
+
+    // Animation controls
+    const btnPrev = document.getElementById("btn-crossover-prev");
+    const btnNext = document.getElementById("btn-crossover-next");
+    const btnPlay = document.getElementById("btn-crossover-play");
+    const btnReset = document.getElementById("btn-crossover-reset");
+
+    if (btnPrev) btnPrev.addEventListener("click", () => {
+        if (currentStep > 0) {
+            currentStep--;
+            renderAnimatedCrossover(currentStep);
+        }
+    });
+
+    if (btnNext) btnNext.addEventListener("click", () => {
+        if (currentStep < maxSteps) {
+            currentStep++;
+            renderAnimatedCrossover(currentStep);
+        }
+    });
+
+    if (btnPlay) btnPlay.addEventListener("click", () => {
+        isPlaying = !isPlaying;
+        btnPlay.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+
+        if (isPlaying) {
+            playInterval = setInterval(() => {
+                if (currentStep >= maxSteps) {
+                    isPlaying = false;
+                    btnPlay.textContent = "▶ Play";
+                    clearInterval(playInterval);
+                    return;
+                }
+                currentStep++;
+                renderAnimatedCrossover(currentStep);
+            }, 1500);
+        } else {
+            clearInterval(playInterval);
+        }
+    });
+
+    if (btnReset) btnReset.addEventListener("click", () => {
+        currentStep = 0;
+        isPlaying = false;
+        if (btnPlay) btnPlay.textContent = "▶ Play";
+        clearInterval(playInterval);
+        renderAnimatedCrossover(currentStep);
+    });
+
+    // Initial render
+    renderAnimatedCrossover(currentStep);
+
+    // Challenge 3: Gene type quiz (appears after animation)
+    if (quiz) {
+        const quizGenes = allInnovations.slice(0, Math.min(3, allInnovations.length));
+
+        quiz.innerHTML = "<h4 style='color: #FFAB40; margin-top: 20px;'>Quiz: Identifiez le type de gène</h4>";
+        quizGenes.forEach(innov => {
+            const inP1 = p1Innovations.includes(innov);
+            const inP2 = p2Innovations.includes(innov);
+            let correctType = "matching";
+
+            if (inP1 && !inP2) {
+                correctType = innov > Math.max(...p2Innovations) ? "excess" : "disjoint";
+            } else if (!inP1 && inP2) {
+                correctType = innov > Math.max(...p1Innovations) ? "excess" : "disjoint";
+            }
+
+            const div = document.createElement("div");
+            div.className = "quiz-item";
+            div.style.marginBottom = "10px";
+            div.innerHTML = `
+                <p style="color: #CCC;">Gène #${innov} :</p>
+                <select data-innov="${innov}" data-correct="${correctType}" style="padding: 5px; margin-top: 5px;">
+                    <option value="">Choisir...</option>
+                    <option value="matching">Matching</option>
+                    <option value="disjoint">Disjoint</option>
+                    <option value="excess">Excess</option>
+                </select>
+            `;
+            quiz.appendChild(div);
+        });
+
+        quiz.addEventListener("change", () => {
+            const selects = quiz.querySelectorAll("select");
+            let allCorrect = true;
+
+            selects.forEach(select => {
+                const correct = select.dataset.correct;
+                const value = select.value;
+
+                if (value === "") {
+                    allCorrect = false;
+                } else if (value !== correct) {
+                    allCorrect = false;
+                    select.style.borderColor = "#F44336";
+                } else {
+                    select.style.borderColor = "#4CAF50";
+                }
+            });
+
+            if (allCorrect && selects.length > 0) {
+                completeChallenge(3);
+            }
+        });
+    }
+}
+
+// ============ Section 5: Speciation + Challenge 4 ============
+// ============ Section 5: Speciation + Challenge 4 (NOUVELLE VERSION) ============
+function initSpeciation() {
+    NEAT.resetInnovation();
+
+    // Create 8 genomes in 4 distinct pairs
+    const genomes = [];
+
+    // Species A: Minimal networks (2 genomes)
+    for (let i = 0; i < 2; i++) {
+        const g = NEAT.Genome.create(2, 1);
+        genomes.push(g);
+    }
+
+    // Species B: Networks with 2 added connections (2 genomes)
+    for (let i = 0; i < 2; i++) {
+        const g = NEAT.Genome.create(2, 1);
+        g.mutateAddConnection();
+        g.mutateAddConnection();
+        genomes.push(g);
+    }
+
+    // Species C: Networks with 1 hidden node (2 genomes)
+    for (let i = 0; i < 2; i++) {
+        const g = NEAT.Genome.create(2, 1);
+        g.mutateAddNode();
+        g.mutateAddConnection();
+        genomes.push(g);
+    }
+
+    // Species D: Complex networks (2 genomes)
+    for (let i = 0; i < 2; i++) {
+        const g = NEAT.Genome.create(2, 1);
+        g.mutateAddNode();
+        g.mutateAddNode();
+        g.mutateAddConnection();
+        g.mutateAddConnection();
+        genomes.push(g);
+    }
+
+    const inputLabels = ["x", "y", "bias"];
+    const outputLabels = ["out"];
+
+    // Render all 8 genomes
+    const genomeGrid = document.getElementById("genome-grid");
+    if (genomeGrid) {
+        genomeGrid.innerHTML = "";
+        genomeGrid.style.display = "grid";
+        genomeGrid.style.gridTemplateColumns = "repeat(4, 1fr)";
+        genomeGrid.style.gap = "10px";
+        genomeGrid.style.marginBottom = "20px";
+
+        genomes.forEach((genome, i) => {
+            const card = document.createElement("div");
+            card.className = "genome-card";
+            card.dataset.genomeId = i;
+            card.dataset.correctSpecies = Math.floor(i / 2); // 0-1 = species 0, 2-3 = species 1, etc.
+            card.style.background = "rgba(255,255,255,0.05)";
+            card.style.border = "2px solid rgba(255,255,255,0.2)";
+            card.style.borderRadius = "8px";
+            card.style.padding = "10px";
+            card.style.cursor = "pointer";
+            card.style.transition = "all 0.3s";
+
+            const title = document.createElement("div");
+            title.textContent = `Génome ${i + 1}`;
+            title.style.textAlign = "center";
+            title.style.color = "#FFAB40";
+            title.style.fontSize = "12px";
+            title.style.fontWeight = "bold";
+            title.style.marginBottom = "5px";
+            card.appendChild(title);
+
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 200 120");
+            svg.style.width = "100%";
+            svg.style.height = "auto";
+            renderGenomeToSVG(genome, svg, inputLabels, outputLabels);
+            card.appendChild(svg);
+
+            const info = genome.getNetworkInfo();
+            const stats = document.createElement("div");
+            stats.style.textAlign = "center";
+            stats.style.fontSize = "10px";
+            stats.style.color = "#999";
+            stats.style.marginTop = "5px";
+            stats.textContent = `${info.nodes.length}N / ${info.connections.length}C`;
+            card.appendChild(stats);
+
+            genomeGrid.appendChild(card);
+        });
+    }
+
+    // Species boxes for interaction
+    const speciesContainer = document.getElementById("species-container");
+    if (speciesContainer) {
+        speciesContainer.innerHTML = "";
+        speciesContainer.style.display = "grid";
+        speciesContainer.style.gridTemplateColumns = "repeat(2, 1fr)";
+        speciesContainer.style.gap = "15px";
+        speciesContainer.style.marginTop = "20px";
+
+        const colors = ["#F44336", "#4CAF50", "#2196F3", "#FF9800"];
+        const labels = ["Espèce A", "Espèce B", "Espèce C", "Espèce D"];
+
+        for (let i = 0; i < 4; i++) {
+            const box = document.createElement("div");
+            box.className = "species-box";
+            box.dataset.speciesId = i;
+            box.style.background = `linear-gradient(135deg, ${colors[i]}22, ${colors[i]}11)`;
+            box.style.border = `2px dashed ${colors[i]}`;
+            box.style.borderRadius = "10px";
+            box.style.padding = "15px";
+            box.style.minHeight = "150px";
+            box.style.transition = "all 0.3s";
+
+            const header = document.createElement("div");
+            header.textContent = labels[i];
+            header.style.color = colors[i];
+            header.style.fontWeight = "bold";
+            header.style.fontSize = "14px";
+            header.style.marginBottom = "10px";
+            header.style.textAlign = "center";
+            box.appendChild(header);
+
+            const dropZone = document.createElement("div");
+            dropZone.className = "drop-zone";
+            dropZone.style.minHeight = "100px";
+            dropZone.style.display = "flex";
+            dropZone.style.flexDirection = "column";
+            dropZone.style.gap = "5px";
+            box.appendChild(dropZone);
+
+            speciesContainer.appendChild(box);
+        }
+    }
+
+    // Click interaction: click a genome then click a species box
+    let selectedGenome = null;
+
+    document.querySelectorAll(".genome-card").forEach(card => {
+        card.addEventListener("click", () => {
+            // Deselect previous
+            document.querySelectorAll(".genome-card").forEach(c => {
+                c.style.border = "2px solid rgba(255,255,255,0.2)";
+                c.style.transform = "scale(1)";
+            });
+
+            // Select this one
+            selectedGenome = card.dataset.genomeId;
+            card.style.border = "2px solid #FFAB40";
+            card.style.transform = "scale(1.05)";
+        });
+    });
+
+    document.querySelectorAll(".species-box").forEach(box => {
+        box.addEventListener("click", () => {
+            if (!selectedGenome) return;
+
+            const card = document.querySelector(`[data-genome-id="${selectedGenome}"]`);
+            if (!card) return;
+
+            // Check if already placed
+            if (card.parentElement.className === "drop-zone") {
+                // Remove from previous species
+                card.parentElement.removeChild(card);
+            } else {
+                // Remove from grid
+                card.parentElement.removeChild(card);
+            }
+
+            // Add to this species
+            const dropZone = box.querySelector(".drop-zone");
+            card.style.border = "2px solid rgba(255,255,255,0.2)";
+            card.style.transform = "scale(1)";
+            card.style.marginBottom = "5px";
+            dropZone.appendChild(card);
+
+            selectedGenome = null;
+
+            // Check if challenge complete
+            checkSpeciationChallenge();
+        });
+    });
+
+    function checkSpeciationChallenge() {
+        const feedback = document.getElementById("ch4-feedback");
+        if (!feedback) return;
+
+        // Check if all 8 genomes are placed
+        const gridCards = document.querySelectorAll("#genome-grid .genome-card");
+        if (gridCards.length > 0) {
+            feedback.textContent = "Placez tous les génomes dans les espèces";
+            feedback.style.color = "#FF9800";
+            return;
+        }
+
+        // Check if each species has exactly 2 genomes
+        let allCorrect = true;
+        let speciesCount = [0, 0, 0, 0];
+
+        document.querySelectorAll(".species-box").forEach(box => {
+            const speciesId = parseInt(box.dataset.speciesId);
+            const cards = box.querySelectorAll(".genome-card");
+            speciesCount[speciesId] = cards.length;
+
+            if (cards.length !== 2) {
+                allCorrect = false;
+            } else {
+                // Check if both genomes belong to this species
+                cards.forEach(card => {
+                    const correctSpecies = parseInt(card.dataset.correctSpecies);
+                    if (correctSpecies !== speciesId) {
+                        allCorrect = false;
+                    }
+                });
+            }
+        });
+
+        if (allCorrect) {
+            feedback.textContent = "✓ Parfait ! Vous avez correctement groupé les génomes par similarité !";
+            feedback.style.color = "#4CAF50";
+            completeChallenge(4);
+        } else {
+            feedback.textContent = "✗ Pas tout à fait... Les génomes similaires doivent être dans la même espèce (2 par espèce)";
+            feedback.style.color = "#F44336";
+        }
+    }
+
+    // Reset button
+    const resetBtn = document.getElementById("btn-reset-speciation");
+    if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+            // Move all cards back to grid
+            document.querySelectorAll(".genome-card").forEach(card => {
+                if (card.parentElement.className === "drop-zone") {
+                    card.parentElement.removeChild(card);
+                    const genomeGrid = document.getElementById("genome-grid");
+                    if (genomeGrid) genomeGrid.appendChild(card);
+                }
+                card.style.border = "2px solid rgba(255,255,255,0.2)";
+                card.style.transform = "scale(1)";
+            });
+
+            const feedback = document.getElementById("ch4-feedback");
+            if (feedback) {
+                feedback.textContent = "";
+            }
+
+            selectedGenome = null;
+        });
+    }
+}
+function initFitness() {
+    const rawChart = document.getElementById("fitness-raw-chart");
+    const adjustedChart = document.getElementById("fitness-adjusted-chart");
+    if (!rawChart || !adjustedChart) return;
+
+    const rawCtx = rawChart.getContext("2d");
+    const adjCtx = adjustedChart.getContext("2d");
+
+    const speciesData = [
+        { name: "Sp1", members: 10, totalFitness: 450 },
+        { name: "Sp2", members: 3, totalFitness: 180 },
+        { name: "Sp3", members: 15, totalFitness: 600 }
+    ];
+
+    function drawBarChart(ctx, data, isAdjusted) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        const values = data.map(sp => isAdjusted ? sp.totalFitness / sp.members : sp.totalFitness);
+        const maxVal = Math.max(...values);
+        const barWidth = ctx.canvas.width / (data.length * 2);
+
+        data.forEach((sp, i) => {
+            const val = values[i];
+            const height = (val / maxVal) * (ctx.canvas.height - 40);
+            const x = i * barWidth * 2 + barWidth / 2;
+            const y = ctx.canvas.height - height - 20;
+
+            ctx.fillStyle = ["#F44336", "#4CAF50", "#2196F3"][i];
+            ctx.fillRect(x, y, barWidth, height);
+
+            ctx.fillStyle = "#FFF";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(sp.name, x + barWidth/2, ctx.canvas.height - 5);
+            ctx.fillText(val.toFixed(0), x + barWidth/2, y - 5);
+        });
+    }
+
+    drawBarChart(rawCtx, speciesData, false);
+    drawBarChart(adjCtx, speciesData, true);
+
+    const explanation = document.getElementById("fitness-explanation");
+    if (explanation) {
+        explanation.textContent = "Le fitness sharing divise la fitness par la taille de l'espece, favorisant les petites especes innovantes.";
+    }
+
+    // Challenge 5
+    const input = document.getElementById("ch5-input");
+    const btn = document.getElementById("ch5-btn");
+    const feedback = document.getElementById("ch5-feedback");
+
+    const correctAnswer = 100 / 4; // 25.0
+
+    btn.addEventListener("click", () => {
+        const userAnswer = parseFloat(input.value);
+        if (Math.abs(userAnswer - correctAnswer) < 0.1) {
+            feedback.textContent = "✓ Correct ! 100 / 4 = 25";
+            feedback.style.color = "#4CAF50";
+            completeChallenge(5);
+        } else {
+            feedback.textContent = `✗ Incorrect. Rappelez-vous : fitness ajustee = fitness brute / taille espece`;
+            feedback.style.color = "#F44336";
+        }
+    });
+}
+
+// ============ Section 7: Evolution Cycle + Challenge 6 ============
+function initEvolutionCycle() {
+    const flowchartSvg = document.getElementById("flowchart-svg");
+    const graphCanvas = document.getElementById("evolution-graph");
+    if (!flowchartSvg || !graphCanvas) return;
+
+    // Draw flowchart
+    flowchartSvg.innerHTML = `
+        <rect x="180" y="20" width="140" height="40" fill="#2196F3" rx="5" />
+        <text x="250" y="45" text-anchor="middle" fill="white" font-size="14">Evaluation</text>
+
+        <rect x="180" y="80" width="140" height="40" fill="#4CAF50" rx="5" />
+        <text x="250" y="105" text-anchor="middle" fill="white" font-size="14">Speciation</text>
+
+        <rect x="180" y="140" width="140" height="40" fill="#FF9800" rx="5" />
+        <text x="250" y="165" text-anchor="middle" fill="white" font-size="14">Selection</text>
+
+        <rect x="180" y="200" width="140" height="40" fill="#9C27B0" rx="5" />
+        <text x="250" y="225" text-anchor="middle" fill="white" font-size="14">Crossover</text>
+
+        <rect x="180" y="260" width="140" height="40" fill="#F44336" rx="5" />
+        <text x="250" y="285" text-anchor="middle" fill="white" font-size="14">Mutation</text>
+
+        <path d="M 250 60 L 250 80" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
+        <path d="M 250 120 L 250 140" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
+        <path d="M 250 180 L 250 200" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
+        <path d="M 250 240 L 250 260" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
+        <path d="M 320 280 Q 380 280 380 40 L 320 40" stroke="white" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5" />
+    `;
+
+    // Evolution simulation (XOR problem)
+    const ctx = graphCanvas.getContext("2d");
+    let generation = 0;
+    let fitnessHistory = [];
+    let isRunning = false;
+    let population = null;
+
+    function xorFitness(genome) {
+        const tests = [
+            { input: [0, 0], expected: 0 },
+            { input: [0, 1], expected: 1 },
+            { input: [1, 0], expected: 1 },
+            { input: [1, 1], expected: 0 }
+        ];
+
+        let error = 0;
+        tests.forEach(test => {
+            const output = genome.activate(test.input)[0];
+            error += Math.abs(output - test.expected);
+        });
+
+        return Math.max(0, 4 - error);
+    }
+
+    function initPopulation() {
+        NEAT.resetInnovation();
+        population = new NEAT.Population(2, 1, 50);
+        generation = 0;
+        fitnessHistory = [];
+    }
+
+    function evolveGeneration() {
+        population.genomes.forEach(g => {
+            g.fitness = xorFitness(g);
+        });
+
+        const best = population.genomes.reduce((a, b) => a.fitness > b.fitness ? a : b);
+        fitnessHistory.push(best.fitness);
+        generation++;
+
+        document.getElementById("gen-value").textContent = generation;
+        document.getElementById("best-fitness-value").textContent = best.fitness.toFixed(3);
+        document.getElementById("species-value").textContent = population.species ? population.species.length : "--";
+
+        population.evolve();
+
+        drawGraph();
+
+        // Check challenge 6
+        if (best.fitness > 0.95) {
+            const progress = document.getElementById("ch6-progress");
+            const text = document.getElementById("ch6-text");
+            if (progress && text) {
+                progress.style.width = "100%";
+                text.textContent = `Fitness : ${best.fitness.toFixed(2)} / 0.95 - Objectif atteint !`;
+                text.style.color = "#4CAF50";
+            }
+            completeChallenge(6);
+            isRunning = false;
+        }
+    }
+
+    function drawGraph() {
+        ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+
+        if (fitnessHistory.length < 2) return;
+
+        const maxGen = Math.max(20, fitnessHistory.length);
+        const xScale = graphCanvas.width / maxGen;
+        const yScale = graphCanvas.height - 20;
+
+        ctx.strokeStyle = "#4CAF50";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        fitnessHistory.forEach((fitness, i) => {
+            const x = i * xScale;
+            const y = graphCanvas.height - (fitness / 4 * yScale);
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+
+        ctx.stroke();
+
+        // Draw target line
+        ctx.strokeStyle = "#FF9800";
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        const targetY = graphCanvas.height - (0.95 / 4 * yScale);
+        ctx.moveTo(0, targetY);
+        ctx.lineTo(graphCanvas.width, targetY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Update progress
+        const progress = document.getElementById("ch6-progress");
+        const text = document.getElementById("ch6-text");
+        if (progress && text && fitnessHistory.length > 0) {
+            const current = fitnessHistory[fitnessHistory.length - 1];
+            progress.style.width = `${Math.min(100, (current / 0.95) * 100)}%`;
+            text.textContent = `Fitness : ${current.toFixed(2)} / 0.95`;
+        }
+    }
+
+    document.getElementById("btn-evolve-step").addEventListener("click", () => {
+        if (!population) initPopulation();
+        evolveGeneration();
+    });
+
+    document.getElementById("btn-evolve-auto").addEventListener("click", () => {
+        if (!population) initPopulation();
+        isRunning = true;
+
+        let count = 0;
+        const interval = setInterval(() => {
+            if (!isRunning || count >= 20) {
+                clearInterval(interval);
+                return;
+            }
+            evolveGeneration();
+            count++;
+        }, 100);
+    });
+
+    document.getElementById("btn-reset-evolution").addEventListener("click", () => {
+        isRunning = false;
+        initPopulation();
+        drawGraph();
+        document.getElementById("gen-value").textContent = "0";
+        document.getElementById("best-fitness-value").textContent = "0.00";
+        document.getElementById("species-value").textContent = "--";
+
+        const progress = document.getElementById("ch6-progress");
+        const text = document.getElementById("ch6-text");
+        if (progress && text) {
+            progress.style.width = "0%";
+            text.textContent = "Fitness : 0.00 / 0.95";
+            text.style.color = "";
+        }
+    });
+}
+
+// ============ Section 8: Applications ============
+function initApplications() {
+    const gen1Svg = document.getElementById("gen1-svg");
+    const gen50Svg = document.getElementById("gen50-svg");
+    if (!gen1Svg || !gen50Svg) return;
+
+    NEAT.resetInnovation();
+
+    // Gen 1: Simple network
+    const gen1 = NEAT.Genome.create(4, 1);
+    const inputLabels = ["x1", "x2", "x3", "x4", "bias"];
+    const outputLabels = ["jump"];
+    renderGenomeToSVG(gen1, gen1Svg, inputLabels, outputLabels);
+
+    document.getElementById("gen1-nodes").textContent = gen1.nodes.length;
+    document.getElementById("gen1-connections").textContent = gen1.connections.length;
+    document.getElementById("gen1-fitness").textContent = "12";
+
+    // Gen 50: Complex network
+    const gen50 = NEAT.Genome.create(4, 1);
+    for (let i = 0; i < 5; i++) {
+        gen50.mutateAddNode();
+        gen50.mutateAddConnection();
+        gen50.mutateAddConnection();
+    }
+    renderGenomeToSVG(gen50, gen50Svg, inputLabels, outputLabels);
+
+    document.getElementById("gen50-nodes").textContent = gen50.nodes.length;
+    document.getElementById("gen50-connections").textContent = gen50.connections.length;
+    document.getElementById("gen50-fitness").textContent = "8547";
+}
+
+// ============ Section 9: Conclusion + Parameter Guide ============
+function initConclusion() {
+    const paramGrid = document.getElementById("param-grid");
+    if (!paramGrid) return;
+
+    const parameters = [
+        {
+            name: "Taille Population",
+            value: "50-500",
+            influence: "Performance vs Temps",
+            desc: "Plus la population est grande, plus l'exploration est large mais plus l'evolution est lente. Commencer avec 100-150.",
+            icon: "👥"
+        },
+        {
+            name: "Taux Mutation Poids",
+            value: "0.7-0.9",
+            influence: "Adaptation Continue",
+            desc: "Probabilite de modifier les poids existants. Haute valeur (80%) permet ajustement fin sans changer la topologie.",
+            icon: "⚖️"
+        },
+        {
+            name: "Taux Mutation Connexion",
+            value: "0.03-0.10",
+            influence: "Complexite Reseau",
+            desc: "Probabilite d'ajouter une nouvelle connexion. 5% est un bon equilibre. Trop haut cree des reseaux trop denses.",
+            icon: "🔗"
+        },
+        {
+            name: "Taux Mutation Noeud",
+            value: "0.01-0.05",
+            influence: "Profondeur Reseau",
+            desc: "Probabilite d'ajouter un noeud cache. Commencer bas (3%) car augmente beaucoup la complexite.",
+            icon: "🔵"
+        },
+        {
+            name: "Seuil Speciation (δt)",
+            value: "2.0-4.0",
+            influence: "Nombre Especes",
+            desc: "Distance max pour appartenir a meme espece. 3.0 est standard. Reduire = plus d'especes = plus de diversite.",
+            icon: "🌳"
+        },
+        {
+            name: "Coefficient c1 (Excess)",
+            value: "1.0",
+            influence: "Distance Topologique",
+            desc: "Poids des genes excess dans calcul distance. Standard: 1.0. Augmenter penalise plus les differences structurelles.",
+            icon: "📊"
+        },
+        {
+            name: "Coefficient c2 (Disjoint)",
+            value: "1.0",
+            influence: "Distance Topologique",
+            desc: "Poids des genes disjoint. Standard: 1.0. Similaire a c1 mais pour genes au milieu de la structure.",
+            icon: "📊"
+        },
+        {
+            name: "Coefficient c3 (Weights)",
+            value: "0.3-0.5",
+            influence: "Distance Poids",
+            desc: "Importance difference poids vs topologie. 0.4 standard. Reduire si topologie plus importante que poids.",
+            icon: "📊"
+        },
+        {
+            name: "Taux Survie",
+            value: "0.2-0.4",
+            influence: "Pression Selection",
+            desc: "Proportion qui se reproduit. 20-30% cree forte selection. 40%+ preserve plus de diversite mais ralentit evolution.",
+            icon: "🏆"
+        },
+        {
+            name: "Taux Crossover",
+            value: "0.7-0.8",
+            influence: "Innovation Combinee",
+            desc: "Probabilite de reproduction sexuee vs clonage. 75% permet combinaison innovations tout en gardant elites.",
+            icon: "🧬"
+        },
+        {
+            name: "Stagnation Max",
+            value: "15-20",
+            influence: "Elimination Especes",
+            desc: "Generations sans amelioration avant extinction espece. 15 gen standard. Permet reallocation ressources.",
+            icon: "⏱️"
+        },
+        {
+            name: "Elite par Espece",
+            value: "1-2",
+            influence: "Conservation Progres",
+            desc: "Meilleurs genomes copies sans modification. 1 suffit generalement. Garantit pas de regression.",
+            icon: "⭐"
+        }
+    ];
+
+    paramGrid.style.display = "grid";
+    paramGrid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+    paramGrid.style.gap = "15px";
+    paramGrid.style.marginTop = "20px";
+
+    parameters.forEach(param => {
+        const card = document.createElement("div");
+        card.style.background = "rgba(255, 255, 255, 0.05)";
+        card.style.borderRadius = "8px";
+        card.style.padding = "15px";
+        card.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+        card.style.transition = "all 0.3s ease";
+        card.style.cursor = "default";
+
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <span style="font-size: 24px;">${param.icon}</span>
+                <div style="flex: 1;">
+                    <h4 style="color: #FFAB40; margin: 0; font-size: 14px;">${param.name}</h4>
+                    <span style="color: #4CAF50; font-size: 12px; font-family: monospace;">${param.value}</span>
+                </div>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong style="color: #2196F3; font-size: 12px;">Impact:</strong>
+                <span style="color: #BBB; font-size: 12px;"> ${param.influence}</span>
+            </div>
+            <p style="color: #999; font-size: 11px; line-height: 1.5; margin: 0;">
+                ${param.desc}
+            </p>
+        `;
+
+        card.addEventListener("mouseenter", () => {
+            card.style.background = "rgba(255, 255, 255, 0.08)";
+            card.style.borderColor = "#FFAB40";
+            card.style.transform = "translateY(-2px)";
+        });
+
+        card.addEventListener("mouseleave", () => {
+            card.style.background = "rgba(255, 255, 255, 0.05)";
+            card.style.borderColor = "rgba(255, 255, 255, 0.1)";
+            card.style.transform = "translateY(0)";
+        });
+
+        paramGrid.appendChild(card);
+    });
+
+    // Update final score
+    const finalScoreText = document.getElementById("final-score-text");
+    const scoreMessage = document.getElementById("score-message");
+    const completedCount = challengeState.completed.size;
+
+    finalScoreText.textContent = `${completedCount}/${challengeState.total} defis completes`;
+
+    if (completedCount === challengeState.total) {
+        scoreMessage.textContent = "🎉 Excellent ! Vous maitrisez NEAT !";
+        scoreMessage.style.color = "#4CAF50";
+    } else if (completedCount >= 4) {
+        scoreMessage.textContent = "👍 Bon travail ! Continuez pour tout completer.";
+        scoreMessage.style.color = "#2196F3";
+    } else if (completedCount >= 2) {
+        scoreMessage.textContent = "💪 Vous progressez ! Essayez les defis restants.";
+        scoreMessage.style.color = "#FF9800";
+    } else {
+        scoreMessage.textContent = "🎯 Relevez les defis pour tester vos connaissances !";
+        scoreMessage.style.color = "#FFC107";
+    }
+
+    // Highlight completed challenge cards
+    challengeState.completed.forEach(id => {
+        const card = document.querySelector(`.recap-card[data-challenge="${id}"]`);
+        if (card) {
+            card.style.borderLeft = "4px solid #4CAF50";
+            card.style.background = "rgba(76, 175, 80, 0.1)";
+        }
+    });
+}
+
+// ============ Init All ============
+document.addEventListener("DOMContentLoaded", () => {
+    initScrollSystem();
+    initHero();
+    initEvolution();
+    initGenome();
+    initMutations();
+    initInnovation();
+    initSpeciation();
+    initFitness();
+    initEvolutionCycle();
+    initApplications();
+    initConclusion();
+    updateCounter();
+});
