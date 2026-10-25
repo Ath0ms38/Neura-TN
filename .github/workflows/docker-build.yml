@@ -74,3 +74,9 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
+
+      - name: Deploy to Coolify
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          curl --fail --request GET "${{ secrets.COOLIFY_WEBHOOK }}" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
