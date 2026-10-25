@@ -78,5 +78,5 @@ jobs:
       - name: Deploy to Coolify
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
-          curl --fail --request GET "${{ secrets.COOLIFY_WEBHOOK }}" \
+          curl --fail --request POST "${{ secrets.COOLIFY_WEBHOOK }}" \
             --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
