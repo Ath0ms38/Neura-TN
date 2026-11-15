@@ -33,9 +33,9 @@
             <canvas id="hero-canvas" aria-hidden="true"></canvas>
             <div class="hero-content">
                 <p class="hero-kicker">Cours 05 · Décision</p>
-                <h2>Apprendre par essais et erreurs</h2>
-                <p class="hero-subtitle">Et si personne ne donnait la bonne réponse ?</p>
-                <p class="hero-intro">Pour reconnaître des chiffres, on montre au réseau des milliers d'exemples corrigés. Mais pour apprendre à marcher, à jouer ou à conduire, il n'existe pas de corrigé : seulement des conséquences. C'est le domaine de l'apprentissage par renforcement.</p>
+                <h2>L'apprentissage par renforcement</h2>
+                <p class="hero-subtitle">Apprendre à partir de récompenses</p>
+                <p class="hero-intro">Pour reconnaître des chiffres, on entraîne un réseau avec des exemples dont on connaît la réponse. Pour un jeu ou un robot, on ne connaît pas la bonne action à chaque instant. On sait seulement si le résultat est bon ou mauvais. L'apprentissage par renforcement sert dans ce cas. Ce cours contient trois défis.</p>
                 <a href="#boucle" class="scroll-hint">Commencer &darr;</a>
             </div>
         </section>
@@ -43,10 +43,10 @@
         <!-- ============ 01 Boucle ============ -->
         <section id="boucle" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">01</span>Un agent, un monde, des récompenses</h2>
-                <p>Tout se résume à une boucle. Un <strong>agent</strong> observe l'<em>état</em> du monde, choisit une <em>action</em>, et le monde lui répond par un nouvel état et une <em>récompense</em> : un simple nombre, positif ou négatif.</p>
-                <p>Personne ne dit à l'agent quelle action était la bonne. Son seul objectif : <strong>accumuler le plus de récompense possible</strong> sur toute la durée de l'épisode.</p>
-                <p>À vous de jouer l'agent. Vous êtes dans un couloir : un trésor d'un côté, une fosse de l'autre, et chaque pas coûte un peu. Vous ne savez pas encore de quel côté est le trésor.</p>
+                <h2><span class="section-number">01</span>L'agent et son environnement</h2>
+                <p>En apprentissage par renforcement, un <strong>agent</strong> agit dans un environnement. À chaque étape, il observe l'<em>état</em> de l'environnement, choisit une <em>action</em>, puis reçoit une <em>récompense</em> : un nombre positif ou négatif.</p>
+                <p>Personne n'indique à l'agent quelle action était la bonne. Son but est d'obtenir la plus grande somme de récompenses sur un épisode.</p>
+                <p>Dans l'exemple ci-contre, vous jouez le rôle de l'agent. Vous êtes dans un couloir. Un trésor se trouve à un bout, une fosse à l'autre, et chaque pas coûte 1 point. Au début, vous ne savez pas de quel côté est le trésor.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -69,7 +69,7 @@
                         <div><dt>Gain de l'épisode</dt><dd id="loop-return">0</dd></div>
                         <div><dt>Meilleur gain</dt><dd id="loop-best">–</dd></div>
                     </dl>
-                    <div class="step-text" id="loop-message" aria-live="polite">Choisissez une direction. Vous ne saurez ce qu'il y a au bout qu'en y allant.</div>
+                    <div class="step-text" id="loop-message" aria-live="polite">Choisissez une direction.</div>
                 </div>
             </div>
         </section>
@@ -77,15 +77,15 @@
         <!-- ============ 02 Bandit ============ -->
         <section id="exploration" class="course-section flip">
             <div class="section-text">
-                <h2><span class="section-number">02</span>Explorer ou exploiter ?</h2>
-                <p>Quatre machines à sous. Chacune a une probabilité de gain <strong>cachée et différente</strong>. Vous ne pouvez l'estimer qu'en jouant.</p>
-                <p>C'est le dilemme central du renforcement :</p>
+                <h2><span class="section-number">02</span>Explorer ou exploiter</h2>
+                <p>Voici quatre machines à sous. Chacune a une probabilité de gain différente, que vous ne connaissez pas. Le seul moyen de l'estimer est de jouer.</p>
+                <p>L'agent a deux possibilités à chaque tirage :</p>
                 <ul class="concept-list">
                     <li><strong>Exploiter</strong> : rejouer la machine qui a le mieux payé jusqu'ici.</li>
-                    <li><strong>Explorer</strong> : en essayer une autre, au risque de perdre un coup, pour vérifier qu'on ne passe pas à côté d'une meilleure.</li>
+                    <li><strong>Explorer</strong> : essayer une autre machine, pour vérifier s'il en existe une meilleure.</li>
                 </ul>
-                <p>Une machine qui perd deux fois de suite n'est pas forcément mauvaise : elle a peut-être manqué de chance. Trop peu d'essais, et l'on se fie à un hasard.</p>
-                <p>La stratégie <strong>ε-greedy</strong> règle la question simplement : avec une probabilité ε, l'agent joue au hasard ; le reste du temps, il joue la meilleure machine connue.</p>
+                <p>Avec peu de tirages, les estimations sont peu fiables. Une bonne machine peut perdre deux fois de suite.</p>
+                <p>La stratégie <strong>ε-greedy</strong> combine les deux : avec une probabilité ε, l'agent choisit une machine au hasard. Le reste du temps, il choisit celle qui a la meilleure estimation.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -101,7 +101,7 @@
                             <span class="challenge-title">Défi 1</span>
                             <span class="challenge-status"></span>
                         </div>
-                        <p class="challenge-text">Jouez au moins <strong>20 tirages</strong>, puis désignez la machine que vous pensez être la meilleure avec son bouton « C'est elle ».</p>
+                        <p class="challenge-text">Faites au moins <strong>20 tirages</strong>, puis cliquez sur « C'est elle » sous la machine que vous pensez être la meilleure.</p>
                         <p class="challenge-feedback" aria-live="polite"></p>
                     </div>
 
@@ -118,7 +118,7 @@
                             <span class="challenge-title">Défi 2</span>
                             <span class="challenge-status"></span>
                         </div>
-                        <p class="challenge-text">Réglez ε pour que l'agent obtienne, en moyenne sur 40 parties, au moins <strong>88 %</strong> du gain d'un joueur qui connaîtrait la meilleure machine. Essayez d'abord ε = 0, puis ε = 1.</p>
+                        <p class="challenge-text">Réglez ε pour que l'agent obtienne au moins <strong>88 %</strong> du gain maximal, en moyenne sur 40 parties. Le gain maximal est celui d'un joueur qui choisit toujours la meilleure machine.</p>
                         <p class="challenge-feedback" aria-live="polite"></p>
                     </div>
                 </div>
@@ -128,15 +128,15 @@
         <!-- ============ 03 Gamma ============ -->
         <section id="horizon" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">03</span>Tout de suite, ou plus tard ?</h2>
-                <p>Les récompenses n'arrivent pas toutes au même moment. Une pièce à un pas d'ici vaut-elle mieux qu'un coffre à cinq pas ?</p>
-                <p>Le <strong>facteur d'actualisation γ</strong> (gamma), compris entre 0 et 1, fixe la réponse. Une récompense obtenue après <em>t</em> pas supplémentaires est multipliée par γ<sup>t</sup> :</p>
+                <h2><span class="section-number">03</span>Le facteur γ</h2>
+                <p>Les récompenses n'arrivent pas toutes au même moment. Dans cet exemple, l'agent peut prendre une pièce (+2) à un pas, ou un coffre (+10) à cinq pas.</p>
+                <p>Le <strong>facteur d'actualisation γ</strong> (gamma) est un nombre entre 0 et 1. Une récompense reçue <em>t</em> pas plus tard est multipliée par γ<sup>t</sup>. Elle compte donc moins qu'une récompense immédiate.</p>
                 <div class="formula-display">Gain = r₀ + γ·r₁ + γ²·r₂ + γ³·r₃ + …</div>
                 <ul class="concept-list">
-                    <li><strong>γ proche de 0</strong> : l'agent est impatient, seule la récompense immédiate compte.</li>
-                    <li><strong>γ proche de 1</strong> : l'agent est prévoyant, il accepte un détour pour un gain plus grand.</li>
+                    <li><strong>γ proche de 0</strong> : seules les récompenses immédiates comptent.</li>
+                    <li><strong>γ proche de 1</strong> : les récompenses lointaines comptent presque autant.</li>
                 </ul>
-                <p>Déplacez le curseur et observez à quel moment l'agent change d'avis.</p>
+                <p>Déplacez le curseur pour voir à partir de quelle valeur l'agent choisit le coffre.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -156,11 +156,11 @@
         <section id="qlearning" class="course-section flip">
             <div class="section-text">
                 <h2><span class="section-number">04</span>La table Q</h2>
-                <p>Pour bien choisir, l'agent tient un tableau : pour chaque <em>état</em> et chaque <em>action</em>, une estimation du gain total qu'il peut espérer. C'est la <strong>table Q</strong>. Au départ, elle ne contient que des zéros.</p>
-                <p>Après chaque pas, il corrige une seule case du tableau :</p>
+                <p>L'agent garde un tableau appelé <strong>table Q</strong>. Pour chaque <em>état</em> et chaque <em>action</em>, il contient une estimation du gain que l'agent peut obtenir. Au départ, toutes les valeurs sont à zéro.</p>
+                <p>Après chaque pas, l'agent met à jour une valeur du tableau :</p>
                 <div class="formula-display">Q(s,a) ← Q(s,a) + α · [ r + γ · max Q(s′,·) − Q(s,a) ]</div>
-                <p>Entre crochets, c'est la <strong>surprise</strong> : l'écart entre ce qu'il vient de constater (la récompense reçue, plus ce que promet la case suivante) et ce qu'il croyait. Le taux α règle la part de cette surprise qu'il retient.</p>
-                <p>Lancez les épisodes un par un : la valeur du trésor <strong>remonte le couloir</strong>, d'une case par épisode, jusqu'au départ.</p>
+                <p>La partie entre crochets est la différence entre deux choses : ce que l'agent vient d'observer (la récompense, plus la meilleure valeur de la case suivante) et son ancienne estimation. Le taux α règle la part de cette différence qui est ajoutée.</p>
+                <p>Lancez plusieurs épisodes. À chaque épisode, une case de plus reçoit une valeur, en partant du trésor.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -171,13 +171,13 @@
                         <button type="button" class="ctrl-btn" id="q-step">Un pas</button>
                         <button type="button" class="ctrl-btn" id="q-episode">Un épisode</button>
                         <span class="spacer"></span>
-                        <button type="button" class="ctrl-btn" id="q-reset">Tout oublier</button>
+                        <button type="button" class="ctrl-btn" id="q-reset">Réinitialiser</button>
                     </div>
                     <dl class="readout">
                         <div><dt>Épisodes</dt><dd id="q-episodes">0</dd></div>
                         <div><dt>Pas du dernier épisode</dt><dd id="q-length">–</dd></div>
                     </dl>
-                    <div class="step-text" id="q-message" aria-live="polite">L'agent part de la case 1. Le trésor (+10) est en case 6. Il explore au hasard une fois sur cinq.</div>
+                    <div class="step-text" id="q-message" aria-live="polite">L'agent part de la case 1. Le trésor (+10) est en case 6. Une fois sur cinq, l'agent choisit sa direction au hasard.</div>
                     <div class="challenge-box" id="challenge-3">
                         <div class="challenge-header">
                             <span class="challenge-icon" aria-hidden="true">&#9733;</span>
@@ -197,16 +197,16 @@
             <div class="conclusion-content">
                 <h2>Récapitulatif</h2>
                 <div class="recap-grid">
-                    <div class="recap-card"><span class="recap-num">01</span><strong>La boucle</strong><p>État, action, récompense : l'agent apprend des conséquences, sans corrigé.</p></div>
-                    <div class="recap-card" data-challenge="1"><span class="recap-num">02</span><strong>Estimer</strong><p>Quelques essais ne suffisent pas à juger une option : le hasard trompe.</p></div>
-                    <div class="recap-card" data-challenge="2"><span class="recap-num">02</span><strong>Explorer</strong><p>ε-greedy : un peu de hasard pour ne pas rester bloqué sur un mauvais choix.</p></div>
-                    <div class="recap-card"><span class="recap-num">03</span><strong>Actualiser</strong><p>γ règle la patience de l'agent face aux récompenses lointaines.</p></div>
-                    <div class="recap-card" data-challenge="3"><span class="recap-num">04</span><strong>Table Q</strong><p>Corriger chaque estimation d'une fraction de la surprise.</p></div>
+                    <div class="recap-card"><span class="recap-num">01</span><strong>Agent</strong><p>Il observe un état, choisit une action et reçoit une récompense.</p></div>
+                    <div class="recap-card" data-challenge="1"><span class="recap-num">02</span><strong>Estimation</strong><p>Avec peu d'essais, une estimation est peu fiable.</p></div>
+                    <div class="recap-card" data-challenge="2"><span class="recap-num">02</span><strong>Exploration</strong><p>ε-greedy : l'agent choisit parfois au hasard pour tester d'autres options.</p></div>
+                    <div class="recap-card"><span class="recap-num">03</span><strong>Facteur γ</strong><p>Il réduit le poids des récompenses lointaines.</p></div>
+                    <div class="recap-card" data-challenge="3"><span class="recap-num">04</span><strong>Table Q</strong><p>Une estimation du gain par état et par action, mise à jour à chaque pas.</p></div>
                 </div>
                 <div class="final-score"><span aria-hidden="true">&#9733;</span><span id="final-score-text">0/3 défis réussis</span></div>
                 <p class="score-message" id="score-message"></p>
                 <div class="next-steps">
-                    <a href="/gridworld" class="cta-btn">Voir un agent apprendre un labyrinthe</a>
+                    <a href="/gridworld" class="cta-btn">Voir la démo du labyrinthe</a>
                     <a href="/" class="btn btn-lg">Retour à l'accueil</a>
                 </div>
             </div>

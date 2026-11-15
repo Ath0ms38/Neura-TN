@@ -114,7 +114,7 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
         $("fit-b-val").textContent = fmt(b);
         $("fit-loss").textContent = fmt(loss, 3);
         $("fit-best").textContent = fmt(best, 3);
-        if (loss < 0.1) Course.complete(1, "Bien joué. Vous venez de faire, à la main, ce que la descente de gradient fait automatiquement.");
+        if (loss < 0.1) Course.complete(1, "Réussi. La descente de gradient fait ce réglage automatiquement.");
     }
 
     $("fit-w").addEventListener("input", draw);
@@ -209,21 +209,21 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
         if (after < 0.03) {
             finished = true;
             stop();
-            msg.innerHTML = `Arrivé au fond en <strong>${steps} pas</strong>. Le gradient est presque nul : plus rien à corriger.`;
+            msg.innerHTML = `Minimum atteint en <strong>${steps} pas</strong>. Le gradient est presque nul.`;
             if (steps <= 5) Course.complete(2, `Fond atteint en ${steps} pas avec η = ${fmt(lr)}.`);
-            else if (!Course.isDone(2)) $("challenge-2").querySelector(".challenge-feedback").textContent = `${steps} pas : c'est trop. Recommencez avec un taux plus grand.`;
+            else if (!Course.isDone(2)) $("challenge-2").querySelector(".challenge-feedback").textContent = `Minimum atteint en ${steps} pas. Pour le défi, essayez un autre taux.`;
         } else if (Math.abs(w) > 40) {
             finished = true;
             stop();
-            msg.innerHTML = "<strong>Divergence.</strong> Chaque pas dépasse le fond et atterrit plus haut sur le versant opposé : l'erreur explose. Baissez le taux d'apprentissage.";
+            msg.innerHTML = "<strong>Divergence.</strong> Chaque pas dépasse le minimum et la perte augmente. Baissez le taux d'apprentissage.";
         } else if (after > before) {
-            msg.innerHTML = "Le pas est trop grand : la bille saute par-dessus le fond et remonte <strong>plus haut</strong> en face.";
+            msg.innerHTML = "Le pas est trop grand : la bille dépasse le minimum et la perte <strong>augmente</strong>.";
         } else if ((w - wStar) * (path[path.length - 2] - wStar) < 0) {
-            msg.innerHTML = "La bille a dépassé le fond mais atterrit plus bas : elle oscille en se rapprochant.";
+            msg.innerHTML = "La bille a dépassé le minimum, mais la perte a quand même baissé.";
         } else if (after / before > 0.85) {
-            msg.innerHTML = "Le taux est faible : chaque pas ne fait gagner que quelques pourcents. On y arrivera, lentement.";
+            msg.innerHTML = "Le taux est faible : la bille avance très peu à chaque pas.";
         } else {
-            msg.innerHTML = "La bille descend. Remarquez que les pas raccourcissent d'eux-mêmes : près du fond, la pente est plus douce.";
+            msg.innerHTML = "La perte baisse. Les pas deviennent plus petits près du minimum, car la pente y est plus faible.";
         }
         draw();
     }
@@ -231,7 +231,7 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
     function reset() {
         stop();
         w = START; steps = 0; path = [START]; finished = false;
-        $("gd-message").textContent = "Cliquez sur « Un pas » : la bille se déplace à l'opposé de la pente.";
+        $("gd-message").textContent = "Cliquez sur « Un pas » pour déplacer la bille.";
         draw();
     }
 
@@ -361,15 +361,15 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
             finished = true;
             stop();
             if (fromDefault && steps < 15) Course.complete(3, `Fond atteint en ${steps} pas (η = ${fmt(lr)}, élan = ${fmt(mom)}).`);
-            else if (!Course.isDone(3)) fb.textContent = fromDefault ? `Fond atteint, mais en ${steps} pas. Ajoutez de l'élan pour aller plus vite.` : "Fond atteint. Pour le défi, repartez du départ par défaut (rechargez la page).";
+            else if (!Course.isDone(3)) fb.textContent = fromDefault ? `Minimum atteint en ${steps} pas. Ajoutez de l'élan pour aller plus vite.` : "Minimum atteint. Pour le défi, il faut partir du point de départ par défaut (rechargez la page).";
         } else if (!Number.isFinite(l) || l > 1e4) {
             finished = true;
             stop();
-            if (!Course.isDone(3)) fb.textContent = "Divergence : le pas est trop grand pour le versant le plus raide de la vallée.";
+            if (!Course.isDone(3)) fb.textContent = "Divergence : le taux d'apprentissage est trop grand.";
         } else if (steps >= 200) {
             finished = true;
             stop();
-            if (!Course.isDone(3)) fb.textContent = "200 pas et toujours pas au fond : la descente rampe le long de la vallée.";
+            if (!Course.isDone(3)) fb.textContent = "Minimum non atteint après 200 pas.";
         }
         draw();
     }
@@ -481,14 +481,14 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
         }
 
         const messages = [
-            `<strong>Départ.</strong> Entrée x = ${fmt(X)}, cible y = ${fmt(TARGET)}. Les poids sont connus, tout le reste est à calculer.`,
+            `<strong>Départ.</strong> Entrée x = ${fmt(X)}, cible y = ${fmt(TARGET)}. On connaît les deux poids.`,
             `<strong>Passe avant 1/3.</strong> h = tanh(w₁ · x) = tanh(${fmt(weights.w1 * X, 3)}) = <strong>${fmt(v.h, 3)}</strong>`,
             `<strong>Passe avant 2/3.</strong> ŷ = w₂ · h = ${fmt(weights.w2, 3)} × ${fmt(v.h, 3)} = <strong>${fmt(v.yhat, 3)}</strong>`,
-            `<strong>Passe avant 3/3.</strong> Perte = (ŷ − y)² = (${fmt(v.yhat - TARGET, 3)})² = <strong>${fmt(v.L, 3)}</strong>. Maintenant, on remonte.`,
+            `<strong>Passe avant 3/3.</strong> Perte = (ŷ − y)² = (${fmt(v.yhat - TARGET, 3)})² = <strong>${fmt(v.L, 3)}</strong>`,
             `<strong>Passe arrière 1/4.</strong> Dérivée de la perte par rapport à la sortie : ∂L/∂ŷ = 2 · (ŷ − y) = <strong>${fmt(v.dY, 3)}</strong>`,
             `<strong>Passe arrière 2/4.</strong> ŷ = w₂ · h, donc ∂ŷ/∂w₂ = h. Gradient de w₂ : ${fmt(v.dY, 3)} × ${fmt(v.h, 3)} = <strong>${fmt(v.dW2, 3)}</strong>`,
-            `<strong>Passe arrière 3/4.</strong> Le gradient continue vers la gauche : ∂L/∂h = ∂L/∂ŷ · w₂ = <strong>${fmt(v.dH, 3)}</strong>`,
-            `<strong>Passe arrière 4/4.</strong> Dérivée de tanh : 1 − h². Gradient de w₁ : ${fmt(v.dH, 3)} × ${fmt(1 - v.h * v.h, 3)} × ${fmt(X)} = <strong>${fmt(v.dW1, 3)}</strong>. Tous les gradients sont connus : on peut mettre à jour.`,
+            `<strong>Passe arrière 3/4.</strong> On continue vers la gauche : ∂L/∂h = ∂L/∂ŷ · w₂ = <strong>${fmt(v.dH, 3)}</strong>`,
+            `<strong>Passe arrière 4/4.</strong> Dérivée de tanh : 1 − h². Gradient de w₁ : ${fmt(v.dH, 3)} × ${fmt(1 - v.h * v.h, 3)} × ${fmt(X)} = <strong>${fmt(v.dW1, 3)}</strong>. On peut maintenant mettre à jour les poids.`,
         ];
         $("bp-message").innerHTML = messages[stage];
         $("bp-prev").disabled = stage === 0;
@@ -506,7 +506,7 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
         updates++;
         stage = 3; // les nouvelles valeurs de la passe avant sont affichées, les gradients sont à refaire
         render();
-        $("bp-message").innerHTML = `<strong>Mise à jour n° ${updates}.</strong> Chaque poids a reculé de η × son gradient (η = ${LR}). La perte vaut maintenant <strong>${fmt(compute().L, 4)}</strong>. Refaites une passe arrière pour continuer.`;
+        $("bp-message").innerHTML = `<strong>Mise à jour n° ${updates}.</strong> On a retiré à chaque poids η × son gradient (η = ${LR}). La perte vaut maintenant <strong>${fmt(compute().L, 4)}</strong>.`;
     });
     $("bp-reset").addEventListener("click", () => { weights = { ...INITIAL }; stage = 0; updates = 0; render(); });
     render();
@@ -688,11 +688,11 @@ const mse = (w, b, data = fitData) => data.reduce((s, p) => s + (w * p.x + b - p
         const fb = $("challenge-4").querySelector(".challenge-feedback");
         // On accepte les quasi-égalités : deux degrés peuvent être à 2 % près
         if (fits[degree].test <= fits[bestDegree].test * 1.02) {
-            Course.complete(4, `Oui : au degré ${degree}, l'erreur de test est minimale (${fits[degree].test.toFixed(3)}). Au-delà, l'erreur d'entraînement baisse encore, mais le modèle généralise moins bien.`);
+            Course.complete(4, `Correct. Au degré ${degree}, l'erreur de test est la plus faible (${fits[degree].test.toFixed(3)}). Avec un degré plus élevé, l'erreur d'entraînement baisse encore mais l'erreur de test augmente.`);
         } else if (degree > bestDegree) {
-            fb.textContent = "Pas encore : ce degré colle mieux aux points d'entraînement, mais regardez la barre bleue. Essayez un modèle plus simple.";
+            fb.textContent = "Ce n'est pas le bon degré. L'erreur de test (barre bleue) est plus faible avec un degré plus petit.";
         } else {
-            fb.textContent = "Pas encore : ce modèle est trop rigide pour suivre la forme des données. Essayez un degré plus élevé.";
+            fb.textContent = "Ce n'est pas le bon degré. L'erreur de test est plus faible avec un degré plus élevé.";
         }
     });
 

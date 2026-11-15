@@ -20,7 +20,7 @@
         <div class="controls">
             <button id="btn-start">Démarrer</button>
             <button id="btn-step" title="Un seul déplacement de l'agent">Un pas</button>
-            <button id="btn-reset" title="L'agent oublie tout ce qu'il a appris">Tout oublier</button>
+            <button id="btn-reset" title="Efface ce que l'agent a appris">Réinitialiser</button>
             <div class="speed-group">
                 <label>Vitesse</label>
                 <button class="speed-btn" data-speed="1">1x</button>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="panel presets">
-                <h2>Labyrinthes prêts à l'emploi</h2>
+                <h2>Exemples de labyrinthes</h2>
                 <div class="preset-row">
                     <button type="button" class="btn" data-preset="couloir">Le détour</button>
                     <button type="button" class="btn" data-preset="falaise">La falaise</button>
@@ -89,41 +89,41 @@
                 <div class="field">
                     <label for="p-epsilon">Exploration ε <output id="o-epsilon">0.20</output></label>
                     <input type="range" id="p-epsilon" min="0" max="1" step="0.05" value="0.2">
-                    <p class="hint">Probabilité de tenter un coup au hasard plutôt que le meilleur coup connu.</p>
+                    <p class="hint">Probabilité de choisir une direction au hasard au lieu de la meilleure connue.</p>
                 </div>
                 <div class="field">
                     <label for="p-alpha">Taux d'apprentissage α <output id="o-alpha">0.30</output></label>
                     <input type="range" id="p-alpha" min="0.05" max="1" step="0.05" value="0.3">
-                    <p class="hint">À quel point une nouvelle expérience remplace ce que l'agent croyait.</p>
+                    <p class="hint">Importance donnée à chaque nouvelle expérience.</p>
                 </div>
                 <div class="field">
                     <label for="p-gamma">Vision à long terme γ <output id="o-gamma">0.95</output></label>
                     <input type="range" id="p-gamma" min="0" max="0.99" step="0.01" value="0.95">
-                    <p class="hint">Proche de 0 : seule compte la récompense immédiate. Proche de 1 : l'agent anticipe.</p>
+                    <p class="hint">Proche de 0 : seule la récompense immédiate compte. Proche de 1 : les récompenses futures comptent aussi.</p>
                 </div>
                 <div class="field">
                     <label for="p-slip">Sol glissant <output id="o-slip">0 %</output></label>
                     <input type="range" id="p-slip" min="0" max="40" step="5" value="0">
-                    <p class="hint">Chance que l'agent dérape dans une direction au hasard.</p>
+                    <p class="hint">Probabilité que l'agent parte dans une direction au hasard.</p>
                 </div>
                 <div class="field">
                     <label for="p-cost">Coût d'un pas <output id="o-cost">−0.10</output></label>
                     <input type="range" id="p-cost" min="0" max="1" step="0.05" value="0.1">
-                    <p class="hint">Petite pénalité à chaque déplacement : elle pousse à prendre le chemin le plus court.</p>
+                    <p class="hint">Pénalité à chaque déplacement. Elle encourage le chemin le plus court.</p>
                 </div>
             </div>
 
             <div class="panel">
                 <h2>Case survolée</h2>
-                <div id="cell-info" class="cell-info">Survolez une case pour lire ses quatre valeurs Q : ce que l'agent espère gagner en partant dans chaque direction.</div>
+                <div id="cell-info" class="cell-info">Survolez une case pour voir ses quatre valeurs Q, une par direction.</div>
             </div>
 
             <div class="info-text">
                 <h2>Comment ça marche</h2>
-                <p>L'agent ne connaît ni la carte ni la règle du jeu. Il tient un tableau, la <strong>table Q</strong>, qui estime pour chaque case et chaque direction le gain total à espérer.</p>
-                <p>Après chaque pas, il corrige une seule valeur :</p>
+                <p>L'agent ne connaît pas la carte. Il garde un tableau, la <strong>table Q</strong> : pour chaque case et chaque direction, une estimation du gain qu'il peut obtenir.</p>
+                <p>Après chaque pas, il met à jour une valeur :</p>
                 <p class="formula">Q(s,a) ← Q(s,a) + α · [ r + γ · max Q(s′,·) − Q(s,a) ]</p>
-                <p>La récompense du trésor se propage ainsi de case en case, à rebours, jusqu'au départ.</p>
+                <p>Au fil des épisodes, la valeur du trésor se transmet aux cases voisines, jusqu'au départ.</p>
                 <p><a href="/cours/rl">Suivre le cours sur l'apprentissage par renforcement →</a></p>
             </div>
         </section>

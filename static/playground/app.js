@@ -86,7 +86,7 @@ function buildNetwork() {
     history = [];
     $("param-count").textContent = `${net.parameterCount} paramètres`;
     renderLayerControls();
-    $("diagnosis").textContent = "Lancez l'entraînement pour voir la perte diminuer.";
+    $("diagnosis").textContent = "Cliquez sur « Entraîner » pour commencer.";
     renderAll();
 }
 
@@ -275,15 +275,15 @@ function renderMetrics() {
 function diagnose(tr, te) {
     const el = $("diagnosis");
     if (epoch < 30) {
-        el.textContent = "Le réseau commence tout juste à ajuster ses poids.";
+        el.textContent = "Début de l'entraînement.";
     } else if (te.accuracy >= 0.97 && te.loss < tr.loss * 2.5 + 0.05) {
-        el.textContent = "Problème résolu : le réseau généralise bien aux points qu'il n'a jamais vus.";
+        el.textContent = "Le réseau classe correctement presque tous les points de test.";
     } else if (te.loss > tr.loss * 2.5 + 0.1 && tr.accuracy > 0.95) {
-        el.textContent = "Surapprentissage : la perte d'entraînement baisse mais la perte de test remonte. Essayez moins de neurones, ou de la régularisation L2.";
+        el.textContent = "Surapprentissage : la perte de test est bien plus haute que la perte d'entraînement. Essayez moins de neurones ou la régularisation L2.";
     } else if (epoch > 300 && tr.accuracy < 0.8) {
-        el.textContent = "Le réseau plafonne. Il manque peut-être de neurones, ou d'une entrée mieux adaptée au problème.";
+        el.textContent = "La précision n'augmente plus. Essayez plus de neurones ou d'autres entrées.";
     } else {
-        el.textContent = "L'entraînement progresse : la frontière se rapproche des données.";
+        el.textContent = "Entraînement en cours.";
     }
 }
 
@@ -309,7 +309,7 @@ function step(epochs) {
     for (let i = 0; i < epochs; i++) trainEpoch();
     if (diverged()) {
         setRunning(false);
-        $("diagnosis").textContent = "L'entraînement a divergé : le taux d'apprentissage est trop élevé, les poids ont explosé. Baissez-le puis réinitialisez.";
+        $("diagnosis").textContent = "Les poids sont devenus trop grands : le taux d'apprentissage est trop élevé. Baissez-le, puis réinitialisez.";
         return;
     }
     const m = renderAll();
@@ -415,7 +415,7 @@ function renderLayerControls() {
     if (!state.hidden.length) {
         const note = document.createElement("span");
         note.className = "hint";
-        note.textContent = "Aucune couche cachée : le réseau ne peut tracer qu'une frontière droite dans l'espace de ses entrées.";
+        note.textContent = "Sans couche cachée, le réseau ne peut tracer qu'une frontière droite.";
         box.appendChild(note);
     }
     $("btn-add-layer").disabled = state.hidden.length >= MAX_LAYERS;

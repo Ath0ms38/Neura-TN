@@ -33,8 +33,8 @@
             <div class="hero-content">
                 <p class="hero-kicker">Cours 02 · Entraînement</p>
                 <h2>La descente de gradient</h2>
-                <p class="hero-subtitle">Comment un réseau apprend-il de ses erreurs ?</p>
-                <p class="hero-intro">Un réseau de neurones démarre avec des poids tirés au hasard : il se trompe sur tout. Ce cours montre comment il mesure son erreur, puis la réduit pas à pas. Quatre défis vous attendent.</p>
+                <p class="hero-subtitle">Comment un réseau de neurones apprend</p>
+                <p class="hero-intro">Au départ, les poids d'un réseau sont choisis au hasard et ses réponses sont fausses. Ce cours explique comment on mesure l'erreur du réseau et comment on la réduit petit à petit. Il contient quatre défis.</p>
                 <a href="#perte" class="scroll-hint">Commencer &darr;</a>
             </div>
         </section>
@@ -43,11 +43,11 @@
         <section id="perte" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">01</span>Mesurer l'erreur</h2>
-                <p>Pour s'améliorer, il faut d'abord savoir <strong>à quel point on se trompe</strong>. C'est le rôle de la <em>fonction de perte</em> : elle résume toutes les erreurs du modèle en un seul nombre.</p>
-                <p>Ici, le modèle est le plus simple possible : une droite <code>ŷ = w·x + b</code> qui doit passer au plus près des points. Les traits rouges sont les erreurs, appelées <em>résidus</em>.</p>
-                <p>On utilise l'<strong>erreur quadratique moyenne</strong> : la moyenne des résidus élevés au carré.</p>
+                <p>Pour améliorer un modèle, il faut d'abord mesurer son erreur. La <em>fonction de perte</em> donne cette mesure sous la forme d'un seul nombre. Plus il est petit, mieux le modèle colle aux données.</p>
+                <p>Le modèle utilisé ici est une droite, <code>ŷ = w·x + b</code>. Elle doit passer le plus près possible des points. Les traits rouges montrent l'écart entre chaque point et la droite. On appelle ces écarts des <em>résidus</em>.</p>
+                <p>La perte choisie est l'<strong>erreur quadratique moyenne</strong> : on met chaque résidu au carré, puis on fait la moyenne.</p>
                 <div class="formula-display">Perte = moyenne( (ŷ − y)² )</div>
-                <p>Le carré a deux effets : les erreurs positives et négatives ne se compensent pas, et une grosse erreur coûte beaucoup plus cher que plusieurs petites.</p>
+                <p>Avec le carré, un écart positif et un écart négatif ne s'annulent pas. Et un grand écart compte beaucoup plus qu'un petit.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -75,11 +75,11 @@
         <section id="descente" class="course-section flip">
             <div class="section-text">
                 <h2><span class="section-number">02</span>Descendre la pente</h2>
-                <p>Chercher les bons réglages à la main, c'est possible avec deux paramètres. Un vrai réseau en a des millions. Il lui faut une méthode automatique.</p>
-                <p>Voici la perte en fonction de la pente <code>w</code> seule. Elle forme une cuvette, et le meilleur <code>w</code> est au fond. Le <strong>gradient</strong> est la pente de cette courbe à l'endroit où l'on se trouve : il indique dans quelle direction la perte augmente.</p>
-                <p>La règle tient en une ligne : <strong>faire un pas dans la direction opposée au gradient</strong>.</p>
+                <p>Avec deux paramètres, on peut chercher les bonnes valeurs à la main. Un vrai réseau a des millions de paramètres, il faut donc une méthode automatique.</p>
+                <p>Le graphique montre la perte en fonction de <code>w</code>. La courbe a la forme d'une cuvette, et la meilleure valeur de <code>w</code> se trouve au fond. Le <strong>gradient</strong> est la pente de la courbe à l'endroit où l'on se trouve. Il indique de quel côté la perte augmente.</p>
+                <p>Pour faire baisser la perte, on déplace donc <code>w</code> dans le sens opposé au gradient :</p>
                 <div class="formula-display">w ← w − η · ∂Perte/∂w</div>
-                <p>Le nombre <code>η</code> est le <em>taux d'apprentissage</em>. Trop petit, la descente n'en finit pas. Trop grand, on saute par-dessus le fond et l'erreur explose. Essayez les deux.</p>
+                <p><code>η</code> est le <em>taux d'apprentissage</em>. Il règle la taille de chaque pas. S'il est trop petit, il faut beaucoup de pas. S'il est trop grand, on dépasse le fond et la perte augmente. Essayez les deux cas.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -97,7 +97,7 @@
                         <div><dt>Gradient</dt><dd id="gd-grad">–</dd></div>
                         <div><dt>Perte</dt><dd id="gd-loss">–</dd></div>
                     </dl>
-                    <div class="step-text" id="gd-message" aria-live="polite">Cliquez sur « Un pas » : la bille se déplace à l'opposé de la pente.</div>
+                    <div class="step-text" id="gd-message" aria-live="polite">Cliquez sur « Un pas » pour déplacer la bille.</div>
                     <div class="challenge-box" id="challenge-2">
                         <div class="challenge-header">
                             <span class="challenge-icon" aria-hidden="true">&#9733;</span>
@@ -114,10 +114,10 @@
         <!-- ============ 03 Paysage 2D ============ -->
         <section id="paysage" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">03</span>Un paysage à deux paramètres</h2>
-                <p>Avec deux paramètres, la perte devient un <strong>relief</strong> : chaque point de la carte est un couple (w, b), et les courbes de niveau relient les réglages de même perte.</p>
-                <p>Le gradient pointe vers la montée la plus raide ; on marche donc à l'opposé. Mais cette vallée est étroite et allongée : la descente simple <em>zigzague</em> d'un versant à l'autre et progresse lentement le long du fond.</p>
-                <p>L'<strong>élan</strong> (<em>momentum</em>) corrige ce défaut. Chaque pas garde une partie de la vitesse du précédent, comme une bille lourde : les oscillations s'annulent, le mouvement utile s'accumule.</p>
+                <h2><span class="section-number">03</span>Deux paramètres</h2>
+                <p>Avec deux paramètres, <code>w</code> et <code>b</code>, la perte se représente comme une carte. Chaque point de la carte correspond à un couple (w, b). Les lignes relient les points qui ont la même perte, comme les courbes de niveau d'une carte de randonnée.</p>
+                <p>Le principe ne change pas : à chaque pas, on se déplace dans le sens opposé au gradient. Ici la vallée est étroite et allongée. La descente passe d'un bord à l'autre et avance lentement vers le fond.</p>
+                <p>L'<strong>élan</strong> (<em>momentum</em> en anglais) améliore ce comportement. Chaque pas garde une partie du déplacement précédent. Les allers-retours d'un bord à l'autre se compensent, et le déplacement le long de la vallée s'accumule.</p>
                 <p>Cliquez sur la carte pour choisir le point de départ.</p>
             </div>
             <div class="section-visual">
@@ -140,7 +140,7 @@
                             <span class="challenge-title">Défi 3</span>
                             <span class="challenge-status"></span>
                         </div>
-                        <p class="challenge-text">Depuis le départ par défaut, atteignez le fond de la vallée (perte sous <strong>0,02</strong>) en <strong>moins de 15 pas</strong>. Sans élan, c'est impossible : essayez d'abord, pour voir.</p>
+                        <p class="challenge-text">Depuis le départ par défaut, atteignez le fond de la vallée (perte sous <strong>0,02</strong>) en <strong>moins de 15 pas</strong>. Ce n'est pas possible sans élan.</p>
                         <p class="challenge-feedback" aria-live="polite"></p>
                     </div>
                 </div>
@@ -151,11 +151,11 @@
         <section id="retro" class="course-section flip">
             <div class="section-text">
                 <h2><span class="section-number">04</span>La rétropropagation</h2>
-                <p>Reste une question : dans un réseau à plusieurs couches, comment connaître le gradient de <strong>chaque</strong> poids, y compris ceux enfouis au début du réseau ?</p>
-                <p>La réponse est la <strong>rétropropagation</strong>. On calcule d'abord la sortie de gauche à droite (<em>passe avant</em>). Puis on remonte de droite à gauche (<em>passe arrière</em>) en appliquant à chaque étape la règle de dérivation des fonctions composées :</p>
+                <p>Dans un réseau à plusieurs couches, il faut calculer le gradient de chaque poids, y compris ceux des premières couches. La méthode utilisée s'appelle la <strong>rétropropagation</strong>.</p>
+                <p>Elle se fait en deux temps. D'abord la <em>passe avant</em> : on calcule la sortie, de gauche à droite. Ensuite la <em>passe arrière</em> : on calcule les gradients, de droite à gauche, avec la règle de dérivation des fonctions composées.</p>
                 <div class="formula-display">∂Perte/∂w₁ = ∂Perte/∂ŷ · ∂ŷ/∂h · ∂h/∂w₁</div>
-                <p>Chaque nœud n'a besoin que de deux choses : le gradient reçu de sa droite, et sa propre dérivée locale. Il les multiplie et transmet le résultat à sa gauche.</p>
-                <p>Avancez étape par étape sur ce réseau miniature, puis appliquez la mise à jour : la perte diminue.</p>
+                <p>À chaque étape de la passe arrière, on multiplie le gradient déjà calculé à droite par la dérivée de l'opération en cours.</p>
+                <p>L'exemple ci-contre contient deux poids. Avancez étape par étape, puis appliquez la mise à jour : la perte diminue.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -179,14 +179,14 @@
         <!-- ============ 05 Surapprentissage ============ -->
         <section id="surapprentissage" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">05</span>Trop bien apprendre</h2>
-                <p>Faire baisser la perte sur les données d'entraînement n'est pas le but final. Ce qu'on veut, c'est un modèle qui se comporte bien sur des données <strong>qu'il n'a jamais vues</strong>.</p>
-                <p>Ici, on ajuste un polynôme à quelques points bruités. Plus son degré est élevé, plus il est souple :</p>
+                <h2><span class="section-number">05</span>Le surapprentissage</h2>
+                <p>Une perte faible sur les données d'entraînement ne suffit pas. Un bon modèle doit aussi donner de bons résultats sur des données qu'il n'a jamais vues.</p>
+                <p>Dans cet exemple, on ajuste un polynôme sur quelques points bruités. Plus le degré est élevé, plus la courbe peut se déformer.</p>
                 <ul class="concept-list">
-                    <li><strong>Trop rigide</strong> : il rate la forme générale. C'est le <em>sous-apprentissage</em>.</li>
-                    <li><strong>Trop souple</strong> : il passe par chaque point, bruit compris, et se tord entre eux. C'est le <em>surapprentissage</em>.</li>
+                    <li><strong>Degré trop faible</strong> : la courbe ne suit pas la forme des données. C'est le <em>sous-apprentissage</em>.</li>
+                    <li><strong>Degré trop élevé</strong> : la courbe passe par tous les points, y compris le bruit. C'est le <em>surapprentissage</em>.</li>
                 </ul>
-                <p>Pour le détecter, on met de côté des <strong>points de test</strong> (en bleu), jamais utilisés pendant l'ajustement. Quand l'erreur d'entraînement continue de baisser mais que l'erreur de test remonte, le modèle apprend le bruit par cœur.</p>
+                <p>Pour s'en rendre compte, on garde des <strong>points de test</strong> (en bleu) qui ne servent pas à l'ajustement. Si l'erreur d'entraînement baisse alors que l'erreur de test augmente, le modèle est en surapprentissage.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -203,7 +203,7 @@
                             <span class="challenge-title">Défi 4</span>
                             <span class="challenge-status"></span>
                         </div>
-                        <p class="challenge-text">Parcourez les degrés, puis arrêtez-vous sur celui qui donne la <strong>plus petite erreur de test</strong>.</p>
+                        <p class="challenge-text">Trouvez le degré qui donne la <strong>plus petite erreur de test</strong>, puis validez.</p>
                         <div class="quiz-options"><button type="button" class="quiz-option" id="poly-answer">C'est ce degré</button></div>
                         <p class="challenge-feedback" aria-live="polite"></p>
                     </div>
@@ -216,16 +216,16 @@
             <div class="conclusion-content">
                 <h2>Récapitulatif</h2>
                 <div class="recap-grid">
-                    <div class="recap-card" data-challenge="1"><span class="recap-num">01</span><strong>Perte</strong><p>Un seul nombre qui mesure l'erreur du modèle sur les données.</p></div>
-                    <div class="recap-card" data-challenge="2"><span class="recap-num">02</span><strong>Gradient</strong><p>La pente de la perte : on avance à l'opposé, d'un pas réglé par η.</p></div>
-                    <div class="recap-card" data-challenge="3"><span class="recap-num">03</span><strong>Élan</strong><p>Garder de la vitesse d'un pas à l'autre pour traverser les vallées étroites.</p></div>
-                    <div class="recap-card"><span class="recap-num">04</span><strong>Rétropropagation</strong><p>Remonter le réseau pour obtenir le gradient de chaque poids.</p></div>
-                    <div class="recap-card" data-challenge="4"><span class="recap-num">05</span><strong>Généralisation</strong><p>Juger un modèle sur des données de test, pas sur celles qu'il a apprises.</p></div>
+                    <div class="recap-card" data-challenge="1"><span class="recap-num">01</span><strong>Perte</strong><p>Un nombre qui mesure l'erreur du modèle.</p></div>
+                    <div class="recap-card" data-challenge="2"><span class="recap-num">02</span><strong>Gradient</strong><p>La pente de la perte. On se déplace dans le sens opposé.</p></div>
+                    <div class="recap-card" data-challenge="3"><span class="recap-num">03</span><strong>Élan</strong><p>Chaque pas garde une partie du déplacement précédent.</p></div>
+                    <div class="recap-card"><span class="recap-num">04</span><strong>Rétropropagation</strong><p>Le calcul du gradient de chaque poids, de la sortie vers l'entrée.</p></div>
+                    <div class="recap-card" data-challenge="4"><span class="recap-num">05</span><strong>Surapprentissage</strong><p>On évalue un modèle sur des données de test.</p></div>
                 </div>
                 <div class="final-score"><span aria-hidden="true">&#9733;</span><span id="final-score-text">0/4 défis réussis</span></div>
                 <p class="score-message" id="score-message"></p>
                 <div class="next-steps">
-                    <a href="/playground" class="cta-btn">Entraîner un vrai réseau dans le bac à sable</a>
+                    <a href="/playground" class="cta-btn">Essayer dans le bac à sable</a>
                     <a href="/cours/cnn" class="btn btn-lg">Cours suivant : réseaux convolutifs</a>
                 </div>
             </div>

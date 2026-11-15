@@ -73,8 +73,8 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
         $("loop-action").classList.remove("pulse");
         $("loop-reward").classList.remove("pulse");
         $("loop-message").textContent = known.size
-            ? "Nouvel épisode. Cette fois, vous savez quelque chose sur ce couloir."
-            : "Choisissez une direction. Vous ne saurez ce qu'il y a au bout qu'en y allant.";
+            ? "Nouvel épisode. Vous pouvez utiliser ce que vous avez appris."
+            : "Choisissez une direction.";
         render();
     }
 
@@ -96,15 +96,15 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
 
         const msg = $("loop-message");
         if (!over) {
-            msg.innerHTML = `Chaque pas coûte <strong>−1</strong> : traîner a un prix. Gain actuel : ${signed(total)}.`;
+            msg.innerHTML = `Chaque pas coûte <strong>1 point</strong>. Gain actuel : ${signed(total)}.`;
         } else {
             best = best === null ? total : Math.max(best, total);
             if (pos === pit) {
-                msg.innerHTML = `<strong>La fosse : −10.</strong> Gain de l'épisode : ${signed(total)}. Personne ne vous avait prévenu, mais vous le savez maintenant. Rejouez.`;
+                msg.innerHTML = `<strong>Fosse : −10.</strong> Gain de l'épisode : ${signed(total)}. Vous savez maintenant où est la fosse. Lancez un nouvel épisode.`;
             } else if (total >= 8) {
-                msg.innerHTML = `<strong>Trésor, par le chemin le plus court : ${signed(total)}.</strong> C'est le meilleur gain possible. Vous venez d'apprendre par renforcement : essayer, constater, ajuster.`;
+                msg.innerHTML = `<strong>Trésor atteint par le chemin le plus court : ${signed(total)}.</strong> C'est le gain maximal. Vous avez appris la bonne direction grâce aux récompenses des épisodes précédents.`;
             } else {
-                msg.innerHTML = `<strong>Trésor : +10.</strong> Gain de l'épisode : ${signed(total)}, à cause des pas en trop. Rejouez en allant droit au but.`;
+                msg.innerHTML = `<strong>Trésor : +10.</strong> Gain de l'épisode : ${signed(total)}. Le gain serait plus élevé avec moins de pas.`;
             }
         }
         render();
@@ -198,18 +198,18 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
     function guess(i) {
         const fb = $("challenge-1").querySelector(".challenge-feedback");
         if (totalPulls < 20) {
-            fb.textContent = `Seulement ${totalPulls} tirage${totalPulls > 1 ? "s" : ""} : jouez-en au moins 20 avant de vous prononcer.`;
+            fb.textContent = `${totalPulls} tirage${totalPulls > 1 ? "s" : ""} pour l'instant. Il en faut au moins 20.`;
             return;
         }
         if (i === best()) {
             revealed = true;
-            Course.complete(1, `Exact : la machine ${NAMES[i]} gagne ${Math.round(probs[i] * 100)} % du temps. Les vraies probabilités sont maintenant affichées : comparez-les à vos estimations.`);
+            Course.complete(1, `Correct. La machine ${NAMES[i]} gagne ${Math.round(probs[i] * 100)} % du temps. Les vraies probabilités sont maintenant affichées sous chaque machine.`);
             renderMachines();
         } else {
             const tried = stats[i].pulls;
             fb.textContent = tried < 6
-                ? `Ce n'est pas elle, et ${tried} tirage${tried > 1 ? "s" : ""} sur cette machine ne permettaient pas d'en juger. Explorez davantage.`
-                : "Ce n'est pas elle. Une bonne série ne fait pas une bonne machine : avez-vous assez essayé les autres ?";
+                ? `Ce n'est pas la meilleure. Vous n'avez fait que ${tried} tirage${tried > 1 ? "s" : ""} sur cette machine : essayez davantage chaque machine.`
+                : "Ce n'est pas la meilleure. Essayez davantage les autres machines.";
         }
     }
 
@@ -277,7 +277,7 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
         ctx.fillStyle = C.green;
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
-        ctx.fillText("joueur omniscient", W - pad.r - 2, Y(top) - 3);
+        ctx.fillText("gain maximal", W - pad.r - 2, Y(top) - 3);
 
         runs.forEach((run, index) => {
             const latest = index === runs.length - 1;
@@ -317,13 +317,13 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
             $("bandit-result").textContent = `ε = ${fmt(eps)} : ${shown} % sur cette partie, ${pct} % en moyenne`;
             const fb = $("challenge-2").querySelector(".challenge-feedback");
             if (mean >= 0.88) {
-                Course.complete(2, `${pct} % en moyenne avec ε = ${fmt(eps)} : assez d'exploration pour trouver la meilleure machine, assez peu pour ne pas gaspiller de tirages.`);
+                Course.complete(2, `${pct} % en moyenne avec ε = ${fmt(eps)}. L'agent explore assez pour trouver la meilleure machine, sans perdre trop de tirages.`);
             } else if (!Course.isDone(2)) {
                 fb.textContent = eps === 0
-                    ? `${pct} % en moyenne. Sans exploration, l'agent s'accroche à la première machine qui a payé, même médiocre. Parfois il a de la chance, souvent non.`
+                    ? `${pct} % en moyenne. Sans exploration, l'agent garde la première machine qui gagne, même si ce n'est pas la meilleure.`
                     : eps >= 0.5
-                        ? `${pct} % en moyenne. L'agent repère vite la meilleure machine, mais continue de jouer au hasard une bonne partie du temps.`
-                        : `${pct} % en moyenne. Pas loin : ajustez légèrement ε.`;
+                        ? `${pct} % en moyenne. L'agent trouve la meilleure machine, mais il joue encore souvent au hasard.`
+                        : `${pct} % en moyenne. Essayez une autre valeur de ε.`;
             }
         };
         if (Course.reducedMotion) return finish();
@@ -432,8 +432,8 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
         $("gamma-right").textContent = fmt(right);
         $("gamma-choice").textContent = goRight ? "le coffre" : "la pièce";
         $("gamma-message").innerHTML = goRight
-            ? `Avec γ = ${fmt(gamma)}, le coffre vaut γ⁴ × 10 = <strong>${fmt(right)}</strong>, plus que la pièce. L'agent accepte quatre pas sans récompense pour un gain supérieur.`
-            : `Avec γ = ${fmt(gamma)}, le coffre ne vaut plus que γ⁴ × 10 = <strong>${fmt(right)}</strong> vu d'ici. L'agent préfère la pièce, toute proche. Le basculement se produit vers γ = ${fmt(THRESHOLD)}.`;
+            ? `Avec γ = ${fmt(gamma)}, le coffre vaut γ⁴ × 10 = <strong>${fmt(right)}</strong>, plus que la pièce. L'agent choisit le coffre.`
+            : `Avec γ = ${fmt(gamma)}, le coffre vaut γ⁴ × 10 = <strong>${fmt(right)}</strong>, moins que la pièce. L'agent choisit la pièce. Il choisit le coffre à partir de γ = ${fmt(THRESHOLD)} environ.`;
     }
 
     $("gamma").addEventListener("input", draw);
@@ -494,7 +494,7 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
         stepsInEpisode = 0;
         lastLength = null;
         updated = null;
-        $("q-message").textContent = "L'agent part de la case 1. Le trésor (+10) est en case 6. Il explore au hasard une fois sur cinq.";
+        $("q-message").textContent = "L'agent part de la case 1. Le trésor (+10) est en case 6. Une fois sur cinq, l'agent choisit sa direction au hasard.";
         render();
     }
 
@@ -521,9 +521,9 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
             $("q-message").innerHTML =
                 `Case ${s + 1}, action ${arrow} : <code>Q = ${fmt(old)} + ${fmt(alpha)} × [ ${r} + ${fmt(gamma)} × ${fmt(future)} − ${fmt(old)} ] = <strong>${fmt(Q[s][a])}</strong></code>. ` +
                 (Math.abs(surprise) < 1e-9
-                    ? "Aucune surprise : la case suivante ne promet rien de plus que prévu, rien ne change."
-                    : terminal ? "Le trésor ! La case voisine du trésor prend de la valeur."
-                        : "La case suivante avait déjà de la valeur : une partie remonte d'une case.");
+                    ? "La valeur ne change pas."
+                    : terminal ? "L'agent a atteint le trésor : la valeur de cette case augmente."
+                        : "La case suivante a déjà une valeur : cette case en reçoit une partie.");
         }
 
         if (terminal) {
@@ -544,8 +544,8 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
         const known = Q.filter((row, s) => s < GOAL && Math.max(...row) > 0.005).length;
         $("q-message").innerHTML = `Épisode ${episodes} terminé en <strong>${lastLength} pas</strong>. ` +
             (known < GOAL
-                ? `La valeur du trésor a atteint ${known} case${known > 1 ? "s" : ""} sur ${GOAL} : elle recule d'une case à chaque épisode.`
-                : "La valeur est remontée jusqu'au départ : à chaque case, la meilleure action est maintenant « → ».");
+                ? `${known} case${known > 1 ? "s" : ""} sur ${GOAL} ${known > 1 ? "ont" : "a"} maintenant une valeur.`
+                : "Toutes les cases ont une valeur. Partout, la meilleure action est « → ».");
         render();
     });
     $("q-reset").addEventListener("click", reset);
@@ -555,10 +555,10 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
     // Défi 3 : 2 + 0,5 × (0 + 0,9 × 10 − 2) = 5,5
     const quiz = $("q-quiz");
     [
-        ["4,5", "Vous avez retenu la moitié de l'ancienne valeur, mais oublié de l'ajouter au résultat : Q + α × surprise."],
+        ["4,5", "Il faut ajouter α × la différence à l'ancienne valeur : 2 + 0,5 × 7."],
         ["5,5", null],
-        ["9", "9 est la cible (r + γ × 10). Avec α = 0,5, l'agent ne fait que la moitié du chemin vers elle."],
-        ["10", "Deux oublis : γ réduit la valeur de la case suivante à 9, et α ne retient que la moitié de l'écart."],
+        ["9", "9 est la valeur de r + γ × 10. Avec α = 0,5, on n'ajoute que la moitié de la différence."],
+        ["10", "Il faut multiplier 10 par γ, puis n'ajouter que la moitié de la différence (α = 0,5)."],
     ].forEach(([text, hint]) => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -568,7 +568,7 @@ const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
             if (hint === null) {
                 btn.classList.add("correct");
                 quiz.querySelectorAll(".quiz-option").forEach((b) => { b.disabled = true; });
-                Course.complete(3, "Oui : surprise = 0 + 0,9 × 10 − 2 = 7, et l'agent en retient la moitié. 2 + 3,5 = 5,5.");
+                Course.complete(3, "Correct. La différence vaut 0 + 0,9 × 10 − 2 = 7. On en ajoute la moitié : 2 + 3,5 = 5,5.");
             } else {
                 btn.classList.add("wrong");
                 $("challenge-3").querySelector(".challenge-feedback").textContent = hint;

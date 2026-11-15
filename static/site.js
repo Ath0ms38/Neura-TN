@@ -6,16 +6,16 @@
 
   const PAGES = {
     "Démos": [
-      { href: "/mnist", title: "Visualiseur MNIST", note: "Dessinez un chiffre, regardez le réseau le lire" },
-      { href: "/playground", title: "Bac à sable", note: "Entraînez un réseau dans votre navigateur" },
-      { href: "/flappy", title: "Flappy Bird NEAT", note: "100 oiseaux apprennent par évolution" },
-      { href: "/car", title: "Conduite NEAT", note: "Dessinez un circuit, l'IA apprend à le parcourir" },
-      { href: "/gridworld", title: "Labyrinthe Q-learning", note: "Un agent apprend par essais et erreurs" },
-      { href: "/chess", title: "Échecs Alpha-Beta", note: "Écrivez la fonction d'évaluation de l'IA" },
+      { href: "/mnist", title: "Visualiseur MNIST", note: "Reconnaissance de chiffres dessinés" },
+      { href: "/playground", title: "Bac à sable", note: "Entraîner un petit réseau dans le navigateur" },
+      { href: "/flappy", title: "Flappy Bird NEAT", note: "Des oiseaux apprennent à jouer par évolution" },
+      { href: "/car", title: "Conduite NEAT", note: "Des voitures apprennent à suivre un circuit" },
+      { href: "/gridworld", title: "Labyrinthe Q-learning", note: "Un agent apprend à sortir d'un labyrinthe" },
+      { href: "/chess", title: "Échecs Alpha-Beta", note: "Une IA avec votre fonction d'évaluation" },
     ],
     "Cours": [
       { href: "/cours/nn", title: "Réseaux de neurones", note: "Neurones, poids, couches, propagation" },
-      { href: "/cours/apprentissage", title: "Descente de gradient", note: "Comment un réseau apprend de ses erreurs" },
+      { href: "/cours/apprentissage", title: "Descente de gradient", note: "Perte, gradient, rétropropagation" },
       { href: "/cours/cnn", title: "Réseaux convolutifs", note: "Filtres, convolution, pooling" },
       { href: "/cours/neat", title: "Neuroévolution NEAT", note: "Mutations, croisement, spéciation" },
       { href: "/cours/rl", title: "Apprentissage par renforcement", note: "Récompenses, exploration, Q-learning" },

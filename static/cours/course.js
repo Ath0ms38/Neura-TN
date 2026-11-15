@@ -59,10 +59,10 @@ const Course = (() => {
         const message = document.getElementById("score-message");
         if (message) {
             message.textContent = done.size === total
-                ? "Tous les défis sont relevés : vous maîtrisez les idées de ce cours."
+                ? "Tous les défis sont réussis."
                 : done.size === 0
-                    ? "Remontez dans le cours pour relever les défis."
-                    : "Il reste des défis à relever plus haut dans le cours.";
+                    ? "Les défis se trouvent dans les chapitres du cours."
+                    : "Il reste des défis à faire dans les chapitres du cours.";
         }
     }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neura'TN — Comprendre les réseaux de neurones en les manipulant</title>
+    <title>Neura'TN — Démos et cours sur les réseaux de neurones</title>
     <meta name="description" content="Démos et cours interactifs pour comprendre les réseaux de neurones : MNIST, neuroévolution NEAT, Q-learning, Alpha-Beta, descente de gradient.">
     <link rel="preload" href="/static/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/static/site.css">
@@ -32,8 +32,8 @@
         <section class="hero">
             <div class="hero-copy">
                 <p class="eyebrow">Démos &amp; cours interactifs</p>
-                <h1>Les réseaux de neurones, ça se <em>manipule</em>.</h1>
-                <p class="lede">Dessinez un chiffre, tracez un circuit, réglez un taux d'apprentissage, puis regardez ce que la machine en fait. Six démos et cinq cours pour comprendre l'IA avec les mains.</p>
+                <h1>Comprendre les réseaux de neurones <em>en pratique</em></h1>
+                <p class="lede">Neura'TN regroupe six démos et cinq cours interactifs. Vous pouvez dessiner un chiffre, entraîner un petit réseau ou suivre un cours avec des exercices.</p>
                 <div class="hero-actions">
                     <a href="/cours/nn" class="btn btn-primary btn-lg">Commencer le premier cours</a>
                     <a href="#demos" class="btn btn-ghost btn-lg">Voir les démos</a>
@@ -43,7 +43,7 @@
             <figure class="live" aria-label="Un réseau de neurones en train d'apprendre">
                 <div class="live-head">
                     <span class="live-dot" aria-hidden="true"></span>
-                    <span>En direct : un réseau apprend à séparer deux classes</span>
+                    <span>Ce réseau s'entraîne en ce moment dans votre navigateur</span>
                 </div>
                 <div class="live-stage">
                     <canvas id="live-field" width="72" height="72" aria-hidden="true"></canvas>
@@ -65,8 +65,8 @@
         <section id="demos" class="block">
             <div class="block-head">
                 <p class="eyebrow">Démos</p>
-                <h2>Six expériences à lancer tout de suite</h2>
-                <p>Aucune installation côté visiteur : tout tourne dans le navigateur, ou sur le petit serveur PyTorch du projet.</p>
+                <h2>Les démos</h2>
+                <p>La plupart des démos fonctionnent entièrement dans le navigateur. MNIST et les échecs utilisent le serveur.</p>
             </div>
 
             <div class="demo-grid">
@@ -89,7 +89,7 @@
                     </div>
                     <div class="demo-body">
                         <h3>Visualiseur MNIST</h3>
-                        <p>Dessinez un chiffre et suivez-le couche après couche : chaque neurone, chaque carte d'activation, jusqu'à la prédiction.</p>
+                        <p>Dessinez un chiffre. Le réseau le reconnaît, et la page affiche les activations de chaque couche.</p>
                         <ul class="tags"><li>PyTorch</li><li>CNN</li><li>Inférence en direct</li></ul>
                     </div>
                 </a>
@@ -107,7 +107,7 @@
                     </div>
                     <div class="demo-body">
                         <h3>Bac à sable</h3>
-                        <p>Choisissez les couches, l'activation et le taux d'apprentissage, puis regardez la frontière de décision se former.</p>
+                        <p>Entraînez un petit réseau sur des points en 2D. Vous choisissez les couches, l'activation et le taux d'apprentissage.</p>
                         <ul class="tags"><li>Entraînement</li><li>100 % navigateur</li></ul>
                     </div>
                 </a>
@@ -126,7 +126,7 @@
                     </div>
                     <div class="demo-body">
                         <h3>Flappy Bird NEAT</h3>
-                        <p>Cent oiseaux par génération, chacun piloté par son propre réseau. Les meilleurs se reproduisent, les autres disparaissent.</p>
+                        <p>Cent oiseaux par génération, chacun contrôlé par un réseau. Les meilleurs servent à créer la génération suivante.</p>
                         <ul class="tags"><li>NEAT</li><li>Évolution</li></ul>
                     </div>
                 </a>
@@ -144,7 +144,7 @@
                     </div>
                     <div class="demo-body">
                         <h3>Conduite NEAT</h3>
-                        <p>Dessinez votre propre circuit. Des voitures équipées de capteurs à rayons apprennent à le parcourir sans jamais l'avoir vu.</p>
+                        <p>Dessinez un circuit. Des voitures équipées de capteurs de distance apprennent à le suivre.</p>
                         <ul class="tags"><li>NEAT</li><li>Raycasting</li><li>Éditeur de piste</li></ul>
                     </div>
                 </a>
@@ -163,7 +163,7 @@
                     </div>
                     <div class="demo-body">
                         <h3>Labyrinthe Q-learning</h3>
-                        <p>Un agent sans carte ni consigne découvre le chemin vers la récompense, uniquement par essais et erreurs.</p>
+                        <p>Un agent apprend à trouver le trésor dans un labyrinthe en essayant des déplacements.</p>
                         <ul class="tags"><li>Renforcement</li><li>Q-learning</li></ul>
                     </div>
                 </a>
@@ -186,7 +186,7 @@
                     </div>
                     <div class="demo-body">
                         <h3>Échecs Alpha-Beta</h3>
-                        <p>Affrontez une IA dont vous écrivez vous-même la fonction d'évaluation en Python, et explorez son arbre de recherche, coupures comprises.</p>
+                        <p>Jouez contre une IA. Vous écrivez sa fonction d'évaluation en Python et vous pouvez voir son arbre de recherche.</p>
                         <ul class="tags"><li>Alpha-Beta</li><li>Élagage</li><li>Python</li></ul>
                     </div>
                 </a>
@@ -197,8 +197,8 @@
         <section id="cours" class="block">
             <div class="block-head">
                 <p class="eyebrow">Cours</p>
-                <h2>Un parcours en cinq étapes</h2>
-                <p>Chaque cours avance par petites manipulations et se termine par des défis. Suivez-les dans l'ordre, ou piochez celui qui vous intrigue.</p>
+                <h2>Les cours</h2>
+                <p>Chaque cours contient des explications, des manipulations et quelques défis. L'ordre ci-dessous est conseillé, mais pas obligatoire.</p>
             </div>
 
             <ol class="path">
@@ -207,7 +207,7 @@
                         <span class="step-num">01</span>
                         <div class="step-main">
                             <h3>Réseaux de neurones</h3>
-                            <p>Du neurone biologique au perceptron multicouche : poids, biais, fonctions d'activation et propagation avant.</p>
+                            <p>Le neurone, les poids, le biais, les fonctions d'activation et la propagation avant.</p>
                         </div>
                         <span class="step-meta">Fondamentaux · 6 défis</span>
                         <span class="step-go" aria-hidden="true">→</span>
@@ -218,7 +218,7 @@
                         <span class="step-num">02</span>
                         <div class="step-main">
                             <h3>Descente de gradient <span class="badge badge-inline">Nouveau</span></h3>
-                            <p>Fonction de perte, taux d'apprentissage, rétropropagation et surapprentissage : comment un réseau corrige ses propres erreurs.</p>
+                            <p>Comment un réseau apprend : la perte, le taux d'apprentissage, la rétropropagation et le surapprentissage.</p>
                         </div>
                         <span class="step-meta">Entraînement · 4 défis</span>
                         <span class="step-go" aria-hidden="true">→</span>
@@ -229,7 +229,7 @@
                         <span class="step-num">03</span>
                         <div class="step-main">
                             <h3>Réseaux convolutifs</h3>
-                            <p>Pixels, filtres, convolution et pooling : ce qu'un CNN regarde vraiment dans une image.</p>
+                            <p>Comment un réseau traite une image : filtres, convolution et pooling.</p>
                         </div>
                         <span class="step-meta">Vision · 6 défis</span>
                         <span class="step-go" aria-hidden="true">→</span>
@@ -240,7 +240,7 @@
                         <span class="step-num">04</span>
                         <div class="step-main">
                             <h3>Neuroévolution NEAT</h3>
-                            <p>Mutations, croisement, spéciation : faire évoluer la structure d'un réseau plutôt que de l'entraîner.</p>
+                            <p>Faire évoluer des réseaux par mutation, croisement et sélection.</p>
                         </div>
                         <span class="step-meta">Évolution · 6 défis</span>
                         <span class="step-go" aria-hidden="true">→</span>
@@ -251,7 +251,7 @@
                         <span class="step-num">05</span>
                         <div class="step-main">
                             <h3>Apprentissage par renforcement <span class="badge badge-inline">Nouveau</span></h3>
-                            <p>Agent, récompense, exploration contre exploitation, et la mise à jour de Q-learning expliquée pas à pas.</p>
+                            <p>Apprendre à partir de récompenses : exploration, facteur γ et Q-learning.</p>
                         </div>
                         <span class="step-meta">Décision · 3 défis</span>
                         <span class="step-go" aria-hidden="true">→</span>

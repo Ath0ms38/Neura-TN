@@ -14,7 +14,7 @@ const ARROWS = ["↑", "→", "↓", "←"];
 
 const PRESETS = {
     couloir: {
-        note: "Le chemin direct est barré par un mur : l'agent doit découvrir le détour.",
+        note: "Un mur bloque le chemin direct. L'agent doit le contourner.",
         start: [0, 3],
         rows: [
             "..........",
@@ -27,7 +27,7 @@ const PRESETS = {
         ],
     },
     falaise: {
-        note: "Le chemin le plus court longe les pièges. Activez le sol glissant : l'agent finit par préférer le détour, plus sûr.",
+        note: "Le chemin le plus court passe à côté des pièges. Avec le sol glissant, l'agent apprend à passer plus loin.",
         start: [0, 6],
         rows: [
             "..........",
@@ -40,7 +40,7 @@ const PRESETS = {
         ],
     },
     dedale: {
-        note: "Plusieurs impasses, un piège sur la route : comptez les épisodes avant le premier succès.",
+        note: "Un labyrinthe avec des impasses et un piège.",
         start: [0, 0],
         rows: [
             "...#......",
@@ -53,7 +53,7 @@ const PRESETS = {
         ],
     },
     vide: {
-        note: "Une page blanche : dessinez votre propre labyrinthe avec les outils ci-dessus.",
+        note: "Une grille vide pour dessiner votre propre labyrinthe.",
         start: [0, 3],
         rows: [
             "..........",
@@ -492,7 +492,7 @@ function paint(cell) {
         for (let a = 0; a < 4; a++) Q[qIndex(x, y, a)] = 0;
         if (agent.x === x && agent.y === y && value !== EMPTY) resetEpisode();
     }
-    $("preset-note").textContent = "Labyrinthe modifié : l'agent garde sa table Q et doit s'adapter. « Tout oublier » le fait repartir de zéro.";
+    $("preset-note").textContent = "Labyrinthe modifié. L'agent garde ce qu'il a appris. Cliquez sur « Réinitialiser » pour repartir de zéro.";
     render();
 }
 

@@ -49,7 +49,7 @@
 
             <div class="panel">
                 <h2>Entrées du réseau</h2>
-                <p class="hint">Ce que le réseau reçoit pour chaque point. Avec les bonnes entrées, un problème difficile devient simple.</p>
+                <p class="hint">Les valeurs données au réseau pour chaque point. Certaines entrées rendent le problème plus facile.</p>
                 <div class="feature-list" id="feature-list"></div>
             </div>
 
@@ -70,7 +70,7 @@
         <section class="col col-main" aria-label="Frontière de décision">
             <div class="panel stage-panel">
                 <div class="stage-head">
-                    <h2 class="panel-title">Ce que le réseau a compris</h2>
+                    <h2 class="panel-title">Frontière de décision</h2>
                     <div class="stage-options">
                         <label class="toggle-label"><input type="checkbox" id="show-test"> Points de test</label>
                         <label class="toggle-label"><input type="checkbox" id="discretize"> Décision tranchée</label>
@@ -119,7 +119,7 @@
                     <div><span class="metric-label"><span class="swatch swatch-test"></span>Perte test</span><span class="metric-value" id="m-test">–</span></div>
                 </div>
                 <canvas id="loss-chart" aria-label="Courbes de perte d'entraînement et de test au fil des époques"></canvas>
-                <p class="hint" id="diagnosis" aria-live="polite">Lancez l'entraînement pour voir la perte diminuer.</p>
+                <p class="hint" id="diagnosis" aria-live="polite">Cliquez sur « Entraîner » pour commencer.</p>
             </div>
         </section>
     </main>
