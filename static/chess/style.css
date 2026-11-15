@@ -682,3 +682,180 @@ main {
     }
     .move-history { width: min(400px, 90vw); }
 }
+
+/* ==========================================================================
+   Refonte de la mise en page : la page défile naturellement (plus de hauteur
+   figée qui tronquait le panneau de droite) et l'échiquier s'adapte à l'écran.
+   ========================================================================== */
+:root {
+    --sq: clamp(34px, calc((100vw - 76px) / 8), 58px);
+    --sq-light: #e6d3b3;
+    --sq-dark: #a9744f;
+}
+main {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+    height: auto;
+    min-height: 0;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.board-panel {
+    position: sticky;
+    top: calc(var(--topbar-h) + 20px);
+    padding: 18px;
+    gap: 14px;
+    background: linear-gradient(180deg, rgba(17, 38, 74, 0.55), rgba(10, 25, 48, 0.75));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+.board-panel > h2 { margin-bottom: 0 !important; }
+.board-wrapper { position: relative; }
+.chess-board {
+    grid-template-columns: repeat(8, var(--sq));
+    grid-template-rows: repeat(8, var(--sq));
+    width: auto;
+    height: auto;
+    border: 0;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px var(--border-strong), 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+.square {
+    width: var(--sq);
+    height: var(--sq);
+    font-size: calc(var(--sq) * 0.74);
+}
+.square.selected { background: #f2b65a !important; }
+.square.last-move { box-shadow: inset 0 0 0 100px rgba(133, 213, 230, 0.32); background: inherit; }
+.square.light.last-move { background: var(--sq-light) !important; }
+.square.dark.last-move { background: var(--sq-dark) !important; }
+.white-piece { color: #fdfdfd; text-shadow: 0 0 1px #000, 0 0 2px #000, 0 2px 3px rgba(0, 0, 0, 0.45); }
+.black-piece { color: #15171c; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.18); }
+.rank-labels {
+    height: auto;
+    padding: 0 2px;
+    justify-content: flex-start;
+}
+.rank-labels span {
+    height: var(--sq);
+    line-height: var(--sq);
+    font: 500 0.68rem/var(--sq) var(--font-mono);
+    color: var(--text-muted);
+}
+.file-labels {
+    grid-template-columns: repeat(8, var(--sq));
+    width: auto;
+    padding-top: 6px;
+}
+.file-labels span {
+    font: 500 0.68rem/1 var(--font-mono);
+    color: var(--text-muted);
+}
+.game-status { font-size: 0.92rem; }
+.game-status.error { color: var(--danger); }
+.move-history {
+    width: 100%;
+    max-width: calc(var(--sq) * 8 + 22px);
+    min-height: 44px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    background: var(--bg-primary);
+}
+.move-history:empty::before {
+    content: "Les coups joués s'afficheront ici.";
+    font-family: var(--font-body);
+    color: var(--text-muted);
+}
+.thinking-overlay {
+    background: rgba(4, 13, 33, 0.62);
+    border-radius: 8px;
+    backdrop-filter: blur(1.5px);
+}
+.thinking-text {
+    padding: 10px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 0.9rem;
+}
+
+.editor-panel {
+    padding: 0;
+    overflow: visible;
+    gap: 18px;
+}
+.eval-editor-wrapper {
+    padding: 18px;
+    background: linear-gradient(180deg, rgba(17, 38, 74, 0.55), rgba(10, 25, 48, 0.75));
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+.preset-group label {
+    font: 500 0.66rem/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.lab-page .preset-btn { padding: 6px 12px; font-size: 0.78rem; }
+#eval-editor,
+.doc-panel {
+    height: clamp(280px, 46vh, 460px);
+    background: #060c1a;
+    border-color: var(--border-strong);
+    border-radius: var(--radius);
+}
+#eval-editor {
+    color: #d5deeb;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    white-space: pre;
+    overflow: auto;
+}
+.doc-content dt { font-family: var(--font-mono); }
+.editor-actions { flex-wrap: wrap; gap: 8px; }
+.eval-status {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    overflow-wrap: anywhere;
+}
+.eval-status:empty { display: none; }
+.eval-status.valid { color: var(--success); background: rgba(44, 196, 165, 0.12); }
+.eval-status.invalid { color: #ff9c8c; background: rgba(240, 98, 77, 0.12); }
+.lab-page .stats,
+.lab-page .info-text { padding: 18px; }
+
+.tree-section {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+    min-height: 0;
+    background: none;
+    border-top: 0;
+}
+.tree-header { flex-wrap: wrap; }
+.tree-header h2 { margin: 0 !important; }
+.tree-header button {
+    padding: 6px 12px;
+    font: 600 0.76rem/1.2 var(--font-body);
+    border-color: var(--border-strong);
+    border-radius: 8px;
+}
+.tree-header button:hover { background: var(--bg-raised); border-color: var(--accent2); color: var(--text-primary); }
+.tree-legend { flex-wrap: wrap; gap: 8px 16px; }
+.tree-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-height: 560px;
+}
+
+@media (max-width: 980px) {
+    main { grid-template-columns: minmax(0, 1fr); padding: 14px; }
+    .board-panel { position: static; padding: 14px 8px; }
+    .tree-section { padding: 0 14px 32px; }
+    .tree-legend { margin-left: 0; }
+}

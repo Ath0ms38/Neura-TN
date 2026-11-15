@@ -1,5 +1,6 @@
 """Chess engine with Alpha-Beta pruning and tree recording for visualization."""
 
+import ast
 import math
 import threading
 import time
@@ -12,21 +13,21 @@ import chess
 
 DEFAULT_EVAL_CODE = '''\
 def evaluate(board):
-    """Evalue la position de l'echiquier.
+    """Évalue la position de l'échiquier.
     Retourne un score positif si les blancs sont mieux,
-    negatif si les noirs sont mieux.
+    négatif si les noirs sont mieux.
 
-    Parametres disponibles:
+    Paramètres disponibles:
         board - objet chess.Board (librairie python-chess)
-        board.piece_map() - dict {case: piece}
-        chess.PAWN, chess.KNIGHT, etc. - types de pieces
+        board.piece_map() - dict {case: pièce}
+        chess.PAWN, chess.KNIGHT, etc. - types de pièces
         piece.piece_type - type (1=pion, 2=cavalier, 3=fou, 4=tour, 5=dame, 6=roi)
         piece.color - couleur (True=blanc, False=noir)
-        chess.square_rank(case) - rang de la case (0-7)
+        chess.square_rank(case) - rangée de la case (0-7)
         chess.square_file(case) - colonne de la case (0-7)
-        board.is_checkmate() - True si echec et mat
-        board.is_check() - True si echec
-        len(list(board.legal_moves)) - nombre de coups legaux
+        board.is_checkmate() - True si échec et mat
+        board.is_check() - True si échec
+        len(list(board.legal_moves)) - nombre de coups légaux
     """
     piece_values = {
         chess.PAWN: 100,
@@ -52,6 +53,13 @@ def evaluate(board):
 # EVAL FUNCTION EXECUTION
 # ============================================================
 
+MAX_EVAL_CODE_LENGTH = 20000
+
+
+class SearchAborted(Exception):
+    """Raised when the user evaluation function must stop being called."""
+
+
 RESTRICTED_BUILTINS = {
     "len": len, "range": range, "sum": sum, "abs": abs,
     "min": min, "max": max, "int": int, "float": float,
@@ -70,15 +78,33 @@ def compile_user_eval(code_string):
 
     Returns (eval_fn, error_string). eval_fn is None on error.
     """
+    if not isinstance(code_string, str) or len(code_string) > MAX_EVAL_CODE_LENGTH:
+        return None, "Code invalide ou trop long"
+
+    try:
+        tree = ast.parse(code_string)
+    except SyntaxError as e:
+        return None, f"Erreur de syntaxe ligne {e.lineno}: {e.msg}"
+
+    # Defense en profondeur : pas d'import, pas d'acces aux attributs internes
+    # (les noms en "_" sont la porte d'entree classique pour sortir du bac a sable).
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            return None, f"Ligne {node.lineno}: les imports ne sont pas autorises"
+        name = getattr(node, "attr", None) if isinstance(node, ast.Attribute) else (
+            node.id if isinstance(node, ast.Name) else None)
+        if name and name.startswith("_"):
+            return None, f"Ligne {node.lineno}: le nom '{name}' n'est pas autorise"
+
     namespace = {
         "chess": chess,
         "__builtins__": RESTRICTED_BUILTINS,
     }
 
     try:
-        exec(code_string, namespace)
+        exec(compile(tree, "<evaluate>", "exec"), namespace)
     except Exception as e:
-        return None, f"Erreur de syntaxe: {e}"
+        return None, f"Erreur a la definition: {e}"
 
     if "evaluate" not in namespace:
         return None, "Fonction 'evaluate(board)' non trouvee"
@@ -98,8 +124,10 @@ def execute_eval(eval_fn, board, timeout=2):
 
     def _run():
         try:
-            val = eval_fn(board.copy())
-            result_holder[0] = float(val)
+            val = float(eval_fn(board.copy()))
+            if not math.isfinite(val):
+                raise ValueError("le score doit etre un nombre fini")
+            result_holder[0] = val
         except Exception as e:
             result_holder[1] = f"Erreur d'execution: {e}"
 
@@ -209,7 +237,9 @@ def alphabeta_with_tree(board, depth, alpha, beta, maximizing, eval_fn, counter)
     if depth == 0:
         score, err = execute_eval(eval_fn, board, timeout=2)
         if err:
-            score = 0.0
+            # A looping or crashing evaluation would otherwise be called again on
+            # every remaining leaf (2 s each): stop and let the caller fall back.
+            raise SearchAborted(err)
         node["is_leaf"] = True
         node["eval_score"] = _fmt_val(score)
         node["value"] = _fmt_val(score)
@@ -398,9 +428,19 @@ def find_best_move(board, eval_code, depth=3):
     counter = [0, 0]  # [nodes_explored, nodes_pruned]
     start_time = time.time()
 
-    value, tree = alphabeta_with_tree(
-        board, depth, -math.inf, math.inf, maximizing, eval_fn, counter
-    )
+    # Search on copies: an aborted search leaves its pushed moves on the board.
+    try:
+        value, tree = alphabeta_with_tree(
+            board.copy(), depth, -math.inf, math.inf, maximizing, eval_fn, counter
+        )
+    except SearchAborted as e:
+        # The user function failed at run time: redo the search with the default one.
+        eval_error = str(e)
+        eval_fn, _ = compile_user_eval(DEFAULT_EVAL_CODE)
+        counter = [0, 0]
+        value, tree = alphabeta_with_tree(
+            board.copy(), depth, -math.inf, math.inf, maximizing, eval_fn, counter
+        )
 
     elapsed_ms = round((time.time() - start_time) * 1000)
 

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours : Apprentissage par renforcement - Neura'TN</title>
+    <link rel="stylesheet" href="/static/cours/course.css">
+    <link rel="stylesheet" href="/static/cours/rl/style.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
+</head>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
+    <header>
+        <div class="header-left">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Cours</span>
+            <h1>Apprentissage par renforcement</h1>
+        </div>
+        <div class="header-right">
+            <nav class="section-nav" id="section-nav" aria-label="Chapitres"></nav>
+            <div class="challenge-counter" id="challenge-counter" title="Défis réussis">
+                <span class="counter-icon" aria-hidden="true">&#9733;</span>
+                <span id="counter-text">0/3</span>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- ============ Hero ============ -->
+        <section id="hero" class="course-section hero-section">
+            <canvas id="hero-canvas" aria-hidden="true"></canvas>
+            <div class="hero-content">
+                <p class="hero-kicker">Cours 05 · Décision</p>
+                <h2>Apprendre par essais et erreurs</h2>
+                <p class="hero-subtitle">Et si personne ne donnait la bonne réponse ?</p>
+                <p class="hero-intro">Pour reconnaître des chiffres, on montre au réseau des milliers d'exemples corrigés. Mais pour apprendre à marcher, à jouer ou à conduire, il n'existe pas de corrigé : seulement des conséquences. C'est le domaine de l'apprentissage par renforcement.</p>
+                <a href="#boucle" class="scroll-hint">Commencer &darr;</a>
+            </div>
+        </section>
+
+        <!-- ============ 01 Boucle ============ -->
+        <section id="boucle" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">01</span>Un agent, un monde, des récompenses</h2>
+                <p>Tout se résume à une boucle. Un <strong>agent</strong> observe l'<em>état</em> du monde, choisit une <em>action</em>, et le monde lui répond par un nouvel état et une <em>récompense</em> : un simple nombre, positif ou négatif.</p>
+                <p>Personne ne dit à l'agent quelle action était la bonne. Son seul objectif : <strong>accumuler le plus de récompense possible</strong> sur toute la durée de l'épisode.</p>
+                <p>À vous de jouer l'agent. Vous êtes dans un couloir : un trésor d'un côté, une fosse de l'autre, et chaque pas coûte un peu. Vous ne savez pas encore de quel côté est le trésor.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="corridor" id="loop-corridor" aria-label="Couloir de sept cases"></div>
+                    <div class="loop-steps" aria-hidden="true">
+                        <div class="loop-step" id="loop-state"><span class="k">État</span><span class="v">case 4</span></div>
+                        <span class="loop-arrow">→</span>
+                        <div class="loop-step" id="loop-action"><span class="k">Action</span><span class="v">–</span></div>
+                        <span class="loop-arrow">→</span>
+                        <div class="loop-step" id="loop-reward"><span class="k">Récompense</span><span class="v">–</span></div>
+                    </div>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="loop-left">← Aller à gauche</button>
+                        <button type="button" class="ctrl-btn" id="loop-right">Aller à droite →</button>
+                        <span class="spacer"></span>
+                        <button type="button" class="ctrl-btn" id="loop-reset">Nouvel épisode</button>
+                    </div>
+                    <dl class="readout">
+                        <div><dt>Épisodes joués</dt><dd id="loop-episodes">0</dd></div>
+                        <div><dt>Gain de l'épisode</dt><dd id="loop-return">0</dd></div>
+                        <div><dt>Meilleur gain</dt><dd id="loop-best">–</dd></div>
+                    </dl>
+                    <div class="step-text" id="loop-message" aria-live="polite">Choisissez une direction. Vous ne saurez ce qu'il y a au bout qu'en y allant.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 02 Bandit ============ -->
+        <section id="exploration" class="course-section flip">
+            <div class="section-text">
+                <h2><span class="section-number">02</span>Explorer ou exploiter ?</h2>
+                <p>Quatre machines à sous. Chacune a une probabilité de gain <strong>cachée et différente</strong>. Vous ne pouvez l'estimer qu'en jouant.</p>
+                <p>C'est le dilemme central du renforcement :</p>
+                <ul class="concept-list">
+                    <li><strong>Exploiter</strong> : rejouer la machine qui a le mieux payé jusqu'ici.</li>
+                    <li><strong>Explorer</strong> : en essayer une autre, au risque de perdre un coup, pour vérifier qu'on ne passe pas à côté d'une meilleure.</li>
+                </ul>
+                <p>Une machine qui perd deux fois de suite n'est pas forcément mauvaise : elle a peut-être manqué de chance. Trop peu d'essais, et l'on se fie à un hasard.</p>
+                <p>La stratégie <strong>ε-greedy</strong> règle la question simplement : avec une probabilité ε, l'agent joue au hasard ; le reste du temps, il joue la meilleure machine connue.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="bandits" id="bandits"></div>
+                    <div class="ctrl-row">
+                        <span class="hint" id="bandit-count">0 tirage</span>
+                        <span class="spacer"></span>
+                        <button type="button" class="ctrl-btn" id="bandit-new">Nouvelles machines</button>
+                    </div>
+                    <div class="challenge-box" id="challenge-1">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 1</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Jouez au moins <strong>20 tirages</strong>, puis désignez la machine que vous pensez être la meilleure avec son bouton « C'est elle ».</p>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+
+                    <canvas id="bandit-chart" aria-label="Gain moyen de l'agent au fil des tirages, comparé au gain optimal"></canvas>
+                    <div class="slider-row"><label for="bandit-eps">Exploration ε</label><input type="range" id="bandit-eps" min="0" max="1" step="0.05" value="0"><span class="value-display" id="bandit-eps-val">0.00</span></div>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="bandit-run">Laisser l'agent jouer 500 tirages</button>
+                        <span class="spacer"></span>
+                        <span class="hint" id="bandit-result"></span>
+                    </div>
+                    <div class="challenge-box" id="challenge-2">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 2</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Réglez ε pour que l'agent obtienne, en moyenne sur 40 parties, au moins <strong>88 %</strong> du gain d'un joueur qui connaîtrait la meilleure machine. Essayez d'abord ε = 0, puis ε = 1.</p>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 03 Gamma ============ -->
+        <section id="horizon" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">03</span>Tout de suite, ou plus tard ?</h2>
+                <p>Les récompenses n'arrivent pas toutes au même moment. Une pièce à un pas d'ici vaut-elle mieux qu'un coffre à cinq pas ?</p>
+                <p>Le <strong>facteur d'actualisation γ</strong> (gamma), compris entre 0 et 1, fixe la réponse. Une récompense obtenue après <em>t</em> pas supplémentaires est multipliée par γ<sup>t</sup> :</p>
+                <div class="formula-display">Gain = r₀ + γ·r₁ + γ²·r₂ + γ³·r₃ + …</div>
+                <ul class="concept-list">
+                    <li><strong>γ proche de 0</strong> : l'agent est impatient, seule la récompense immédiate compte.</li>
+                    <li><strong>γ proche de 1</strong> : l'agent est prévoyant, il accepte un détour pour un gain plus grand.</li>
+                </ul>
+                <p>Déplacez le curseur et observez à quel moment l'agent change d'avis.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <canvas id="gamma-canvas" aria-label="Couloir : une pièce à un pas à gauche, un coffre à cinq pas à droite, et la valeur actualisée de chaque option"></canvas>
+                    <div class="slider-row"><label for="gamma">Facteur γ</label><input type="range" id="gamma" min="0" max="0.99" step="0.01" value="0.5"><span class="value-display" id="gamma-val">0.50</span></div>
+                    <dl class="readout">
+                        <div><dt>Valeur de la pièce</dt><dd id="gamma-left">–</dd></div>
+                        <div><dt>Valeur du coffre</dt><dd id="gamma-right">–</dd></div>
+                        <div><dt>L'agent choisit</dt><dd id="gamma-choice">–</dd></div>
+                    </dl>
+                    <div class="step-text" id="gamma-message" aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 04 Q-learning ============ -->
+        <section id="qlearning" class="course-section flip">
+            <div class="section-text">
+                <h2><span class="section-number">04</span>La table Q</h2>
+                <p>Pour bien choisir, l'agent tient un tableau : pour chaque <em>état</em> et chaque <em>action</em>, une estimation du gain total qu'il peut espérer. C'est la <strong>table Q</strong>. Au départ, elle ne contient que des zéros.</p>
+                <p>Après chaque pas, il corrige une seule case du tableau :</p>
+                <div class="formula-display">Q(s,a) ← Q(s,a) + α · [ r + γ · max Q(s′,·) − Q(s,a) ]</div>
+                <p>Entre crochets, c'est la <strong>surprise</strong> : l'écart entre ce qu'il vient de constater (la récompense reçue, plus ce que promet la case suivante) et ce qu'il croyait. Le taux α règle la part de cette surprise qu'il retient.</p>
+                <p>Lancez les épisodes un par un : la valeur du trésor <strong>remonte le couloir</strong>, d'une case par épisode, jusqu'au départ.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <div class="qtable" id="qtable" role="img" aria-label="Table Q du couloir : une colonne par case, une ligne par action"></div>
+                    <div class="slider-row"><label for="q-alpha">Taux α</label><input type="range" id="q-alpha" min="0.1" max="1" step="0.1" value="0.5"><span class="value-display" id="q-alpha-val">0.50</span></div>
+                    <div class="slider-row"><label for="q-gamma">Facteur γ</label><input type="range" id="q-gamma" min="0" max="1" step="0.05" value="0.9"><span class="value-display" id="q-gamma-val">0.90</span></div>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="q-step">Un pas</button>
+                        <button type="button" class="ctrl-btn" id="q-episode">Un épisode</button>
+                        <span class="spacer"></span>
+                        <button type="button" class="ctrl-btn" id="q-reset">Tout oublier</button>
+                    </div>
+                    <dl class="readout">
+                        <div><dt>Épisodes</dt><dd id="q-episodes">0</dd></div>
+                        <div><dt>Pas du dernier épisode</dt><dd id="q-length">–</dd></div>
+                    </dl>
+                    <div class="step-text" id="q-message" aria-live="polite">L'agent part de la case 1. Le trésor (+10) est en case 6. Il explore au hasard une fois sur cinq.</div>
+                    <div class="challenge-box" id="challenge-3">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 3</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Une case vaut <strong>Q = 2</strong>. L'agent avance, reçoit <strong>r = 0</strong>, et la meilleure valeur de la case suivante est <strong>10</strong>. Avec <strong>α = 0,5</strong> et <strong>γ = 0,9</strong>, que devient Q ?</p>
+                        <div class="quiz-options" id="q-quiz"></div>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Conclusion ============ -->
+        <section id="conclusion" class="course-section conclusion-section">
+            <div class="conclusion-content">
+                <h2>Récapitulatif</h2>
+                <div class="recap-grid">
+                    <div class="recap-card"><span class="recap-num">01</span><strong>La boucle</strong><p>État, action, récompense : l'agent apprend des conséquences, sans corrigé.</p></div>
+                    <div class="recap-card" data-challenge="1"><span class="recap-num">02</span><strong>Estimer</strong><p>Quelques essais ne suffisent pas à juger une option : le hasard trompe.</p></div>
+                    <div class="recap-card" data-challenge="2"><span class="recap-num">02</span><strong>Explorer</strong><p>ε-greedy : un peu de hasard pour ne pas rester bloqué sur un mauvais choix.</p></div>
+                    <div class="recap-card"><span class="recap-num">03</span><strong>Actualiser</strong><p>γ règle la patience de l'agent face aux récompenses lointaines.</p></div>
+                    <div class="recap-card" data-challenge="3"><span class="recap-num">04</span><strong>Table Q</strong><p>Corriger chaque estimation d'une fraction de la surprise.</p></div>
+                </div>
+                <div class="final-score"><span aria-hidden="true">&#9733;</span><span id="final-score-text">0/3 défis réussis</span></div>
+                <p class="score-message" id="score-message"></p>
+                <div class="next-steps">
+                    <a href="/gridworld" class="cta-btn">Voir un agent apprendre un labyrinthe</a>
+                    <a href="/" class="btn btn-lg">Retour à l'accueil</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/cours/course.js"></script>
+    <script src="/static/cours/rl/app.js"></script>
+</body>
+</html>

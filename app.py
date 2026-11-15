@@ -1,6 +1,6 @@
 """Flask backend for MNIST Neural Network Visualizer."""
 
-import json
+import os
 import random
 import numpy as np
 import torch
@@ -19,13 +19,19 @@ app = Flask(__name__, static_folder="static")
 
 # --------------- Load models ---------------
 
-nn_model = SimpleNN()
-nn_model.load_state_dict(torch.load("models/nn_model.pth", weights_only=True))
-nn_model.eval()
+def load_model(cls, path):
+    """Load a trained model, or return None when its weights are missing."""
+    if not os.path.exists(path):
+        print(f"[warn] {path} introuvable : lancez `python train.py`.")
+        return None
+    model = cls()
+    model.load_state_dict(torch.load(path, weights_only=True))
+    model.eval()
+    return model
 
-cnn_model = SimpleCNN()
-cnn_model.load_state_dict(torch.load("models/cnn_model.pth", weights_only=True))
-cnn_model.eval()
+
+nn_model = load_model(SimpleNN, "models/nn_model.pth")
+cnn_model = load_model(SimpleCNN, "models/cnn_model.pth")
 
 # --------------- Load test dataset ---------------
 
@@ -121,49 +127,70 @@ def get_cnn_activations(image_tensor):
 
 # --------------- Routes ---------------
 
-@app.route("/")
-def index():
-    return send_from_directory("static", "index.html")
+# Every page is a static folder containing an index.html.
+PAGES = {
+    "/": "static",
+    "/mnist": "static/mnist",
+    "/playground": "static/playground",
+    "/flappy": "static/flappy",
+    "/car": "static/car",
+    "/gridworld": "static/gridworld",
+    "/chess": "static/chess",
+    "/cours/nn": "static/cours/nn",
+    "/cours/apprentissage": "static/cours/apprentissage",
+    "/cours/cnn": "static/cours/cnn",
+    "/cours/neat": "static/cours/neat",
+    "/cours/rl": "static/cours/rl",
+}
 
 
-@app.route("/mnist")
-def mnist():
-    return send_from_directory("static/mnist", "index.html")
+def _make_page_view(folder):
+    def view():
+        return send_from_directory(folder, "index.html")
+    return view
 
 
-@app.route("/flappy")
-def flappy():
-    return send_from_directory("static/flappy", "index.html")
-
-
-@app.route("/car")
-def car():
-    return send_from_directory("static/car", "index.html")
-
-
-@app.route("/chess")
-def chess_page():
-    return send_from_directory("static/chess", "index.html")
-
-
-@app.route("/cours/nn")
-def cours_nn():
-    return send_from_directory("static/cours/nn", "index.html")
-
-
-@app.route("/cours/cnn")
-def cours_cnn():
-    return send_from_directory("static/cours/cnn", "index.html")
-
-
-@app.route("/cours/neat")
-def cours_neat():
-    return send_from_directory("static/cours/neat", "index.html")
+for _url, _folder in PAGES.items():
+    app.add_url_rule(
+        _url,
+        endpoint="page_" + (_url.strip("/").replace("/", "_") or "index"),
+        view_func=_make_page_view(_folder),
+        strict_slashes=False,
+    )
 
 
 @app.route("/static/<path:path>")
 def serve_static(path):
     return send_from_directory("static", path)
+
+
+@app.errorhandler(404)
+def not_found(_error):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Ressource introuvable"}), 404
+    return send_from_directory("static", "404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(_error):
+    # Les pages attendent toujours du JSON de la part de l'API.
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Erreur interne du serveur"}), 500
+    return "Erreur interne du serveur", 500
+
+
+MODEL_MISSING = "Modèle {} non entraîné : lancez `python train.py` puis redémarrez le serveur."
+
+
+def parse_image(pixels):
+    """Validate a client-supplied 28x28 image and return a (1, 28, 28) tensor."""
+    try:
+        tensor = torch.tensor(pixels, dtype=torch.float32)
+    except (TypeError, ValueError, RuntimeError):
+        return None
+    if tensor.shape != (28, 28) or not torch.isfinite(tensor).all():
+        return None
+    return tensor.unsqueeze(0)
 
 
 @app.route("/api/sample")
@@ -180,11 +207,17 @@ def get_sample():
 
 @app.route("/api/predict", methods=["POST"])
 def predict():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     model_type = data.get("model", "nn")
-    pixels = data.get("image")  # 28x28 array, normalized
+    if model_type not in ("nn", "cnn"):
+        return jsonify({"error": "Modele inconnu"}), 400
 
-    image_tensor = torch.tensor(pixels, dtype=torch.float32).unsqueeze(0)  # (1,28,28)
+    image_tensor = parse_image(data.get("image"))  # 28x28 array, normalized
+    if image_tensor is None:
+        return jsonify({"error": "Image invalide : un tableau 28x28 est attendu"}), 400
+
+    if (cnn_model if model_type == "cnn" else nn_model) is None:
+        return jsonify({"error": MODEL_MISSING.format(model_type.upper())}), 503
 
     with torch.no_grad():
         if model_type == "cnn":
@@ -229,6 +262,8 @@ def model_info(model_type):
 @app.route("/api/cnn-filters")
 def cnn_filters():
     """Get Conv1 filters (weights) from the trained CNN model."""
+    if cnn_model is None:
+        return jsonify({"error": MODEL_MISSING.format("CNN")}), 503
     # Conv1 has shape [32, 1, 3, 3] (32 filters, 1 input channel, 3x3 kernel)
     conv1_weights = cnn_model.conv1.weight.data.cpu().numpy()
 
@@ -249,7 +284,7 @@ def cnn_filters():
 
 @app.route("/api/chess/new", methods=["POST"])
 def chess_new():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     fen = data.get("fen")
     try:
         board = chess.Board(fen) if fen else chess.Board()
@@ -268,14 +303,19 @@ def chess_new():
 
 @app.route("/api/chess/move", methods=["POST"])
 def chess_move():
-    data = request.get_json()
+    data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Donnees manquantes"}), 400
 
     fen = data.get("fen")
     user_move_uci = data.get("user_move")
     eval_code = data.get("eval_code", DEFAULT_EVAL_CODE)
-    depth = min(int(data.get("depth", 3)), 4)
+    try:
+        depth = max(1, min(int(data.get("depth", 3)), 4))
+    except (TypeError, ValueError):
+        depth = 3
+    if not isinstance(eval_code, str):
+        eval_code = DEFAULT_EVAL_CODE
 
     try:
         board = chess.Board(fen)
@@ -337,7 +377,7 @@ def chess_move():
 
 @app.route("/api/chess/validate-eval", methods=["POST"])
 def chess_validate_eval():
-    data = request.get_json()
+    data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Donnees manquantes"}), 400
 

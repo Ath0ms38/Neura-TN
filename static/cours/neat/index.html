@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cours : NEAT - Neura'TN</title>
     <link rel="stylesheet" href="/static/cours/neat/style.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
 </head>
-<body>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
     <header>
         <div class="header-left">
-            <a href="/" class="back-link">&larr; Accueil</a>
-            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Cours</span>
             <h1>NEAT</h1>
         </div>
         <div class="header-right">
@@ -22,47 +26,47 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <!-- Section 0: Hero -->
         <section id="hero" class="course-section hero-section">
             <canvas id="hero-canvas"></canvas>
             <div class="hero-content">
                 <h2>NEAT</h2>
-                <p class="hero-subtitle">Comment les reseaux de neurones peuvent-ils se concevoir eux-memes ?</p>
-                <p class="hero-intro">Decouvrez NEAT (NeuroEvolution of Augmenting Topologies), un algorithme qui fait evoluer des reseaux de neurones par selection naturelle. De la mutation a la speciation, explorez comment l'evolution peut concevoir des architectures optimales. Completez les 6 defis interactifs pour maitriser les concepts !</p>
+                <p class="hero-subtitle">Comment les réseaux de neurones peuvent-ils se concevoir eux-mêmes ?</p>
+                <p class="hero-intro">Découvrez NEAT (Neuroévolution of Augmenting Topologies), un algorithme qui fait évoluer des réseaux de neurones par sélection naturelle. De la mutation à la spéciation, explorez comment l'évolution peut concevoir des architectures optimales. Complétez les 6 défis interactifs pour maîtriser les concepts !</p>
                 <a href="#evolution" class="scroll-hint">Commencer &darr;</a>
             </div>
         </section>
 
-        <!-- Section 1: Introduction a la Neuroevolution -->
+        <!-- Section 1: Introduction à la Neuroevolution -->
         <section id="evolution" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">01</span>La Neuroevolution</h2>
-                <p>Dans le cours sur les reseaux de neurones, vous avez decouvert la <strong>retropropagation</strong> : un algorithme qui ajuste les poids en calculant des gradients.</p>
+                <h2><span class="section-number">01</span>La Neuroévolution</h2>
+                <p>Dans le cours sur les réseaux de neurones, vous avez découvert la <strong>rétropropagation</strong> : un algorithme qui ajuste les poids en calculant des gradients.</p>
                 <p>Mais que faire si :</p>
                 <ul class="concept-list">
-                    <li>Vous n'avez <strong>pas de labels</strong> pour l'apprentissage supervise ?</li>
-                    <li>La fonction d'objectif n'est <strong>pas derivable</strong> ?</li>
-                    <li>Vous voulez que l'architecture elle-meme <strong>evolue</strong> ?</li>
+                    <li>Vous n'avez <strong>pas de labels</strong> pour l'apprentissage supervisé ?</li>
+                    <li>La fonction d'objectif n'est <strong>pas dérivable</strong> ?</li>
+                    <li>Vous voulez que l'architecture elle-meme <strong>évolue</strong> ?</li>
                 </ul>
-                <p>C'est la que la <strong>neuroevolution</strong> entre en jeu : une approche inspiree de la <em>selection naturelle</em> qui fait evoluer des populations de reseaux de neurones.</p>
+                <p>C'est la que la <strong>neuroévolution</strong> entre en jeu : une approche inspirée de la <em>sélection naturelle</em> qui fait évoluer des populations de réseaux de neurones.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
                     <div class="comparison-split">
                         <div class="comparison-col">
-                            <h3>Retropropagation</h3>
+                            <h3>Rétropropagation</h3>
                             <svg id="backprop-svg" viewBox="0 0 240 200"></svg>
                             <div class="comp-desc">
-                                <p><strong>Forces</strong> : Rapide, precis</p>
+                                <p><strong>Forces</strong> : Rapide, précis</p>
                                 <p><strong>Limites</strong> : Besoin de labels, architecture fixe</p>
                             </div>
                         </div>
                         <div class="comparison-col">
-                            <h3>Neuroevolution</h3>
+                            <h3>Neuroévolution</h3>
                             <svg id="neuroevo-svg" viewBox="0 0 240 200"></svg>
                             <div class="comp-desc">
-                                <p><strong>Forces</strong> : Pas de labels, architecture evolutive</p>
+                                <p><strong>Forces</strong> : Pas de labels, architecture évolutive</p>
                                 <p><strong>Limites</strong> : Plus lent, stochastique</p>
                             </div>
                         </div>
@@ -74,19 +78,19 @@
         <!-- Section 2: Le Genome -->
         <section id="genome" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">02</span>Le Genome</h2>
-                <p>Dans NEAT, un reseau de neurones est encode comme un <strong>genome</strong> : un ensemble de genes qui definissent sa structure.</p>
-                <p>Il existe deux types de genes :</p>
+                <h2><span class="section-number">02</span>Le Génome</h2>
+                <p>Dans NEAT, un réseau de neurones est encodé comme un <strong>génome</strong> : un ensemble de gènes qui définissent sa structure.</p>
+                <p>Il existe deux types de gènes :</p>
                 <ul class="concept-list">
-                    <li><strong>NodeGene</strong> : Represente un neurone (id, type, biais)</li>
-                    <li><strong>ConnectionGene</strong> : Represente une synapse (entree, sortie, poids, actif, innovation)</li>
+                    <li><strong>NodeGene</strong> : Représente un neurone (id, type, biais)</li>
+                    <li><strong>ConnectionGene</strong> : Représente une synapse (entrée, sortie, poids, actif, innovation)</li>
                 </ul>
-                <p>Chaque connexion possede un <strong>numero d'innovation</strong> unique qui permet de suivre son historique evolutif a travers les generations.</p>
+                <p>Chaque connexion possède un <strong>numéro d'innovation</strong> unique qui permet de suivre son historique évolutif à travers les générations.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
                     <div class="genome-viewer">
-                        <h3 style="text-align: center; color: #FFAB40; margin-bottom: 10px;">Construction du Genome</h3>
+                        <h3 style="text-align: center; color: #FFAB40; margin-bottom: 10px;">Construction du Génome</h3>
 
                         <div style="text-align: center; margin: 10px 0; padding: 10px; background: rgba(255, 171, 64, 0.1); border-radius: 5px;">
                             <p id="genome-explanation" style="color: #FFAB40; font-weight: bold; margin: 0;">Cliquez sur Play pour animer la construction du génome</p>
@@ -138,13 +142,13 @@
                     <div class="challenge-box" id="challenge-1">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 1</span>
+                            <span class="challenge-title">Défi 1</span>
                             <span class="challenge-status" id="ch1-status"></span>
                         </div>
-                        <p class="challenge-text">Comptez combien de <strong>connexions activees</strong> pointent vers les <strong>neurones de sortie</strong>.</p>
+                        <p class="challenge-text">Comptez combien de <strong>connexions activées</strong> pointent vers les <strong>neurones de sortie</strong>.</p>
                         <div class="challenge-input-row">
-                            <input type="number" id="ch1-input" min="0" max="20" placeholder="Votre reponse">
-                            <button id="ch1-btn" class="ctrl-btn">Verifier</button>
+                            <input type="number" id="ch1-input" min="0" max="20" placeholder="Votre réponse">
+                            <button id="ch1-btn" class="ctrl-btn">Vérifier</button>
                         </div>
                         <div class="challenge-feedback" id="ch1-feedback"></div>
                     </div>
@@ -156,13 +160,13 @@
         <section id="mutations" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">03</span>Les Mutations</h2>
-                <p>Les <strong>mutations</strong> sont le moteur de la variation genetique. Dans NEAT, il existe trois types principaux :</p>
+                <p>Les <strong>mutations</strong> sont le moteur de la variation génétique. Dans NEAT, il existe trois types principaux :</p>
                 <ul class="concept-list">
-                    <li><strong>Mutation de poids</strong> : Ajuste legerement les poids (le plus frequent)</li>
-                    <li><strong>Ajout de connexion</strong> : Cree un nouveau lien entre deux neurones</li>
-                    <li><strong>Ajout de noeud</strong> : Divise une connexion en inserant un neurone cache</li>
+                    <li><strong>Mutation de poids</strong> : Ajuste légèrement les poids (le plus fréquent)</li>
+                    <li><strong>Ajout de connexion</strong> : Crée un nouveau lien entre deux neurones</li>
+                    <li><strong>Ajout de nœud</strong> : Divise une connexion en insérant un neurone caché</li>
                 </ul>
-                <p>Ces mutations permettent aux reseaux de <strong>complexifier progressivement</strong> leur structure, partant d'un reseau minimal pour evoluer vers des architectures sophistiquees.</p>
+                <p>Ces mutations permettent aux réseaux de <strong>complexifier progressivement</strong> leur structure, partant d'un réseau minimal pour évoluer vers des architectures sophistiquées.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -170,19 +174,19 @@
                     <div class="mutation-controls">
                         <button id="btn-mutate-weight" class="ctrl-btn">Muter poids</button>
                         <button id="btn-add-connection" class="ctrl-btn">Ajouter connexion</button>
-                        <button id="btn-add-node" class="ctrl-btn">Ajouter noeud</button>
-                        <button id="btn-reset-mutation" class="ctrl-btn secondary">Reinitialiser</button>
+                        <button id="btn-add-node" class="ctrl-btn">Ajouter nœud</button>
+                        <button id="btn-reset-mutation" class="ctrl-btn secondary">Réinitialiser</button>
                     </div>
                     <div id="mutation-log" class="step-text"></div>
                     <div class="challenge-box" id="challenge-2">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 2</span>
+                            <span class="challenge-title">Défi 2</span>
                             <span class="challenge-status" id="ch2-status"></span>
                         </div>
-                        <p class="challenge-text">Partez du reseau minimal et appliquez des mutations pour atteindre :</p>
+                        <p class="challenge-text">Partez du réseau minimal et appliquez des mutations pour atteindre :</p>
                         <div class="challenge-checklist">
-                            <div class="check-item" id="ch2-check-hidden"><span class="check-icon">&#9675;</span> Au moins 1 neurone cache</div>
+                            <div class="check-item" id="ch2-check-hidden"><span class="check-icon">&#9675;</span> Au moins 1 neurone caché</div>
                             <div class="check-item" id="ch2-check-connections"><span class="check-icon">&#9675;</span> Au moins 8 connexions</div>
                         </div>
                     </div>
@@ -194,14 +198,14 @@
         <section id="innovation" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">04</span>Innovation & Crossover</h2>
-                <p>Lorsque deux genomes se reproduisent, comment aligner leurs genes ? C'est la que les <strong>numeros d'innovation</strong> interviennent.</p>
-                <p>Chaque nouvelle connexion recoit un numero unique. Lors du crossover :</p>
+                <p>Lorsque deux génomes se reproduisent, comment aligner leurs gènes ? C'est la que les <strong>numéros d'innovation</strong> interviennent.</p>
+                <p>Chaque nouvelle connexion reçoit un numéro unique. Lors du crossover :</p>
                 <ul class="concept-list">
-                    <li><strong>Matching genes</strong> : Meme numero d'innovation dans les deux parents</li>
-                    <li><strong>Disjoint genes</strong> : Numero present dans un seul parent (milieu de plage)</li>
-                    <li><strong>Excess genes</strong> : Numero present dans un seul parent (fin de plage)</li>
+                    <li><strong>Matching gènes</strong> : Même numéro d'innovation dans les deux parents</li>
+                    <li><strong>Disjoint gènes</strong> : Numéro présent dans un seul parent (milieu de plage)</li>
+                    <li><strong>Excess gènes</strong> : Numéro présent dans un seul parent (fin de plage)</li>
                 </ul>
-                <p>L'enfant herite de tous les genes du parent le plus fit, et choisit aleatoirement parmi les matching genes.</p>
+                <p>L'enfant hérite de tous les gènes du parent le plus fit, et choisit aléatoirement parmi les matching gènes.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -244,10 +248,10 @@
                     <div class="challenge-box" id="challenge-3">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 3</span>
+                            <span class="challenge-title">Défi 3</span>
                             <span class="challenge-status" id="ch3-status"></span>
                         </div>
-                        <p class="challenge-text">Identifiez le type de chaque gene dans le crossover :</p>
+                        <p class="challenge-text">Identifiez le type de chaque gène dans le crossover :</p>
                         <div id="innovation-quiz" class="gene-quiz"></div>
                     </div>
                 </div>
@@ -257,12 +261,12 @@
         <!-- Section 5: La Speciation -->
         <section id="speciation" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">05</span>La Speciation</h2>
-                <p>Imaginez une innovation prometteuse mais fragile : un nouveau neurone qui augmente temporairement l'erreur. Dans une competition directe, cette innovation disparaitrait !</p>
-                <p>La <strong>speciation</strong> protege la diversite en regroupant les genomes similaires en especes. La <strong>distance de compatibilite</strong> mesure la similarite :</p>
+                <h2><span class="section-number">05</span>La Spéciation</h2>
+                <p>Imaginez une innovation prometteuse mais fragile : un nouveau neurone qui augmente temporairement l'erreur. Dans une compétition directe, cette innovation disparaîtrait !</p>
+                <p>La <strong>spéciation</strong> protège la diversité en regroupant les génomes similaires en espèces. La <strong>distance de compatibilité</strong> mesure la similarité :</p>
                 <div class="formula-display">&delta; = c1&middot;E/N + c2&middot;D/N + c3&middot;W</div>
-                <p>Ou E = genes excess, D = genes disjoint, N = taille du plus grand genome, W = difference moyenne de poids.</p>
-                <p>Si &delta; &lt; seuil, deux genomes appartiennent a la meme espece.</p>
+                <p>Où E = gènes excess, D = gènes disjoint, N = taille du plus grand génome, W = différence moyenne de poids.</p>
+                <p>Si &delta; &lt; seuil, deux génomes appartiennent à la même espèce.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -289,12 +293,12 @@
         <!-- Section 6: Fitness et Selection -->
         <section id="fitness" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">06</span>Fitness & Selection</h2>
-                <p>La <strong>fitness</strong> mesure la performance d'un genome sur une tache (survie dans un jeu, distance parcourue, etc.).</p>
-                <p>Mais pour proteger les especes petites et innovantes, NEAT utilise le <strong>fitness sharing</strong> :</p>
-                <div class="formula-display">Fitness ajustee = Fitness brute / Taille de l'espece</div>
-                <p>Ainsi, une espece nombreuse voit sa fitness divisee : cela evite qu'une espece dominante n'elimine toutes les autres.</p>
-                <p>Lors de la reproduction, chaque espece recoit un nombre de descendants proportionnel a sa fitness ajustee totale.</p>
+                <h2><span class="section-number">06</span>Fitness & Sélection</h2>
+                <p>La <strong>fitness</strong> mesure la performance d'un génome sur une tâche (survie dans un jeu, distance parcourue, etc.).</p>
+                <p>Mais pour protéger les espèces petites et innovantes, NEAT utilise le <strong>fitness sharing</strong> :</p>
+                <div class="formula-display">Fitness ajustée = Fitness brute / Taille de l'espèce</div>
+                <p>Ainsi, une espèce nombreuse voit sa fitness divisée : cela évite qu'une espèce dominante n'élimine toutes les autres.</p>
+                <p>Lors de la reproduction, chaque espèce reçoit un nombre de descendants proportionnel à sa fitness ajustée totale.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -307,7 +311,7 @@
                                 <canvas id="fitness-raw-chart" width="220" height="200"></canvas>
                             </div>
                             <div class="chart-col">
-                                <h4>Fitness ajustee</h4>
+                                <h4>Fitness ajustée</h4>
                                 <canvas id="fitness-adjusted-chart" width="220" height="200"></canvas>
                             </div>
                         </div>
@@ -316,13 +320,13 @@
                     <div class="challenge-box" id="challenge-5">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 5</span>
+                            <span class="challenge-title">Défi 5</span>
                             <span class="challenge-status" id="ch5-status"></span>
                         </div>
-                        <p class="challenge-text">Une espece a 4 membres avec fitness : 100, 80, 60, 40. Calculez la fitness ajustee du meilleur individu.</p>
+                        <p class="challenge-text">Une espèce a 4 membres avec fitness : 100, 80, 60, 40. Calculez la fitness ajustée du meilleur individu.</p>
                         <div class="challenge-input-row">
-                            <input type="number" id="ch5-input" step="0.1" placeholder="Votre reponse">
-                            <button id="ch5-btn" class="ctrl-btn">Verifier</button>
+                            <input type="number" id="ch5-input" step="0.1" placeholder="Votre réponse">
+                            <button id="ch5-btn" class="ctrl-btn">Vérifier</button>
                         </div>
                         <div class="challenge-feedback" id="ch5-feedback"></div>
                     </div>
@@ -333,16 +337,16 @@
         <!-- Section 7: Le Cycle d'Evolution -->
         <section id="evolution-cycle" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">07</span>Le Cycle d'Evolution</h2>
-                <p>NEAT fonctionne par <strong>generations</strong>. A chaque generation :</p>
+                <h2><span class="section-number">07</span>Le Cycle d'Évolution</h2>
+                <p>NEAT fonctionne par <strong>générations</strong>. À chaque génération :</p>
                 <ol class="concept-list">
-                    <li><strong>Evaluation</strong> : Chaque genome joue et obtient une fitness</li>
-                    <li><strong>Speciation</strong> : Les genomes sont regroupes en especes</li>
-                    <li><strong>Selection</strong> : Seuls les meilleurs de chaque espece se reproduisent</li>
-                    <li><strong>Crossover</strong> : Combinaison de deux parents pour creer un enfant</li>
-                    <li><strong>Mutation</strong> : L'enfant subit des mutations aleatoires</li>
+                    <li><strong>Évaluation</strong> : Chaque génome joue et obtient une fitness</li>
+                    <li><strong>Spéciation</strong> : Les génomes sont regroupés en espèces</li>
+                    <li><strong>Sélection</strong> : Seuls les meilleurs de chaque espèce se reproduisent</li>
+                    <li><strong>Crossover</strong> : Combinaison de deux parents pour créer un enfant</li>
+                    <li><strong>Mutation</strong> : L'enfant subit des mutations aléatoires</li>
                 </ol>
-                <p>Les especes stagnantes (pas d'amelioration pendant N generations) sont <strong>eliminees</strong>.</p>
+                <p>Les espèces stagnantes (pas d'amélioration pendant N générations) sont <strong>éliminées</strong>.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -353,23 +357,23 @@
                     <div class="evolution-sim">
                         <canvas id="evolution-graph" width="500" height="200"></canvas>
                         <div class="sim-controls">
-                            <button id="btn-evolve-step" class="ctrl-btn">Evoluer 1 generation</button>
+                            <button id="btn-evolve-step" class="ctrl-btn">Évoluer 1 génération</button>
                             <button id="btn-evolve-auto" class="ctrl-btn accent">Auto (50 gen)</button>
-                            <button id="btn-reset-evolution" class="ctrl-btn secondary">Reinitialiser</button>
+                            <button id="btn-reset-evolution" class="ctrl-btn secondary">Réinitialiser</button>
                         </div>
                         <div class="sim-stats">
-                            <span>Generation : <strong id="gen-value">0</strong></span>
+                            <span>Génération : <strong id="gen-value">0</strong></span>
                             <span>Meilleure fitness : <strong id="best-fitness-value">0.00</strong></span>
-                            <span>Especes : <strong id="species-value">--</strong></span>
+                            <span>Espèces : <strong id="species-value">--</strong></span>
                         </div>
                     </div>
                     <div class="challenge-box" id="challenge-6">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 6</span>
+                            <span class="challenge-title">Défi 6</span>
                             <span class="challenge-status" id="ch6-status"></span>
                         </div>
-                        <p class="challenge-text">Faites evoluer la population sur le probleme XOR jusqu'a atteindre <strong>fitness &gt; 90%</strong>.</p>
+                        <p class="challenge-text">Faites évoluer la population sur le problème XOR jusqu'à atteindre <strong>fitness &gt; 90%</strong>.</p>
                         <div class="challenge-progress">
                             <div class="progress-bar"><div class="progress-fill" id="ch6-progress"></div></div>
                             <span class="progress-text" id="ch6-text">Fitness : 0.0% / 90%</span>
@@ -382,32 +386,32 @@
         <!-- Section 8: Applications Reelles -->
         <section id="applications" class="course-section">
             <div class="section-text">
-                <h2><span class="section-number">08</span>Applications Reelles</h2>
-                <p>NEAT a ete utilise avec succes dans de nombreux domaines : jeux video, robotique, simulation, art generatif...</p>
-                <p>Sur ce site, vous pouvez voir NEAT en action sur deux demos :</p>
+                <h2><span class="section-number">08</span>Applications Réelles</h2>
+                <p>NEAT a été utilise avec succès dans de nombreux domaines : jeux vidéo, robotique, simulation, art génératif...</p>
+                <p>Sur ce site, vous pouvez voir NEAT en action sur deux démos :</p>
                 <ul class="concept-list">
-                    <li><strong>Flappy Bird</strong> : NEAT apprend a jouer en evaluant la position des tuyaux</li>
-                    <li><strong>Course de voitures</strong> : NEAT evolue des pilotes en utilisant des capteurs de distance</li>
+                    <li><strong>Flappy Bird</strong> : NEAT apprend à jouer en évaluant la position des tuyaux</li>
+                    <li><strong>Course de voitures</strong> : NEAT évolue des pilotes en utilisant des capteurs de distance</li>
                 </ul>
-                <p>Observez la difference entre un reseau de <strong>Generation 1</strong> (simple, aleatoire) et <strong>Generation 50+</strong> (complexe, optimise).</p>
+                <p>Observez la différence entre un réseau de <strong>Génération 1</strong> (simple, aléatoire) et <strong>Génération 50+</strong> (complexe, optimisé).</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
                     <div class="demo-comparison">
                         <div class="demo-col">
-                            <h4>Generation 1</h4>
+                            <h4>Génération 1</h4>
                             <svg id="gen1-svg" viewBox="0 0 220 180"></svg>
                             <div class="demo-stats">
-                                <p>Noeuds : <strong id="gen1-nodes">--</strong></p>
+                                <p>Nœuds : <strong id="gen1-nodes">--</strong></p>
                                 <p>Connexions : <strong id="gen1-connections">--</strong></p>
                                 <p>Fitness : <strong id="gen1-fitness">--</strong></p>
                             </div>
                         </div>
                         <div class="demo-col">
-                            <h4>Generation 50</h4>
+                            <h4>Génération 50</h4>
                             <svg id="gen50-svg" viewBox="0 0 220 180"></svg>
                             <div class="demo-stats">
-                                <p>Noeuds : <strong id="gen50-nodes">--</strong></p>
+                                <p>Nœuds : <strong id="gen50-nodes">--</strong></p>
                                 <p>Connexions : <strong id="gen50-connections">--</strong></p>
                                 <p>Fitness : <strong id="gen50-fitness">--</strong></p>
                             </div>
@@ -424,71 +428,71 @@
         <!-- Section 9: Conclusion -->
         <section id="conclusion" class="course-section conclusion-section">
             <div class="conclusion-content">
-                <h2>Recapitulatif</h2>
+                <h2>Récapitulatif</h2>
                 <div class="recap-grid">
                     <div class="recap-card">
                         <span class="recap-num">01</span>
-                        <strong>Neuroevolution</strong>
-                        <p>Alternative a la retropropagation basee sur la selection naturelle.</p>
+                        <strong>Neuroévolution</strong>
+                        <p>Alternative à la rétropropagation basée sur la sélection naturelle.</p>
                     </div>
                     <div class="recap-card" data-challenge="1">
                         <span class="recap-num">02</span>
-                        <strong>Genome</strong>
-                        <p>NodeGenes et ConnectionGenes avec numeros d'innovation.</p>
+                        <strong>Génome</strong>
+                        <p>NodeGenes et ConnectionGenes avec numéros d'innovation.</p>
                     </div>
                     <div class="recap-card" data-challenge="2">
                         <span class="recap-num">03</span>
                         <strong>Mutations</strong>
-                        <p>Poids, ajout de connexion, ajout de noeud.</p>
+                        <p>Poids, ajout de connexion, ajout de nœud.</p>
                     </div>
                     <div class="recap-card" data-challenge="3">
                         <span class="recap-num">04</span>
                         <strong>Crossover</strong>
-                        <p>Reproduction avec alignement par numeros d'innovation.</p>
+                        <p>Reproduction avec alignement par numéros d'innovation.</p>
                     </div>
                     <div class="recap-card" data-challenge="4">
                         <span class="recap-num">05</span>
-                        <strong>Speciation</strong>
-                        <p>Protection de la diversite par regroupement en especes.</p>
+                        <strong>Spéciation</strong>
+                        <p>Protection de la diversité par regroupement en espèces.</p>
                     </div>
                     <div class="recap-card" data-challenge="5">
                         <span class="recap-num">06</span>
                         <strong>Fitness Sharing</strong>
-                        <p>Ajustement de la fitness pour eviter la domination.</p>
+                        <p>Ajustement de la fitness pour éviter la domination.</p>
                     </div>
                     <div class="recap-card" data-challenge="6">
                         <span class="recap-num">07</span>
-                        <strong>Evolution</strong>
-                        <p>Cycle complet : evaluation, speciation, selection, reproduction.</p>
+                        <strong>Évolution</strong>
+                        <p>Cycle complet : évaluation, spéciation, sélection, reproduction.</p>
                     </div>
                     <div class="recap-card">
                         <span class="recap-num">08</span>
                         <strong>Applications</strong>
-                        <p>Jeux, robotique, simulation, art generatif.</p>
+                        <p>Jeux, robotique, simulation, art génératif.</p>
                     </div>
                 </div>
                 <div class="final-score" id="final-score">
                     <span class="score-icon">&#9733;</span>
-                    <span class="score-text" id="final-score-text">0/6 defis completes</span>
+                    <span class="score-text" id="final-score-text">0/6 défis complétés</span>
                 </div>
                 <p class="score-message" id="score-message"></p>
 
                 <!-- Parameter Reference -->
                 <div class="param-reference" style="margin-top: 40px; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 30px;">
                     <h3 style="color: #FFAB40; margin-bottom: 20px; text-align: center;">Guide de Configuration NEAT</h3>
-                    <p style="color: #CCC; text-align: center; margin-bottom: 30px;">Parametres cles et leurs influences sur l'evolution</p>
+                    <p style="color: #CCC; text-align: center; margin-bottom: 30px;">Paramètres clés et leurs influences sur l'évolution</p>
 
                     <div class="param-grid" id="param-grid"></div>
 
                     <div style="margin-top: 30px; padding: 20px; background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4CAF50; border-radius: 6px;">
                         <h4 style="color: #4CAF50; margin-bottom: 15px;">💡 Conseils de Configuration</h4>
                         <ul style="color: #CCC; line-height: 1.8; list-style-position: inside;">
-                            <li><strong>Commencer simple :</strong> Population de 50-150, seuil de speciation a 3.0</li>
-                            <li><strong>Taux de mutation :</strong> Poids 80%, Connexion 5%, Noeud 3%</li>
-                            <li><strong>Si l'evolution stagne :</strong> Augmenter taux mutation ou reduire seuil speciation</li>
-                            <li><strong>Si trop chaotique :</strong> Reduire taux mutation, augmenter seuil speciation</li>
-                            <li><strong>Problemes complexes :</strong> Augmenter population (200-500) et generations (100+)</li>
-                            <li><strong>Selection :</strong> Garder top 20-30% de chaque espece</li>
+                            <li><strong>Commencer simple :</strong> Population de 50-150, seuil de spéciation à 3.0</li>
+                            <li><strong>Taux de mutation :</strong> Poids 80%, Connexion 5%, Nœud 3%</li>
+                            <li><strong>Si l'évolution stagne :</strong> Augmenter taux mutation ou réduire seuil spéciation</li>
+                            <li><strong>Si trop chaotique :</strong> Réduire taux mutation, augmenter seuil spéciation</li>
+                            <li><strong>Problèmes complexes :</strong> Augmenter population (200-500) et générations (100+)</li>
+                            <li><strong>Sélection :</strong> Garder top 20-30% de chaque espèce</li>
                             <li><strong>Coefficients c1, c2, c3 :</strong> Valeurs standard 1.0, 1.0, 0.4 fonctionnent bien</li>
                         </ul>
                     </div>
@@ -496,7 +500,7 @@
 
                 <div class="next-steps" style="margin-top: 30px;">
                     <a href="/flappy" class="cta-btn">Voir NEAT en action &rarr;</a>
-                    <a href="/" class="back-link">&larr; Retour a l'accueil</a>
+                    <a href="/" class="back-link">&larr; Retour à l'accueil</a>
                 </div>
             </div>
         </section>

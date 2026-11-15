@@ -32,13 +32,13 @@ function updateCounter() {
     if (el) el.textContent = `${count}/${challengeState.total}`;
     // Update conclusion
     const scoreText = document.getElementById("final-score-text");
-    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} defis completes`;
+    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} défis complétés`;
     const msg = document.getElementById("score-message");
     if (msg) {
-        if (count === 6) msg.textContent = "Parfait ! Vous maitrisez les bases des reseaux de neurones !";
-        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques defis a relever.";
-        else if (count >= 1) msg.textContent = "Bon debut ! N'hesitez pas a revenir completer les defis.";
-        else msg.textContent = "Remontez et tentez les defis pour tester vos connaissances !";
+        if (count === 6) msg.textContent = "Parfait ! Vous maîtrisez les bases des réseaux de neurones !";
+        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques défis à relever.";
+        else if (count >= 1) msg.textContent = "Bon début ! N'hésitez pas à revenir compléter les défis.";
+        else msg.textContent = "Remontez et tentez les défis pour tester vos connaissances !";
     }
     // Update recap cards
     document.querySelectorAll(".recap-card[data-challenge]").forEach(card => {
@@ -485,9 +485,9 @@ function initActivationQuiz() {
     if (!container) return;
 
     const questions = [
-        { input: -2, output: 0, answer: "relu", text: "Entree = -2, Sortie attendue = 0" },
-        { input: 0.5, output: "0.62", answer: "sigmoid", text: "Entree = 0.5, Sortie attendue \u2248 0.62" },
-        { input: 3, output: 3, answer: "relu", text: "Entree = 3, Sortie attendue = 3" },
+        { input: -2, output: 0, answer: "relu", text: "Entrée = -2, Sortie attendue = 0" },
+        { input: 0.5, output: "0.62", answer: "sigmoid", text: "Entrée = 0.5, Sortie attendue \u2248 0.62" },
+        { input: 3, output: 3, answer: "relu", text: "Entrée = 3, Sortie attendue = 3" },
     ];
 
     let score = 0;
@@ -696,7 +696,7 @@ function initClassifier() {
             showMessage("");
         } else if (dataMode === "circle" && trainEpoch >= 100) {
             stopTraining();
-            showMessage("Impossible ! Une droite ne peut pas separer un cercle. Il faut <strong>plusieurs couches</strong> pour tracer des frontieres non-lineaires.");
+            showMessage("Impossible ! Une droite ne peut pas séparer un cercle. Il faut <strong>plusieurs couches</strong> pour tracer des frontières non linéaires.");
         } else if (dataMode === "linear" && trainEpoch >= 200) {
             stopTraining();
         }
@@ -715,7 +715,7 @@ function initClassifier() {
             clearInterval(trainInterval);
             trainInterval = null;
             training = false;
-            document.getElementById("btn-train").textContent = "Entrainer";
+            document.getElementById("btn-train").textContent = "Entraîner";
         }
     }
 
@@ -793,7 +793,7 @@ function initClassifier() {
             <circle cx="220" cy="60" r="18" fill="#0E2A47" stroke="#0097A7" stroke-width="1.5"/>
             <text x="220" y="64" text-anchor="middle" fill="#0097A7" font-size="10" font-weight="700">classe</text>
             <!-- Label -->
-            <text x="140" y="112" text-anchor="middle" fill="#78909C" font-size="9">1 neurone = frontiere lineaire</text>
+            <text x="140" y="112" text-anchor="middle" fill="#78909C" font-size="9">1 neurone = frontière linéaire</text>
         `;
 
         if (dataMode === "circle") {
@@ -874,7 +874,7 @@ function initNetworkBuilder() {
 
             // Layer label
             const labelY = 380 - 8;
-            const label = isInput ? "Entree" : isOutput ? "Sortie" : `Cachee ${li}`;
+            const label = isInput ? "Entrée" : isOutput ? "Sortie" : `Cachée ${li}`;
             html += `<text x="${layer[0].x}" y="${labelY}" text-anchor="middle" fill="#78909C" font-size="10">${label}</text>`;
         });
 
@@ -1234,7 +1234,7 @@ function initMLPClassifier() {
         }
         // Nodes
         const colors = ["#FFAB40", "#85D5E6", "#85D5E6", "#0097A7"];
-        const labels = ["Entree", "Cachee 1", "Cachee 2", "Sortie"];
+        const labels = ["Entrée", "Cachée 1", "Cachée 2", "Sortie"];
         positions.forEach((layer, li) => {
             layer.forEach(pos => {
                 html += `<circle cx="${pos.x}" cy="${pos.y}" r="7" fill="#0E2A47" stroke="${colors[li]}" stroke-width="1.5"/>`;
@@ -1259,7 +1259,7 @@ function initMLPClassifier() {
             cancelAnimationFrame(trainAnimId);
             trainAnimId = null;
         }
-        document.getElementById("btn-mlp-train").textContent = "Entrainer";
+        document.getElementById("btn-mlp-train").textContent = "Entraîner";
     }
 
     function startTraining() {
@@ -1293,9 +1293,9 @@ function initMLPClassifier() {
                 stopTraining();
                 drawMLPNetworkSVG();
                 if (acc >= 0.95) {
-                    showMLPMessage("Le reseau multicouche a appris a separer le cercle ! La <strong>non-linearite</strong> des couches cachees permet de tracer des frontieres courbes.");
+                    showMLPMessage("Le réseau multicouche a appris à séparer le cercle ! La <strong>non-linéarité</strong> des couches cachées permet de tracer des frontières courbes.");
                 } else {
-                    showMLPMessage("Le reseau n'a pas converge. Essayez de <strong>reinitialiser</strong> et relancer l'entrainement (les poids de depart sont aleatoires).");
+                    showMLPMessage("Le réseau n'a pas converge. Essayez de <strong>réinitialiser</strong> et relancer l'entraînement (les poids de départ sont aléatoires).");
                 }
             } else {
                 trainAnimId = requestAnimationFrame(step);
@@ -1351,12 +1351,12 @@ function initForwardPass() {
     const maxSteps = 6;
 
     const stepDescriptions = [
-        "Pret. Cliquez sur <strong>Etape suivante</strong> pour commencer la propagation.",
-        `<strong>Entrees :</strong> x1 = ${inputs[0]}, x2 = ${inputs[1]}`,
-        `<strong>Neurone cache 1 :</strong> z = <span class="math">${inputs[0]}\u00d7${w[0][0]} + ${inputs[1]}\u00d7${w[0][1]} + (${bh[0]}) = ${z1.toFixed(2)}</span> \u2192 ReLU = <span class="math">${h1.toFixed(2)}</span>`,
-        `<strong>Neurone cache 2 :</strong> z = <span class="math">${inputs[0]}\u00d7${w[1][0]} + ${inputs[1]}\u00d7${w[1][1]} + ${bh[1]} = ${z2.toFixed(2)}</span> \u2192 ReLU = <span class="math">${h2.toFixed(2)}</span>`,
+        "Prêt. Cliquez sur <strong>Étape suivante</strong> pour commencer la propagation.",
+        `<strong>Entrées :</strong> x1 = ${inputs[0]}, x2 = ${inputs[1]}`,
+        `<strong>Neurone caché 1 :</strong> z = <span class="math">${inputs[0]}\u00d7${w[0][0]} + ${inputs[1]}\u00d7${w[0][1]} + (${bh[0]}) = ${z1.toFixed(2)}</span> \u2192 ReLU = <span class="math">${h1.toFixed(2)}</span>`,
+        `<strong>Neurone caché 2 :</strong> z = <span class="math">${inputs[0]}\u00d7${w[1][0]} + ${inputs[1]}\u00d7${w[1][1]} + ${bh[1]} = ${z2.toFixed(2)}</span> \u2192 ReLU = <span class="math">${h2.toFixed(2)}</span>`,
         `<strong>Sortie :</strong> z = <span class="math">${h1.toFixed(2)}\u00d7${wo[0]} + ${h2.toFixed(2)}\u00d7${wo[1]} + ${bo} = ${zOut.toFixed(2)}</span>`,
-        `<strong>Resultat final :</strong> ReLU(${zOut.toFixed(2)}) = <span class="math">${out.toFixed(2)}</span>`,
+        `<strong>Résultat final :</strong> ReLU(${zOut.toFixed(2)}) = <span class="math">${out.toFixed(2)}</span>`,
     ];
 
     const nodePositions = {
@@ -1750,7 +1750,7 @@ function initGradientDescent() {
 
         if (lossVal === null) {
             fill.style.width = "0%";
-            text.textContent = "Cliquez sur la surface pour placer le point de depart";
+            text.textContent = "Cliquez sur la surface pour placer le point de départ";
             return;
         }
 

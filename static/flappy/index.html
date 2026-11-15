@@ -5,17 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flappy Bird NEAT - Neura'TN</title>
     <link rel="stylesheet" href="/static/flappy/style.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
 </head>
-<body>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
     <header>
         <div class="header-left">
-            <a href="/" class="back-link">&larr; Accueil</a>
-            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Démo</span>
         </div>
         <h1>Flappy Bird NEAT</h1>
         <div class="controls">
-            <button id="btn-start">Demarrer</button>
-            <button id="btn-reset">Reinitialiser</button>
+            <button id="btn-start">Démarrer</button>
+            <button id="btn-reset">Réinitialiser</button>
             <div class="speed-group">
                 <label>Vitesse :</label>
                 <button class="speed-btn active" data-speed="1">1x</button>
@@ -25,7 +29,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="game-panel">
             <canvas id="game-canvas" width="500" height="800"></canvas>
         </section>
@@ -33,11 +37,11 @@
         <section class="info-panel">
             <div class="stats">
                 <h2>Statistiques</h2>
-                <div class="stat-row"><span class="stat-label">Generation</span><span id="stat-gen" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Génération</span><span id="stat-gen" class="stat-value">0</span></div>
                 <div class="stat-row"><span class="stat-label">En vie</span><span id="stat-alive" class="stat-value">0</span></div>
                 <div class="stat-row"><span class="stat-label">Score</span><span id="stat-score" class="stat-value">0</span></div>
                 <div class="stat-row"><span class="stat-label">Meilleure fitness</span><span id="stat-best" class="stat-value">0</span></div>
-                <div class="stat-row"><span class="stat-label">Especes</span><span id="stat-species" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Espèces</span><span id="stat-species" class="stat-value">0</span></div>
             </div>
 
             <div class="nn-viz">
@@ -47,25 +51,25 @@
 
             <!-- NN Input Selection -->
             <details class="param-section" open>
-                <summary>Entrees du reseau</summary>
+                <summary>Entrées du réseau</summary>
                 <div class="param-grid">
                     <label class="nn-input-toggle"><input type="checkbox" id="input-pipex" checked> Position X tuyau (PipeX)</label>
                     <label class="nn-input-toggle"><input type="checkbox" id="input-topy" checked> Bord haut tuyau (TopY)</label>
                     <label class="nn-input-toggle"><input type="checkbox" id="input-boty" checked> Bord bas tuyau (BotY)</label>
-                    <label class="nn-input-toggle"><input type="checkbox" id="input-ydiff" checked> Ecart Y / centre (Ydiff)</label>
+                    <label class="nn-input-toggle"><input type="checkbox" id="input-ydiff" checked> Écart Y / centre (Ydiff)</label>
                     <label class="nn-input-toggle"><input type="checkbox" id="input-xdiff" checked> Distance X tuyau (Xdiff)</label>
                     <label class="nn-input-toggle"><input type="checkbox" id="input-birdy" checked> Position Y oiseau (BirdY)</label>
                     <label class="nn-input-toggle"><input type="checkbox" id="input-vel"> Vitesse verticale (Vel)</label>
                 </div>
-                <p class="hint" style="margin-top: 8px; font-size: 0.78rem;">Cochez/decochez puis "Reinitialiser" pour appliquer.</p>
+                <p class="hint" style="margin-top: 8px; font-size: 0.78rem;">Cochez/decochez puis "Réinitialiser" pour appliquer.</p>
             </details>
 
             <!-- Game parameters -->
             <details class="param-section" open>
-                <summary>Parametres jeu</summary>
+                <summary>Paramètres jeu</summary>
                 <div class="param-grid">
                     <div class="param-row">
-                        <label for="param-gravity">Gravite</label>
+                        <label for="param-gravity">Gravité</label>
                         <input type="number" id="param-gravity" value="3" min="0.5" max="10" step="0.5">
                     </div>
                     <div class="param-row">
@@ -77,7 +81,7 @@
                         <input type="number" id="param-terminal-vel" value="16" min="5" max="30" step="1">
                     </div>
                     <div class="param-row">
-                        <label for="param-pipe-gap">Ecart tuyaux</label>
+                        <label for="param-pipe-gap">Écart tuyaux</label>
                         <input type="number" id="param-pipe-gap" value="200" min="80" max="400" step="10">
                     </div>
                     <div class="param-row">
@@ -89,18 +93,18 @@
 
             <!-- Training parameters -->
             <details class="param-section">
-                <summary>Parametres entrainement</summary>
+                <summary>Paramètres entraînement</summary>
                 <div class="param-grid">
                     <div class="param-row">
                         <label for="param-pop-size">Taille population</label>
                         <input type="number" id="param-pop-size" value="100" min="10" max="500" step="10">
                     </div>
                     <div class="param-row">
-                        <label for="param-compat-threshold">Seuil compatibilite</label>
+                        <label for="param-compat-threshold">Seuil compatibilité</label>
                         <input type="number" id="param-compat-threshold" value="1.5" min="0.5" max="5.0" step="0.1">
                     </div>
                     <div class="param-row">
-                        <label for="param-elitism">Elitisme</label>
+                        <label for="param-elitism">Élitisme</label>
                         <input type="number" id="param-elitism" value="2" min="0" max="10" step="1">
                     </div>
                     <div class="param-row">
@@ -116,7 +120,7 @@
                         <input type="number" id="param-weight-mutate" value="0.8" min="0" max="1" step="0.05">
                     </div>
                     <div class="param-row">
-                        <label for="param-add-node">Taux ajout noeud</label>
+                        <label for="param-add-node">Taux ajout nœud</label>
                         <input type="number" id="param-add-node" value="0.35" min="0" max="1" step="0.05">
                     </div>
                     <div class="param-row">
@@ -131,12 +135,12 @@
             </details>
 
             <div class="info-text">
-                <h2>Comment ca marche</h2>
-                <p>Des oiseaux par generation, chacun controle par un reseau de neurones. Les meilleurs se reproduisent pour creer la generation suivante via l'algorithme NEAT.</p>
-                <p><strong>Entrees :</strong> position du tuyau, emplacement de l'ouverture, position de l'oiseau</p>
+                <h2>Comment ça marche</h2>
+                <p>Des oiseaux par génération, chacun contrôle par un réseau de neurones. Les meilleurs se reproduisent pour créer la génération suivante via l'algorithme NEAT.</p>
+                <p><strong>Entrées :</strong> position du tuyau, emplacement de l'ouverture, position de l'oiseau</p>
                 <p><strong>Sortie :</strong> sauter ou non</p>
-                <p><strong>Fitness :</strong> +0.1/frame en vie, +5/tuyau passe</p>
-                <p class="hint">Modifiez les parametres puis cliquez "Reinitialiser" pour appliquer.</p>
+                <p><strong>Fitness :</strong> +0.1/frame en vie, +5/tuyau passé</p>
+                <p class="hint">Modifiez les paramètres puis cliquez "Réinitialiser" pour appliquer.</p>
             </div>
         </section>
     </main>

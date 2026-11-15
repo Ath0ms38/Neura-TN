@@ -2,8 +2,10 @@
 
 // ============ Constants ============
 const CW = 1000, CH = 600;
-const GRASS_COLOR = [0, 200, 0];
-const ROAD_COLOR = [128, 128, 128];
+// isGrass() compare ces valeurs au pixel près : tout ce qui n'est pas exactement
+// de l'herbe (route, bords lissés) est praticable.
+const GRASS_COLOR = [27, 94, 58];
+const ROAD_COLOR = [74, 84, 102];
 const CAR_W = 13, CAR_H = 23;
 let MAX_SPEED = 175, MIN_SPEED = 0, ACCELERATION = 75, TURN_SPEED = 150;
 let DRIFT_FACTOR = 0.8, DRIFT_THRESHOLD = 87.5, DRIFT_FRICTION = 0.95;
@@ -313,7 +315,7 @@ function renderEditor() {
         ctx.fillStyle = "#5dade2";
         ctx.font = "12px Arial, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("DEPART", startPos.x, startPos.y - 16);
+        ctx.fillText("DÉPART", startPos.x, startPos.y - 16);
     }
 
     // Brush cursor (if road/erase mode)
@@ -333,10 +335,10 @@ function renderEditor() {
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     const statusParts = [];
-    const toolNames = { road: "Route", erase: "Gomme", start: "Depart", checkpoint: "Checkpoint", "delete-cp": "Supprimer CP" };
+    const toolNames = { road: "Route", erase: "Gomme", start: "Départ", checkpoint: "Checkpoint", "delete-cp": "Supprimer CP" };
     statusParts.push(`Outil : ${toolNames[editorTool] || editorTool}`);
-    if (startPos) statusParts.push("Depart : place");
-    else statusParts.push("Depart : non place");
+    if (startPos) statusParts.push("Départ : placé");
+    else statusParts.push("Départ : non placé");
     statusParts.push(`Checkpoints : ${checkpoints.length}`);
     ctx.fillText(statusParts.join("  |  "), 10, CH - 15);
     ctx.textBaseline = "alphabetic";
@@ -353,27 +355,30 @@ function pointToSegDist(px, py, ax, ay, bx, by) {
     return Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
 }
 
-// -- Editor mouse events --
+// -- Editor pointer events (souris, stylet, tactile) --
+let strokeX = 0, strokeY = 0;   // dernier point peint du trait en cours
+let strokeErases = false;
+
 function onEditorMouseDown(e) {
     const { x, y } = getCanvasCoords(e);
+    lastMx = x; lastMy = y;
+    hideNotice();
 
-    if (e.button === 2) {
-        // Right click always erases
+    const paints = e.button === 2 || editorTool === "road" || editorTool === "erase";
+    if (paints) {
+        e.preventDefault();
+        canvas.setPointerCapture(e.pointerId);
         painting = true;
-        lastMx = x; lastMy = y;
-        drawBrush(x, y, `rgb(${GRASS_COLOR.join(",")})`, brushSize);
+        // Le clic droit efface quel que soit l'outil.
+        strokeErases = e.button === 2 || editorTool === "erase";
+        strokeX = x; strokeY = y;
+        drawBrush(x, y, `rgb(${(strokeErases ? GRASS_COLOR : ROAD_COLOR).join(",")})`, brushSize);
+        renderEditor();
         return;
     }
+    if (e.button !== 0) return;
 
-    if (editorTool === "road") {
-        painting = true;
-        lastMx = x; lastMy = y;
-        drawBrush(x, y, `rgb(${ROAD_COLOR.join(",")})`, brushSize);
-    } else if (editorTool === "erase") {
-        painting = true;
-        lastMx = x; lastMy = y;
-        drawBrush(x, y, `rgb(${GRASS_COLOR.join(",")})`, brushSize);
-    } else if (editorTool === "start") {
+    if (editorTool === "start") {
         startPos = { x: Math.round(x), y: Math.round(y) };
         renderEditor();
     } else if (editorTool === "checkpoint") {
@@ -386,8 +391,8 @@ function onEditorMouseDown(e) {
                 order: checkpoints.length,
             });
             cpTempStart = null;
-            renderEditor();
         }
+        renderEditor();
     } else if (editorTool === "delete-cp") {
         let minDist = Infinity, minIdx = -1;
         for (let i = 0; i < checkpoints.length; i++) {
@@ -405,38 +410,128 @@ function onEditorMouseDown(e) {
 
 function onEditorMouseMove(e) {
     const { x, y } = getCanvasCoords(e);
-    lastMx = x; lastMy = y;
 
     if (painting) {
-        const isErase = e.buttons === 2 || editorTool === "erase";
-        const color = isErase ? `rgb(${GRASS_COLOR.join(",")})` : `rgb(${ROAD_COLOR.join(",")})`;
-        drawBrushLine(lastMx, lastMy, x, y, color, brushSize);
-        lastMx = x; lastMy = y;
+        // On relie le point précédent au point courant : un geste rapide ne
+        // laisse plus de trous dans la route.
+        const color = `rgb(${(strokeErases ? GRASS_COLOR : ROAD_COLOR).join(",")})`;
+        drawBrushLine(strokeX, strokeY, x, y, color, brushSize);
+        strokeX = x; strokeY = y;
     }
 
+    lastMx = x; lastMy = y;
     renderEditor();
 }
 
-function onEditorMouseUp(e) {
+function onEditorMouseUp() {
     if (painting) {
         painting = false;
         updateTrackImageData();
     }
 }
 
+function onEditorMouseLeave() {
+    if (painting) return; // le trait est capturé : il continue hors du canvas
+    lastMx = -1; lastMy = -1;
+    renderEditor();
+}
+
+const preventContextMenu = (e) => e.preventDefault();
+
 function attachEditorEvents() {
-    canvas.addEventListener("mousedown", onEditorMouseDown);
-    canvas.addEventListener("mousemove", onEditorMouseMove);
-    canvas.addEventListener("mouseup", onEditorMouseUp);
-    canvas.addEventListener("mouseleave", onEditorMouseUp);
-    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    canvas.addEventListener("pointerdown", onEditorMouseDown);
+    canvas.addEventListener("pointermove", onEditorMouseMove);
+    canvas.addEventListener("pointerup", onEditorMouseUp);
+    canvas.addEventListener("pointercancel", onEditorMouseUp);
+    canvas.addEventListener("pointerleave", onEditorMouseLeave);
+    canvas.addEventListener("contextmenu", preventContextMenu);
+    canvas.style.touchAction = "none";
 }
 
 function detachEditorEvents() {
-    canvas.removeEventListener("mousedown", onEditorMouseDown);
-    canvas.removeEventListener("mousemove", onEditorMouseMove);
-    canvas.removeEventListener("mouseup", onEditorMouseUp);
-    canvas.removeEventListener("mouseleave", onEditorMouseUp);
+    canvas.removeEventListener("pointerdown", onEditorMouseDown);
+    canvas.removeEventListener("pointermove", onEditorMouseMove);
+    canvas.removeEventListener("pointerup", onEditorMouseUp);
+    canvas.removeEventListener("pointercancel", onEditorMouseUp);
+    canvas.removeEventListener("pointerleave", onEditorMouseLeave);
+    canvas.removeEventListener("contextmenu", preventContextMenu);
+    canvas.style.touchAction = "";
+    painting = false;
+}
+
+// -- Messages (remplacent les alert() bloquants) --
+function showNotice(message) {
+    const el = document.getElementById("editor-notice");
+    el.textContent = message;
+    el.hidden = false;
+}
+
+function hideNotice() {
+    document.getElementById("editor-notice").hidden = true;
+}
+
+// -- Circuit d'exemple : une boucle fermée, son départ et ses checkpoints --
+function loadExampleTrack() {
+    const anchors = [
+        [150, 300], [215, 140], [400, 100], [545, 140], [700, 100], [860, 190],
+        [850, 410], [700, 500], [530, 455], [370, 500], [205, 465],
+    ];
+    // Spline de Catmull-Rom fermée passant par les points d'ancrage
+    const pts = [];
+    const n = anchors.length;
+    for (let i = 0; i < n; i++) {
+        const p0 = anchors[(i - 1 + n) % n], p1 = anchors[i];
+        const p2 = anchors[(i + 1) % n], p3 = anchors[(i + 2) % n];
+        for (let k = 0; k < 16; k++) {
+            const t = k / 16, t2 = t * t, t3 = t2 * t;
+            pts.push([0, 1].map(a => 0.5 * (
+                2 * p1[a] + (p2[a] - p0[a]) * t +
+                (2 * p0[a] - 5 * p1[a] + 4 * p2[a] - p3[a]) * t2 +
+                (3 * p1[a] - p0[a] - 3 * p2[a] + p3[a]) * t3
+            )));
+        }
+    }
+
+    trackCtx.fillStyle = `rgb(${GRASS_COLOR.join(",")})`;
+    trackCtx.fillRect(0, 0, CW, CH);
+    trackCtx.strokeStyle = `rgb(${ROAD_COLOR.join(",")})`;
+    trackCtx.lineWidth = 66;
+    trackCtx.lineJoin = "round";
+    trackCtx.beginPath();
+    pts.forEach(([x, y], i) => (i ? trackCtx.lineTo(x, y) : trackCtx.moveTo(x, y)));
+    trackCtx.closePath();
+    trackCtx.stroke();
+    updateTrackImageData();
+
+    startPos = { x: Math.round(pts[0][0]), y: Math.round(pts[0][1]) };
+    checkpoints = [];
+    const count = 12;
+    for (let c = 0; c < count; c++) {
+        const i = Math.round(((c + 0.5) / count) * pts.length) % pts.length;
+        const [x, y] = pts[i];
+        const [nx, ny] = pts[(i + 1) % pts.length];
+        const len = Math.hypot(nx - x, ny - y) || 1;
+        const px = -(ny - y) / len * 42, py = (nx - x) / len * 42;
+        checkpoints.push({
+            start: [Math.round(x + px), Math.round(y + py)],
+            end: [Math.round(x - px), Math.round(y - py)],
+            order: c,
+        });
+    }
+    cpTempStart = null;
+    hideNotice();
+    renderEditor();
+}
+
+function clearTrack() {
+    trackCtx.fillStyle = `rgb(${GRASS_COLOR.join(",")})`;
+    trackCtx.fillRect(0, 0, CW, CH);
+    updateTrackImageData();
+    startPos = null;
+    checkpoints = [];
+    cpTempStart = null;
+    hideNotice();
+    renderEditor();
 }
 
 // ============================================================
@@ -906,9 +1001,21 @@ function updateStats() {
 }
 
 // ---- Main Loop ----
-function gameLoop() {
+let lastSimTime = null;
+let simAccumulator = 0;
+const SIM_TICK_MS = 1000 / 60;
+
+function gameLoop(timestamp) {
     if (!running || mode !== "simulation") return;
-    for (let s = 0; s < speed; s++) {
+    const delta = lastSimTime === null ? 0 : Math.min(timestamp - lastSimTime, 100);
+    lastSimTime = timestamp;
+    simAccumulator += delta * speed;
+    // Budget de calcul par image : si la machine ne suit pas en accéléré,
+    // on ralentit la simulation au lieu de geler la page.
+    const frameStart = performance.now();
+    while (simAccumulator >= SIM_TICK_MS) {
+        if (performance.now() - frameStart > 24) { simAccumulator = 0; break; }
+        simAccumulator -= SIM_TICK_MS;
         const genOver = gameTick();
         if (genOver && !manualMode) {
             population.evolve();
@@ -925,6 +1032,8 @@ function gameLoop() {
 function startSim() {
     if (running) return;
     running = true;
+    lastSimTime = null;
+    simAccumulator = 0;
     animFrame = requestAnimationFrame(gameLoop);
     document.getElementById("btn-start").textContent = "Pause";
 }
@@ -932,7 +1041,7 @@ function startSim() {
 function pauseSim() {
     running = false;
     if (animFrame) cancelAnimationFrame(animFrame);
-    document.getElementById("btn-start").textContent = "Demarrer";
+    document.getElementById("btn-start").textContent = "Démarrer";
 }
 
 // ============================================================
@@ -981,13 +1090,18 @@ function enterEditor() {
 
 function enterSimulation() {
     if (!startPos) {
-        alert("Veuillez definir une position de depart.");
+        showNotice("Placez d'abord la position de départ : outil « Départ », puis cliquez sur la route.");
+        return;
+    }
+    if (isGrass(startPos.x, startPos.y)) {
+        showNotice("Le départ est sur l'herbe : les voitures s'écraseraient immédiatement. Placez-le sur la route.");
         return;
     }
     if (checkpoints.length < 2) {
-        alert("Veuillez ajouter au moins 2 checkpoints.");
+        showNotice("Ajoutez au moins 2 checkpoints, dans l'ordre du circuit, pour mesurer la progression.");
         return;
     }
+    hideNotice();
 
     readCarParams();
     detachEditorEvents();
@@ -1051,6 +1165,8 @@ document.getElementById("brush-size").addEventListener("input", (e) => {
 });
 
 document.getElementById("btn-launch").addEventListener("click", enterSimulation);
+document.getElementById("btn-example").addEventListener("click", loadExampleTrack);
+document.getElementById("btn-clear-track").addEventListener("click", clearTrack);
 
 // Ray config buttons
 document.getElementById("btn-add-ray").addEventListener("click", addRay);
@@ -1065,11 +1181,10 @@ document.getElementById("btn-edit-track").addEventListener("click", enterEditor)
 
 document.getElementById("chk-rays").addEventListener("change", (e) => { showRays = e.target.checked; });
 document.getElementById("chk-manual").addEventListener("change", (e) => {
+    // Le mode manuel met l'entraînement entre parenthèses sans l'effacer :
+    // en le quittant, la génération en cours repart du départ.
     manualMode = e.target.checked;
     pauseSim();
-    population = null;
-    generation = 0;
-    bestFitnessEver = 0;
     initGeneration();
     renderSimulation();
     updateStats();
@@ -1086,8 +1201,12 @@ document.querySelectorAll(".speed-btn").forEach(btn => {
 
 window.addEventListener("keydown", (e) => {
     keys[e.key] = true;
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+    // On ne confisque les flèches que pour conduire : ailleurs elles servent
+    // à défiler et à régler les champs numériques.
+    const driving = mode === "simulation" && manualMode && !e.target.closest("input, select, textarea");
+    if (driving && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
 });
+window.addEventListener("blur", () => { keys = {}; });
 window.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
 // ============================================================
@@ -1097,4 +1216,9 @@ window.addEventListener("keyup", (e) => { keys[e.key] = false; });
 initTrackCanvas();
 buildRayConfigUI();
 attachEditorEvents();
-renderEditor();
+loadExampleTrack(); // un circuit prêt à l'emploi : « Entraîner » fonctionne dès l'arrivée
+
+document.addEventListener("visibilitychange", () => {
+    lastSimTime = null;
+    simAccumulator = 0;
+});

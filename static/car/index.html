@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conduite NEAT - Neura'TN</title>
     <link rel="stylesheet" href="/static/car/style.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
 </head>
-<body>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
     <header>
         <div class="header-left">
-            <a href="/" class="back-link">&larr; Accueil</a>
-            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Démo</span>
         </div>
         <h1>Conduite NEAT</h1>
 
@@ -18,21 +22,23 @@
         <div id="editor-controls" class="controls">
             <button id="btn-tool-road" class="tool-btn active">Dessiner route</button>
             <button id="btn-tool-erase" class="tool-btn">Effacer</button>
-            <button id="btn-tool-start" class="tool-btn">Depart</button>
+            <button id="btn-tool-start" class="tool-btn">Départ</button>
             <button id="btn-tool-checkpoint" class="tool-btn">Checkpoint</button>
             <button id="btn-tool-delete-cp" class="tool-btn">Supprimer CP</button>
             <button id="btn-undo-cp" class="tool-btn">Annuler CP</button>
+            <button id="btn-example" class="tool-btn">Circuit exemple</button>
+            <button id="btn-clear-track" class="tool-btn">Tout effacer</button>
             <div class="brush-size-group">
                 <label>Pinceau :</label>
                 <input type="range" id="brush-size" min="10" max="60" value="30">
             </div>
-            <button id="btn-launch" class="launch-btn">Entrainer</button>
+            <button id="btn-launch" class="launch-btn">Entraîner</button>
         </div>
 
         <!-- Simulation toolbar (shown during training) -->
         <div id="sim-controls" class="controls" style="display:none;">
-            <button id="btn-start">Demarrer</button>
-            <button id="btn-edit-track">Editer piste</button>
+            <button id="btn-start">Démarrer</button>
+            <button id="btn-edit-track">Éditer piste</button>
             <label class="toggle-label">
                 <input type="checkbox" id="chk-rays" checked>
                 Rayons
@@ -50,21 +56,22 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="game-panel">
-            <canvas id="game-canvas" width="1000" height="600"></canvas>
+            <canvas id="game-canvas" width="1000" height="600" aria-label="Circuit et simulation"></canvas>
         </section>
 
         <section class="info-panel">
+            <div id="editor-notice" class="notice" role="alert" hidden></div>
             <!-- Editor help (shown during editing) -->
             <div id="editor-help" class="info-text">
-                <h2>Editeur de piste</h2>
+                <h2>Éditeur de piste</h2>
                 <p><strong>1. Dessiner route :</strong> Cliquez et glissez pour peindre la route grise sur l'herbe verte.</p>
                 <p><strong>2. Effacer :</strong> Supprimez la route en repeignant l'herbe.</p>
-                <p><strong>3. Depart :</strong> Cliquez sur la route pour placer la position de depart.</p>
-                <p><strong>4. Checkpoint :</strong> Cliquez un point de depart, puis un point d'arrivee pour tracer une ligne de checkpoint. Ajoutez-les dans l'ordre du circuit.</p>
+                <p><strong>3. Départ :</strong> Cliquez sur la route pour placer la position de départ.</p>
+                <p><strong>4. Checkpoint :</strong> Cliquez un point de départ, puis un point d'arrivée pour tracer une ligne de checkpoint. Ajoutez-les dans l'ordre du circuit.</p>
                 <p><strong>5. Supprimer CP :</strong> Cliquez sur un checkpoint pour le supprimer.</p>
-                <p><strong>6. Entrainer :</strong> Une fois votre piste dotee d'un depart et d'au moins 2 checkpoints, cliquez sur "Entrainer" pour lancer l'IA.</p>
+                <p><strong>6. Entraîner :</strong> Une fois votre piste dotée d'un départ et d'au moins 2 checkpoints, cliquez sur "Entraîner" pour lancer l'IA.</p>
                 <p class="hint">Clic droit pour effacer dans n'importe quel mode.</p>
             </div>
 
@@ -90,14 +97,14 @@
 
             <!-- Car parameters (shown during editing) -->
             <details id="editor-car-params" class="param-section">
-                <summary>Parametres voiture</summary>
+                <summary>Paramètres voiture</summary>
                 <div class="param-grid">
                     <div class="param-row">
                         <label for="param-max-speed">Vitesse max</label>
                         <input type="number" id="param-max-speed" value="175" min="50" max="500" step="5">
                     </div>
                     <div class="param-row">
-                        <label for="param-accel">Acceleration</label>
+                        <label for="param-accel">Accélération</label>
                         <input type="number" id="param-accel" value="75" min="10" max="200" step="5">
                     </div>
                     <div class="param-row">
@@ -113,18 +120,18 @@
 
             <!-- Training parameters (shown during editing) -->
             <details id="editor-neat-params" class="param-section">
-                <summary>Parametres entrainement</summary>
+                <summary>Paramètres entraînement</summary>
                 <div class="param-grid">
                     <div class="param-row">
                         <label for="param-pop-size">Taille population</label>
                         <input type="number" id="param-pop-size" value="150" min="10" max="500" step="10">
                     </div>
                     <div class="param-row">
-                        <label for="param-compat-threshold">Seuil compatibilite</label>
+                        <label for="param-compat-threshold">Seuil compatibilité</label>
                         <input type="number" id="param-compat-threshold" value="2.0" min="0.5" max="5.0" step="0.1">
                     </div>
                     <div class="param-row">
-                        <label for="param-elitism">Elitisme</label>
+                        <label for="param-elitism">Élitisme</label>
                         <input type="number" id="param-elitism" value="3" min="0" max="10" step="1">
                     </div>
                     <div class="param-row">
@@ -140,7 +147,7 @@
                         <input type="number" id="param-weight-mutate" value="0.8" min="0" max="1" step="0.05">
                     </div>
                     <div class="param-row">
-                        <label for="param-add-node">Taux ajout noeud</label>
+                        <label for="param-add-node">Taux ajout nœud</label>
                         <input type="number" id="param-add-node" value="0.2" min="0" max="1" step="0.05">
                     </div>
                     <div class="param-row">
@@ -158,11 +165,11 @@
             <div id="sim-panels" style="display:none;">
                 <div class="stats">
                     <h2>Statistiques</h2>
-                    <div class="stat-row"><span class="stat-label">Generation</span><span id="stat-gen" class="stat-value">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Génération</span><span id="stat-gen" class="stat-value">0</span></div>
                     <div class="stat-row"><span class="stat-label">En vie</span><span id="stat-alive" class="stat-value">0</span></div>
                     <div class="stat-row"><span class="stat-label">Meilleur checkpoint</span><span id="stat-cp" class="stat-value">0</span></div>
                     <div class="stat-row"><span class="stat-label">Meilleure fitness</span><span id="stat-best" class="stat-value">0</span></div>
-                    <div class="stat-row"><span class="stat-label">Especes</span><span id="stat-species" class="stat-value">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Espèces</span><span id="stat-species" class="stat-value">0</span></div>
                     <div class="stat-row"><span class="stat-label">Frame</span><span id="stat-frame" class="stat-value">0/1000</span></div>
                 </div>
 
@@ -172,12 +179,12 @@
                 </div>
 
                 <div class="info-text">
-                    <h2>Comment ca marche</h2>
-                    <p>Chaque voiture utilise des rayons pour detecter les bords de la route, alimentant un reseau de neurones qui controle l'acceleration et la direction.</p>
-                    <p><strong>Entrees :</strong> distances de rayons, vitesse, angle</p>
-                    <p><strong>Sorties :</strong> accelerer/freiner, tourner gauche/droite</p>
-                    <p><strong>Fitness :</strong> checkpoints passes + progression</p>
-                    <p class="manual-hint"><strong>Mode manuel :</strong> Fleches du clavier pour conduire</p>
+                    <h2>Comment ça marche</h2>
+                    <p>Chaque voiture utilise des rayons pour détecter les bords de la route, alimentant un réseau de neurones qui contrôle l'accélération et la direction.</p>
+                    <p><strong>Entrées :</strong> distances de rayons, vitesse, angle</p>
+                    <p><strong>Sorties :</strong> accélérer/freiner, tourner gauche/droite</p>
+                    <p><strong>Fitness :</strong> checkpoints passés + progression</p>
+                    <p class="manual-hint"><strong>Mode manuel :</strong> Flèches du clavier pour conduire</p>
                 </div>
             </div>
         </section>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours : Descente de gradient - Neura'TN</title>
+    <link rel="stylesheet" href="/static/cours/course.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
+</head>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
+    <header>
+        <div class="header-left">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Cours</span>
+            <h1>Descente de gradient</h1>
+        </div>
+        <div class="header-right">
+            <nav class="section-nav" id="section-nav" aria-label="Chapitres"></nav>
+            <div class="challenge-counter" id="challenge-counter" title="Défis réussis">
+                <span class="counter-icon" aria-hidden="true">&#9733;</span>
+                <span id="counter-text">0/4</span>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- ============ Hero ============ -->
+        <section id="hero" class="course-section hero-section">
+            <canvas id="hero-canvas" aria-hidden="true"></canvas>
+            <div class="hero-content">
+                <p class="hero-kicker">Cours 02 · Entraînement</p>
+                <h2>La descente de gradient</h2>
+                <p class="hero-subtitle">Comment un réseau apprend-il de ses erreurs ?</p>
+                <p class="hero-intro">Un réseau de neurones démarre avec des poids tirés au hasard : il se trompe sur tout. Ce cours montre comment il mesure son erreur, puis la réduit pas à pas. Quatre défis vous attendent.</p>
+                <a href="#perte" class="scroll-hint">Commencer &darr;</a>
+            </div>
+        </section>
+
+        <!-- ============ 01 Perte ============ -->
+        <section id="perte" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">01</span>Mesurer l'erreur</h2>
+                <p>Pour s'améliorer, il faut d'abord savoir <strong>à quel point on se trompe</strong>. C'est le rôle de la <em>fonction de perte</em> : elle résume toutes les erreurs du modèle en un seul nombre.</p>
+                <p>Ici, le modèle est le plus simple possible : une droite <code>ŷ = w·x + b</code> qui doit passer au plus près des points. Les traits rouges sont les erreurs, appelées <em>résidus</em>.</p>
+                <p>On utilise l'<strong>erreur quadratique moyenne</strong> : la moyenne des résidus élevés au carré.</p>
+                <div class="formula-display">Perte = moyenne( (ŷ − y)² )</div>
+                <p>Le carré a deux effets : les erreurs positives et négatives ne se compensent pas, et une grosse erreur coûte beaucoup plus cher que plusieurs petites.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <canvas id="fit-canvas" aria-label="Nuage de points, droite du modèle et résidus"></canvas>
+                    <div class="slider-row"><label for="fit-w">Pente w</label><input type="range" id="fit-w" min="-2" max="3" step="0.02" value="-0.6"><span class="value-display" id="fit-w-val">-0.60</span></div>
+                    <div class="slider-row"><label for="fit-b">Ordonnée b</label><input type="range" id="fit-b" min="-2" max="2" step="0.02" value="1.2"><span class="value-display" id="fit-b-val">1.20</span></div>
+                    <dl class="readout">
+                        <div><dt>Perte actuelle</dt><dd id="fit-loss">–</dd></div>
+                        <div><dt>Meilleure atteinte</dt><dd id="fit-best">–</dd></div>
+                    </dl>
+                    <div class="challenge-box" id="challenge-1">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 1</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Réglez <strong>w</strong> et <strong>b</strong> à la main pour faire descendre la perte sous <strong>0,10</strong>.</p>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 02 Descente 1D ============ -->
+        <section id="descente" class="course-section flip">
+            <div class="section-text">
+                <h2><span class="section-number">02</span>Descendre la pente</h2>
+                <p>Chercher les bons réglages à la main, c'est possible avec deux paramètres. Un vrai réseau en a des millions. Il lui faut une méthode automatique.</p>
+                <p>Voici la perte en fonction de la pente <code>w</code> seule. Elle forme une cuvette, et le meilleur <code>w</code> est au fond. Le <strong>gradient</strong> est la pente de cette courbe à l'endroit où l'on se trouve : il indique dans quelle direction la perte augmente.</p>
+                <p>La règle tient en une ligne : <strong>faire un pas dans la direction opposée au gradient</strong>.</p>
+                <div class="formula-display">w ← w − η · ∂Perte/∂w</div>
+                <p>Le nombre <code>η</code> est le <em>taux d'apprentissage</em>. Trop petit, la descente n'en finit pas. Trop grand, on saute par-dessus le fond et l'erreur explose. Essayez les deux.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <canvas id="gd-canvas" aria-label="Courbe de la perte en fonction de w, avec la position actuelle"></canvas>
+                    <div class="slider-row"><label for="gd-lr">Taux η</label><input type="range" id="gd-lr" min="0.05" max="1.2" step="0.05" value="0.1"><span class="value-display" id="gd-lr-val">0.10</span></div>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="gd-step">Un pas</button>
+                        <button type="button" class="ctrl-btn" id="gd-run">Descendre</button>
+                        <button type="button" class="ctrl-btn" id="gd-reset">Recommencer</button>
+                        <span class="spacer"></span>
+                    </div>
+                    <dl class="readout">
+                        <div><dt>Pas effectués</dt><dd id="gd-steps">0</dd></div>
+                        <div><dt>w</dt><dd id="gd-w">–</dd></div>
+                        <div><dt>Gradient</dt><dd id="gd-grad">–</dd></div>
+                        <div><dt>Perte</dt><dd id="gd-loss">–</dd></div>
+                    </dl>
+                    <div class="step-text" id="gd-message" aria-live="polite">Cliquez sur « Un pas » : la bille se déplace à l'opposé de la pente.</div>
+                    <div class="challenge-box" id="challenge-2">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 2</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Trouvez un taux d'apprentissage qui amène la bille au fond de la cuvette en <strong>5 pas ou moins</strong>.</p>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 03 Paysage 2D ============ -->
+        <section id="paysage" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">03</span>Un paysage à deux paramètres</h2>
+                <p>Avec deux paramètres, la perte devient un <strong>relief</strong> : chaque point de la carte est un couple (w, b), et les courbes de niveau relient les réglages de même perte.</p>
+                <p>Le gradient pointe vers la montée la plus raide ; on marche donc à l'opposé. Mais cette vallée est étroite et allongée : la descente simple <em>zigzague</em> d'un versant à l'autre et progresse lentement le long du fond.</p>
+                <p>L'<strong>élan</strong> (<em>momentum</em>) corrige ce défaut. Chaque pas garde une partie de la vitesse du précédent, comme une bille lourde : les oscillations s'annulent, le mouvement utile s'accumule.</p>
+                <p>Cliquez sur la carte pour choisir le point de départ.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <canvas id="land-canvas" class="interactive" aria-label="Carte de la perte en fonction de w et b, avec la trajectoire de la descente"></canvas>
+                    <div class="slider-row"><label for="land-lr">Taux η</label><input type="range" id="land-lr" min="0.01" max="0.5" step="0.01" value="0.1"><span class="value-display" id="land-lr-val">0.10</span></div>
+                    <div class="slider-row"><label for="land-mom">Élan</label><input type="range" id="land-mom" min="0" max="0.95" step="0.05" value="0"><span class="value-display" id="land-mom-val">0.00</span></div>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="land-run">Descendre</button>
+                        <button type="button" class="ctrl-btn" id="land-reset">Revenir au départ</button>
+                        <span class="spacer"></span>
+                    </div>
+                    <dl class="readout">
+                        <div><dt>Pas effectués</dt><dd id="land-steps">0</dd></div>
+                        <div><dt>Perte</dt><dd id="land-loss">–</dd></div>
+                    </dl>
+                    <div class="challenge-box" id="challenge-3">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 3</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Depuis le départ par défaut, atteignez le fond de la vallée (perte sous <strong>0,02</strong>) en <strong>moins de 15 pas</strong>. Sans élan, c'est impossible : essayez d'abord, pour voir.</p>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 04 Rétropropagation ============ -->
+        <section id="retro" class="course-section flip">
+            <div class="section-text">
+                <h2><span class="section-number">04</span>La rétropropagation</h2>
+                <p>Reste une question : dans un réseau à plusieurs couches, comment connaître le gradient de <strong>chaque</strong> poids, y compris ceux enfouis au début du réseau ?</p>
+                <p>La réponse est la <strong>rétropropagation</strong>. On calcule d'abord la sortie de gauche à droite (<em>passe avant</em>). Puis on remonte de droite à gauche (<em>passe arrière</em>) en appliquant à chaque étape la règle de dérivation des fonctions composées :</p>
+                <div class="formula-display">∂Perte/∂w₁ = ∂Perte/∂ŷ · ∂ŷ/∂h · ∂h/∂w₁</div>
+                <p>Chaque nœud n'a besoin que de deux choses : le gradient reçu de sa droite, et sa propre dérivée locale. Il les multiplie et transmet le résultat à sa gauche.</p>
+                <p>Avancez étape par étape sur ce réseau miniature, puis appliquez la mise à jour : la perte diminue.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <svg id="bp-svg" viewBox="0 0 640 250" role="img" aria-label="Graphe de calcul : x, puis h égale tanh de w1 fois x, puis y chapeau égale w2 fois h, puis la perte"></svg>
+                    <div class="step-text" id="bp-message" aria-live="polite"></div>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="bp-prev">Étape précédente</button>
+                        <button type="button" class="ctrl-btn" id="bp-next">Étape suivante</button>
+                        <span class="spacer"></span>
+                        <button type="button" class="ctrl-btn" id="bp-apply">Appliquer la mise à jour</button>
+                        <button type="button" class="ctrl-btn" id="bp-reset">Réinitialiser</button>
+                    </div>
+                    <dl class="readout">
+                        <div><dt>Mises à jour</dt><dd id="bp-updates">0</dd></div>
+                        <div><dt>Perte</dt><dd id="bp-loss">–</dd></div>
+                    </dl>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 05 Surapprentissage ============ -->
+        <section id="surapprentissage" class="course-section">
+            <div class="section-text">
+                <h2><span class="section-number">05</span>Trop bien apprendre</h2>
+                <p>Faire baisser la perte sur les données d'entraînement n'est pas le but final. Ce qu'on veut, c'est un modèle qui se comporte bien sur des données <strong>qu'il n'a jamais vues</strong>.</p>
+                <p>Ici, on ajuste un polynôme à quelques points bruités. Plus son degré est élevé, plus il est souple :</p>
+                <ul class="concept-list">
+                    <li><strong>Trop rigide</strong> : il rate la forme générale. C'est le <em>sous-apprentissage</em>.</li>
+                    <li><strong>Trop souple</strong> : il passe par chaque point, bruit compris, et se tord entre eux. C'est le <em>surapprentissage</em>.</li>
+                </ul>
+                <p>Pour le détecter, on met de côté des <strong>points de test</strong> (en bleu), jamais utilisés pendant l'ajustement. Quand l'erreur d'entraînement continue de baisser mais que l'erreur de test remonte, le modèle apprend le bruit par cœur.</p>
+            </div>
+            <div class="section-visual">
+                <div class="visual-container">
+                    <canvas id="poly-canvas" aria-label="Points d'entraînement et de test, courbe du polynôme ajusté"></canvas>
+                    <div class="slider-row"><label for="poly-degree">Degré</label><input type="range" id="poly-degree" min="1" max="11" step="1" value="1"><span class="value-display" id="poly-degree-val">1</span></div>
+                    <canvas id="poly-bars" aria-label="Erreur d'entraînement et erreur de test pour chaque degré"></canvas>
+                    <div class="ctrl-row">
+                        <button type="button" class="ctrl-btn" id="poly-new">Nouveaux points</button>
+                        <span class="spacer"></span>
+                    </div>
+                    <div class="challenge-box" id="challenge-4">
+                        <div class="challenge-header">
+                            <span class="challenge-icon" aria-hidden="true">&#9733;</span>
+                            <span class="challenge-title">Défi 4</span>
+                            <span class="challenge-status"></span>
+                        </div>
+                        <p class="challenge-text">Parcourez les degrés, puis arrêtez-vous sur celui qui donne la <strong>plus petite erreur de test</strong>.</p>
+                        <div class="quiz-options"><button type="button" class="quiz-option" id="poly-answer">C'est ce degré</button></div>
+                        <p class="challenge-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Conclusion ============ -->
+        <section id="conclusion" class="course-section conclusion-section">
+            <div class="conclusion-content">
+                <h2>Récapitulatif</h2>
+                <div class="recap-grid">
+                    <div class="recap-card" data-challenge="1"><span class="recap-num">01</span><strong>Perte</strong><p>Un seul nombre qui mesure l'erreur du modèle sur les données.</p></div>
+                    <div class="recap-card" data-challenge="2"><span class="recap-num">02</span><strong>Gradient</strong><p>La pente de la perte : on avance à l'opposé, d'un pas réglé par η.</p></div>
+                    <div class="recap-card" data-challenge="3"><span class="recap-num">03</span><strong>Élan</strong><p>Garder de la vitesse d'un pas à l'autre pour traverser les vallées étroites.</p></div>
+                    <div class="recap-card"><span class="recap-num">04</span><strong>Rétropropagation</strong><p>Remonter le réseau pour obtenir le gradient de chaque poids.</p></div>
+                    <div class="recap-card" data-challenge="4"><span class="recap-num">05</span><strong>Généralisation</strong><p>Juger un modèle sur des données de test, pas sur celles qu'il a apprises.</p></div>
+                </div>
+                <div class="final-score"><span aria-hidden="true">&#9733;</span><span id="final-score-text">0/4 défis réussis</span></div>
+                <p class="score-message" id="score-message"></p>
+                <div class="next-steps">
+                    <a href="/playground" class="cta-btn">Entraîner un vrai réseau dans le bac à sable</a>
+                    <a href="/cours/cnn" class="btn btn-lg">Cours suivant : réseaux convolutifs</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/cours/course.js"></script>
+    <script src="/static/cours/apprentissage/app.js"></script>
+</body>
+</html>

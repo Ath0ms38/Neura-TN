@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cours : Reseaux de Neurones - Neura'TN</title>
+    <title>Cours : Réseaux de Neurones - Neura'TN</title>
     <link rel="stylesheet" href="/static/cours/nn/style.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
 </head>
-<body>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
     <header>
         <div class="header-left">
-            <a href="/" class="back-link">&larr; Accueil</a>
-            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
-            <h1>Reseaux de Neurones</h1>
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Cours</span>
+            <h1>Réseaux de Neurones</h1>
         </div>
         <div class="header-right">
             <nav class="section-nav" id="section-nav"></nav>
@@ -22,14 +26,14 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <!-- Section 0: Hero -->
         <section id="hero" class="course-section hero-section">
             <canvas id="hero-canvas"></canvas>
             <div class="hero-content">
-                <h2>Les Reseaux de Neurones</h2>
-                <p class="hero-subtitle">Comment une machine apprend-elle a reconnaitre des chiffres ?</p>
-                <p class="hero-intro">Decouvrez pas a pas le fonctionnement des reseaux de neurones artificiels, de la cellule biologique jusqu'a l'apprentissage automatique. Completez les 6 defis interactifs pour tester vos connaissances.</p>
+                <h2>Les Réseaux de Neurones</h2>
+                <p class="hero-subtitle">Comment une machine apprend-elle à reconnaître des chiffres ?</p>
+                <p class="hero-intro">Découvrez pas à pas le fonctionnement des réseaux de neurones artificiels, de la cellule biologique jusqu'à l'apprentissage automatique. Complétez les 6 défis interactifs pour tester vos connaissances.</p>
                 <a href="#neurone" class="scroll-hint">Commencer &darr;</a>
             </div>
         </section>
@@ -38,9 +42,9 @@
         <section id="neurone" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">01</span>Le Neurone</h2>
-                <p>Le cerveau humain contient environ <strong>86 milliards de neurones</strong>. Chaque neurone recoit des signaux electriques par ses <em>dendrites</em>, les traite dans son <em>corps cellulaire</em>, et transmet le resultat via son <em>axone</em>.</p>
-                <p>Un <strong>neurone artificiel</strong> fonctionne sur le meme principe : il recoit des <em>entrees</em> numeriques, les combine mathematiquement, et produit une <em>sortie</em>. C'est la brique de base de tous les reseaux de neurones.</p>
-                <p>La difference ? Un neurone artificiel est une simple formule mathematique que l'on peut calculer en quelques nanosecondes.</p>
+                <p>Le cerveau humain contient environ <strong>86 milliards de neurones</strong>. Chaque neurone reçoit des signaux électriques par ses <em>dendrites</em>, les traite dans son <em>corps cellulaire</em>, et transmet le résultat via son <em>axone</em>.</p>
+                <p>Un <strong>neurone artificiel</strong> fonctionne sur le même principe : il reçoit des <em>entrées</em> numériques, les combine mathématiquement, et produit une <em>sortie</em>. C'est la brique de base de tous les réseaux de neurones.</p>
+                <p>La différence ? Un neurone artificiel est une simple formule mathématique que l'on peut calculer en quelques nanosecondes.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container" id="neuron-comparison">
@@ -61,18 +65,18 @@
         <section id="poids" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">02</span>Poids et Biais</h2>
-                <p>Chaque connexion entre neurones a un <strong>poids</strong> (weight) qui determine l'importance du signal. Un poids eleve signifie que l'entree a beaucoup d'influence sur la sortie.</p>
+                <p>Chaque connexion entre neurones a un <strong>poids</strong> (weight) qui détermine l'importance du signal. Un poids élevé signifie que l'entrée a beaucoup d'influence sur la sortie.</p>
                 <p>La formule est simple :</p>
                 <div class="formula-display">z = w1&middot;x1 + w2&middot;x2 + w3&middot;x3 + b</div>
-                <p>Le <strong>biais</strong> (b) permet de decaler le seuil d'activation. Pensez-y comme un reglage de sensibilite.</p>
-                <p>Essayez les curseurs pour voir comment chaque parametre influence la sortie !</p>
+                <p>Le <strong>biais</strong> (b) permet de décaler le seuil d'activation. Pensez-y comme un réglage de sensibilité.</p>
+                <p>Essayez les curseurs pour voir comment chaque paramètre influence la sortie !</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
                     <svg id="weights-svg" viewBox="0 0 480 280"></svg>
                     <div class="slider-panel" id="weights-sliders">
                         <div class="slider-group">
-                            <span class="slider-group-title">Entrees (fixes)</span>
+                            <span class="slider-group-title">Entrées (fixes)</span>
                             <div class="slider-row"><label>x1</label><input type="range" id="sl-x1" min="-5" max="5" step="0.1" value="2" disabled><span class="value-display" id="val-x1">2.0</span></div>
                             <div class="slider-row"><label>x2</label><input type="range" id="sl-x2" min="-5" max="5" step="0.1" value="-1" disabled><span class="value-display" id="val-x2">-1.0</span></div>
                             <div class="slider-row"><label>x3</label><input type="range" id="sl-x3" min="-5" max="5" step="0.1" value="3" disabled><span class="value-display" id="val-x3">3.0</span></div>
@@ -95,10 +99,10 @@
                     <div class="challenge-box" id="challenge-1">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 1</span>
+                            <span class="challenge-title">Défi 1</span>
                             <span class="challenge-status" id="ch1-status"></span>
                         </div>
-                        <p class="challenge-text">Ajustez les poids et le biais pour que la sortie <strong>z = 10</strong> (tolerance &plusmn;0.5)</p>
+                        <p class="challenge-text">Ajustez les poids et le biais pour que la sortie <strong>z = 10</strong> (tolérance &plusmn;0.5)</p>
                         <div class="challenge-progress">
                             <div class="progress-bar"><div class="progress-fill" id="ch1-progress"></div></div>
                             <span class="progress-text" id="ch1-text">z = 2.0 / 10</span>
@@ -112,13 +116,13 @@
         <section id="activation" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">03</span>Fonction d'Activation</h2>
-                <p>Si un neurone ne faisait que des sommes, empiler des couches ne servirait a rien : le resultat resterait une simple formule lineaire.</p>
-                <p>Les <strong>fonctions d'activation</strong> introduisent de la non-linearite, ce qui permet au reseau d'apprendre des patterns complexes.</p>
+                <p>Si un neurone ne faisait que des sommes, empiler des couches ne servirait à rien : le résultat resterait une simple formule linéaire.</p>
+                <p>Les <strong>fonctions d'activation</strong> introduisent de la non-linéarité, ce qui permet au réseau d'apprendre des patterns complexes.</p>
                 <p>Les trois fonctions les plus courantes :</p>
                 <ul class="concept-list">
                     <li><strong>Step</strong> : Tout ou rien. Si z &ge; 0, sortie = 1, sinon 0.</li>
-                    <li><strong>Sigmoid</strong> : Sortie douce entre 0 et 1. Utile pour les probabilites.</li>
-                    <li><strong>ReLU</strong> : Si z &ge; 0, sortie = z, sinon 0. La plus utilisee aujourd'hui.</li>
+                    <li><strong>Sigmoid</strong> : Sortie douce entre 0 et 1. Utile pour les probabilités.</li>
+                    <li><strong>ReLU</strong> : Si z &ge; 0, sortie = z, sinon 0. La plus utilisée aujourd'hui.</li>
                 </ul>
                 <p>Passez la souris sur le graphe pour voir la valeur de sortie.</p>
             </div>
@@ -134,7 +138,7 @@
                     <div class="challenge-box" id="challenge-2">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 2</span>
+                            <span class="challenge-title">Défi 2</span>
                             <span class="challenge-status" id="ch2-status"></span>
                         </div>
                         <p class="challenge-text">Pour chaque cas, choisissez la bonne fonction d'activation :</p>
@@ -148,15 +152,15 @@
         <section id="classifieur" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">04</span>Un Neurone Classifieur</h2>
-                <p>Avec seulement 2 entrees, un neurone peut <strong>separer un espace 2D</strong> en deux regions : c'est une <em>frontiere de decision</em>.</p>
-                <p>La droite de decision est definie par : <code>w1&middot;x + w2&middot;y + b = 0</code></p>
-                <p>Testez avec des donnees <em>lineaires</em> (deux groupes separes), puis essayez le mode <em>cercle</em> : un seul neurone ne peut pas tracer une frontiere circulaire ! C'est la raison pour laquelle on a besoin de <strong>plusieurs couches</strong>.</p>
-                <p>Cliquez sur <strong>Entrainer</strong> pour lancer l'algorithme du perceptron.</p>
+                <p>Avec seulement 2 entrées, un neurone peut <strong>séparer un espace 2D</strong> en deux régions : c'est une <em>frontière de décision</em>.</p>
+                <p>La droite de décision est définie par : <code>w1&middot;x + w2&middot;y + b = 0</code></p>
+                <p>Testez avec des données <em>linéaires</em> (deux groupes séparés), puis essayez le mode <em>cercle</em> : un seul neurone ne peut pas tracer une frontière circulaire ! C'est la raison pour laquelle on a besoin de <strong>plusieurs couches</strong>.</p>
+                <p>Cliquez sur <strong>Entraîner</strong> pour lancer l'algorithme du perceptron.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
                     <div class="func-selector">
-                        <button class="data-btn active" data-mode="linear">Lineaire</button>
+                        <button class="data-btn active" data-mode="linear">Linéaire</button>
                         <button class="data-btn" data-mode="circle">Cercle</button>
                     </div>
                     <div id="classifier-network-diagram" class="mini-network-container">
@@ -164,18 +168,18 @@
                     </div>
                     <canvas id="classifier-canvas" width="500" height="400"></canvas>
                     <div class="classifier-controls">
-                        <button id="btn-train" class="ctrl-btn">Entrainer</button>
-                        <button id="btn-reset-classifier" class="ctrl-btn secondary">Reinitialiser</button>
-                        <span class="stat-display">Precision : <strong id="accuracy-value">--</strong></span>
+                        <button id="btn-train" class="ctrl-btn">Entraîner</button>
+                        <button id="btn-reset-classifier" class="ctrl-btn secondary">Réinitialiser</button>
+                        <span class="stat-display">Précision : <strong id="accuracy-value">--</strong></span>
                     </div>
                     <div id="classifier-message" class="step-text" style="display:none;"></div>
                     <div class="challenge-box" id="challenge-3">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 3</span>
+                            <span class="challenge-title">Défi 3</span>
                             <span class="challenge-status" id="ch3-status"></span>
                         </div>
-                        <p class="challenge-text">Atteignez <strong>100% de precision</strong> sur les donnees lineaires, puis observez les limites du neurone sur les donnees circulaires.</p>
+                        <p class="challenge-text">Atteignez <strong>100% de précision</strong> sur les données linéaires, puis observez les limites du neurone sur les données circulaires.</p>
                     </div>
                 </div>
             </div>
@@ -185,14 +189,14 @@
         <section id="couches" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">05</span>Les Couches</h2>
-                <p>Un seul neurone ne peut tracer qu'une frontiere lineaire. Pour resoudre des problemes complexes, on <strong>empile des neurones en couches</strong>.</p>
-                <p>Un reseau typique a :</p>
+                <p>Un seul neurone ne peut tracer qu'une frontière linéaire. Pour résoudre des problèmes complexes, on <strong>empile des neurones en couches</strong>.</p>
+                <p>Un réseau typique a :</p>
                 <ul class="concept-list">
-                    <li><strong>Couche d'entree</strong> : recoit les donnees brutes</li>
-                    <li><strong>Couches cachees</strong> : extraient des caracteristiques de plus en plus abstraites</li>
-                    <li><strong>Couche de sortie</strong> : produit la prediction finale</li>
+                    <li><strong>Couche d'entrée</strong> : reçoit les données brutes</li>
+                    <li><strong>Couches cachées</strong> : extraient des caractéristiques de plus en plus abstraites</li>
+                    <li><strong>Couche de sortie</strong> : produit la prédiction finale</li>
                 </ul>
-                <p>Construisez votre propre reseau et observez les signaux se propager !</p>
+                <p>Construisez votre propre réseau et observez les signaux se propager !</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -208,14 +212,14 @@
                     <div class="challenge-box" id="challenge-4">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 4</span>
+                            <span class="challenge-title">Défi 4</span>
                             <span class="challenge-status" id="ch4-status"></span>
                         </div>
-                        <p class="challenge-text">Construisez un reseau avec <strong>3 couches cachees</strong> et au moins <strong>12 neurones</strong> au total, puis lancez une propagation.</p>
+                        <p class="challenge-text">Construisez un réseau avec <strong>3 couches cachées</strong> et au moins <strong>12 neurones</strong> au total, puis lancez une propagation.</p>
                         <div class="challenge-checklist" id="ch4-checklist">
-                            <div class="check-item" id="ch4-check-layers"><span class="check-icon">&#9675;</span> 3 couches cachees</div>
+                            <div class="check-item" id="ch4-check-layers"><span class="check-icon">&#9675;</span> 3 couches cachées</div>
                             <div class="check-item" id="ch4-check-neurons"><span class="check-icon">&#9675;</span> 12+ neurones</div>
-                            <div class="check-item" id="ch4-check-propagate"><span class="check-icon">&#9675;</span> Propagation lancee</div>
+                            <div class="check-item" id="ch4-check-propagate"><span class="check-icon">&#9675;</span> Propagation lancée</div>
                         </div>
                     </div>
                 </div>
@@ -226,10 +230,10 @@
         <section id="multicouche" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">06</span>La Puissance des Couches</h2>
-                <p>En section 4, un seul neurone n'a pas pu separer le cercle. Maintenant, avec <strong>plusieurs couches</strong>, observons la difference !</p>
-                <p>Le reseau ci-contre a <strong>2 entrees</strong>, deux couches cachees de <strong>6 neurones</strong> chacune, et <strong>1 sortie</strong>.</p>
-                <p>Cliquez sur <strong>Entrainer</strong> pour lancer l'apprentissage par <em>retropropagation</em>. Observez comment la frontiere de decision se courbe progressivement pour entourer le cercle !</p>
-                <p>C'est la <strong>non-linearite</strong> des couches cachees qui permet de tracer des frontieres complexes.</p>
+                <p>En section 4, un seul neurone n'a pas pu séparer le cercle. Maintenant, avec <strong>plusieurs couches</strong>, observons la différence !</p>
+                <p>Le réseau ci-contre a <strong>2 entrées</strong>, deux couches cachées de <strong>6 neurones</strong> chacune, et <strong>1 sortie</strong>.</p>
+                <p>Cliquez sur <strong>Entraîner</strong> pour lancer l'apprentissage par <em>rétropropagation</em>. Observez comment la frontière de décision se courbe progressivement pour entourer le cercle !</p>
+                <p>C'est la <strong>non-linéarité</strong> des couches cachées qui permet de tracer des frontières complexes.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -242,10 +246,10 @@
                         </div>
                     </div>
                     <div class="classifier-controls">
-                        <button id="btn-mlp-train" class="ctrl-btn accent">Entrainer</button>
-                        <button id="btn-mlp-reset" class="ctrl-btn secondary">Reinitialiser</button>
-                        <span class="stat-display">Precision : <strong id="mlp-accuracy-value">--</strong></span>
-                        <span class="stat-display">Epoque : <strong id="mlp-epoch-value">0</strong></span>
+                        <button id="btn-mlp-train" class="ctrl-btn accent">Entraîner</button>
+                        <button id="btn-mlp-reset" class="ctrl-btn secondary">Réinitialiser</button>
+                        <span class="stat-display">Précision : <strong id="mlp-accuracy-value">--</strong></span>
+                        <span class="stat-display">Époque : <strong id="mlp-epoch-value">0</strong></span>
                     </div>
                     <div id="mlp-message" class="step-text" style="display:none;"></div>
                 </div>
@@ -256,31 +260,31 @@
         <section id="propagation" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">07</span>Propagation Avant</h2>
-                <p>Voici comment les donnees traversent un petit reseau <strong>2-2-1</strong> (2 entrees, 2 neurones caches, 1 sortie).</p>
-                <p>A chaque etape :</p>
+                <p>Voici comment les données traversent un petit réseau <strong>2-2-1</strong> (2 entrées, 2 neurones cachés, 1 sortie).</p>
+                <p>À chaque étape :</p>
                 <ol class="concept-list">
-                    <li>On multiplie chaque entree par son poids</li>
+                    <li>On multiplie chaque entrée par son poids</li>
                     <li>On fait la somme et on ajoute le biais</li>
                     <li>On applique la fonction d'activation (ReLU)</li>
                 </ol>
-                <p>Suivez le calcul etape par etape, ou essayez de calculer vous-meme avant la correction !</p>
+                <p>Suivez le calcul étape par étape, ou essayez de calculer vous-meme avant la correction !</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
                     <svg id="forward-svg" viewBox="0 0 600 380"></svg>
                     <div id="step-explanation" class="step-text"></div>
                     <div class="step-controls">
-                        <button id="btn-step" class="ctrl-btn">Etape suivante</button>
+                        <button id="btn-step" class="ctrl-btn">Étape suivante</button>
                         <button id="btn-auto-forward" class="ctrl-btn accent">Tout calculer</button>
-                        <button id="btn-reset-forward" class="ctrl-btn secondary">Reinitialiser</button>
+                        <button id="btn-reset-forward" class="ctrl-btn secondary">Réinitialiser</button>
                     </div>
                     <div class="challenge-box" id="challenge-5">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 5</span>
+                            <span class="challenge-title">Défi 5</span>
                             <span class="challenge-status" id="ch5-status"></span>
                         </div>
-                        <p class="challenge-text">Calculez vous-meme ! Entrez le resultat de chaque etape avant la correction.</p>
+                        <p class="challenge-text">Calculez vous-meme ! Entrez le résultat de chaque étape avant la correction.</p>
                         <div id="calc-challenge" class="calc-challenge-container"></div>
                     </div>
                 </div>
@@ -291,10 +295,10 @@
         <section id="apprentissage" class="course-section">
             <div class="section-text">
                 <h2><span class="section-number">08</span>L'Apprentissage</h2>
-                <p>Au depart, les poids sont <strong>aleatoires</strong> : le reseau fait n'importe quoi. L'apprentissage consiste a ajuster les poids pour <strong>minimiser l'erreur</strong>.</p>
-                <p>Imaginez un paysage montagneux : l'altitude represente l'erreur, et les axes representent les poids. L'objectif est de trouver le point le plus bas.</p>
-                <p>La <strong>descente de gradient</strong> fonctionne comme une bille qui roule vers le bas : a chaque pas, on calcule la pente et on avance dans la direction opposee.</p>
-                <p>Le <strong>taux d'apprentissage</strong> controle la taille des pas : trop grand = oscillations, trop petit = convergence lente.</p>
+                <p>Au départ, les poids sont <strong>aléatoires</strong> : le réseau fait n'importe quoi. L'apprentissage consiste à ajuster les poids pour <strong>minimiser l'erreur</strong>.</p>
+                <p>Imaginez un paysage montagneux : l'altitude représente l'erreur, et les axes représentent les poids. L'objectif est de trouver le point le plus bas.</p>
+                <p>La <strong>descente de gradient</strong> fonctionne comme une bille qui roule vers le bas : à chaque pas, on calcule la pente et on avance dans la direction opposée.</p>
+                <p>Le <strong>taux d'apprentissage</strong> contrôle la taille des pas : trop grand = oscillations, trop petit = convergence lente.</p>
             </div>
             <div class="section-visual">
                 <div class="visual-container">
@@ -307,7 +311,7 @@
                         </div>
                         <div class="gradient-btns">
                             <button id="btn-gradient-start" class="ctrl-btn accent">Descente de gradient</button>
-                            <button id="btn-gradient-reset" class="ctrl-btn secondary">Reinitialiser</button>
+                            <button id="btn-gradient-reset" class="ctrl-btn secondary">Réinitialiser</button>
                         </div>
                         <div class="gradient-stats">
                             <span>Erreur : <strong id="loss-value">--</strong></span>
@@ -317,13 +321,13 @@
                     <div class="challenge-box" id="challenge-6">
                         <div class="challenge-header">
                             <span class="challenge-icon">&#9733;</span>
-                            <span class="challenge-title">Defi 6</span>
+                            <span class="challenge-title">Défi 6</span>
                             <span class="challenge-status" id="ch6-status"></span>
                         </div>
-                        <p class="challenge-text">Faites descendre l'erreur en dessous de <strong>0.1</strong> en moins de <strong>50 iterations</strong>. Choisissez bien votre point de depart (clic) et votre taux d'apprentissage.</p>
+                        <p class="challenge-text">Faites descendre l'erreur en dessous de <strong>0.1</strong> en moins de <strong>50 iterations</strong>. Choisissez bien votre point de départ (clic) et votre taux d'apprentissage.</p>
                         <div class="challenge-progress">
                             <div class="progress-bar"><div class="progress-fill" id="ch6-progress"></div></div>
-                            <span class="progress-text" id="ch6-text">Cliquez sur le graphe pour placer le point de depart</span>
+                            <span class="progress-text" id="ch6-text">Cliquez sur le graphe pour placer le point de départ</span>
                         </div>
                     </div>
                 </div>
@@ -333,42 +337,42 @@
         <!-- Section 8: Conclusion -->
         <section id="conclusion" class="course-section conclusion-section">
             <div class="conclusion-content">
-                <h2>Recapitulatif</h2>
+                <h2>Récapitulatif</h2>
                 <div class="recap-grid">
                     <div class="recap-card">
                         <span class="recap-num">01</span>
                         <strong>Neurone</strong>
-                        <p>Unite de calcul : entrees, poids, somme, activation.</p>
+                        <p>Unité de calcul : entrées, poids, somme, activation.</p>
                     </div>
                     <div class="recap-card" data-challenge="1">
                         <span class="recap-num">02</span>
                         <strong>Poids & Biais</strong>
-                        <p>Parametres qui controlent l'importance de chaque entree.</p>
+                        <p>Paramètres qui contrôlent l'importance de chaque entrée.</p>
                     </div>
                     <div class="recap-card" data-challenge="2">
                         <span class="recap-num">03</span>
                         <strong>Activation</strong>
-                        <p>Non-linearite qui permet d'apprendre des patterns complexes.</p>
+                        <p>Non-linéarité qui permet d'apprendre des patterns complexes.</p>
                     </div>
                     <div class="recap-card" data-challenge="3">
                         <span class="recap-num">04</span>
                         <strong>Classification</strong>
-                        <p>Un neurone trace une frontiere de decision dans l'espace.</p>
+                        <p>Un neurone trace une frontière de décision dans l'espace.</p>
                     </div>
                     <div class="recap-card" data-challenge="4">
                         <span class="recap-num">05</span>
                         <strong>Couches</strong>
-                        <p>Empiler des neurones pour resoudre des problemes complexes.</p>
+                        <p>Empiler des neurones pour résoudre des problèmes complexes.</p>
                     </div>
                     <div class="recap-card">
                         <span class="recap-num">06</span>
                         <strong>Multicouche</strong>
-                        <p>Plusieurs couches permettent de tracer des frontieres non-lineaires.</p>
+                        <p>Plusieurs couches permettent de tracer des frontières non linéaires.</p>
                     </div>
                     <div class="recap-card" data-challenge="5">
                         <span class="recap-num">07</span>
                         <strong>Propagation</strong>
-                        <p>Les donnees traversent le reseau couche par couche.</p>
+                        <p>Les données traversent le réseau couche par couche.</p>
                     </div>
                     <div class="recap-card" data-challenge="6">
                         <span class="recap-num">08</span>
@@ -378,12 +382,12 @@
                 </div>
                 <div class="final-score" id="final-score">
                     <span class="score-icon">&#9733;</span>
-                    <span class="score-text" id="final-score-text">0/6 defis completes</span>
+                    <span class="score-text" id="final-score-text">0/6 défis complétés</span>
                 </div>
                 <p class="score-message" id="score-message"></p>
                 <div class="next-steps">
-                    <a href="/mnist" class="cta-btn">Tester un vrai reseau &rarr;</a>
-                    <a href="/" class="back-link">&larr; Retour a l'accueil</a>
+                    <a href="/mnist" class="cta-btn">Tester un vrai réseau &rarr;</a>
+                    <a href="/" class="back-link">&larr; Retour à l'accueil</a>
                 </div>
             </div>
         </section>

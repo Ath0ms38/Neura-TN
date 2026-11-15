@@ -601,29 +601,32 @@ function updateStats() {
 }
 
 // ============ Main Loop ============
-let lastTime = 0;
+let lastTime = null;
 let accumulator = 0;
 const TICK_MS = 1000 / TARGET_FPS;
 
 function gameLoop(timestamp) {
     if (!running) return;
 
-    if (lastTime === 0) lastTime = timestamp;
-    const delta = timestamp - lastTime;
+    // Physics runs at 30 Hz regardless of the display refresh rate.
+    // Discard time spent in background tabs instead of fast-forwarding on return.
+    const delta = lastTime === null ? 0 : Math.min(timestamp - lastTime, 100);
     lastTime = timestamp;
-    accumulator += delta;
-
-    const ticksPerFrame = speed;
+    accumulator += delta * speed;
     let ticked = false;
 
-    for (let s = 0; s < ticksPerFrame; s++) {
+    const frameStart = performance.now();
+    while (accumulator >= TICK_MS) {
+        // Si la machine ne suit pas en accéléré, on ralentit au lieu de geler la page.
+        if (performance.now() - frameStart > 24) { accumulator = 0; break; }
+        accumulator -= TICK_MS;
         const genOver = gameTick();
         ticked = true;
         if (genOver) {
-            // Evolve
             population.evolve();
             generation = population.generation;
             initGeneration();
+            accumulator = 0;
             break;
         }
     }
@@ -640,7 +643,7 @@ function gameLoop(timestamp) {
 function start() {
     if (running) return;
     running = true;
-    lastTime = 0;
+    lastTime = null;
     accumulator = 0;
     animFrame = requestAnimationFrame(gameLoop);
     document.getElementById("btn-start").textContent = "Pause";
@@ -649,7 +652,7 @@ function start() {
 function pause() {
     running = false;
     if (animFrame) cancelAnimationFrame(animFrame);
-    document.getElementById("btn-start").textContent = "Demarrer";
+    document.getElementById("btn-start").textContent = "Démarrer";
 }
 
 function reset() {
@@ -676,6 +679,11 @@ document.querySelectorAll(".speed-btn").forEach(btn => {
         document.querySelectorAll(".speed-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
     });
+});
+
+document.addEventListener("visibilitychange", () => {
+    lastTime = null;
+    accumulator = 0;
 });
 
 // ============ Init ============

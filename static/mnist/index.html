@@ -5,17 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualiseur MNIST - Neura'TN</title>
     <link rel="stylesheet" href="/static/mnist/style.css">
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
 </head>
-<body>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
     <!-- Header -->
     <header>
         <div class="header-left">
-            <a href="/" class="back-link">&larr; Accueil</a>
-            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Démo</span>
             <h1>Visualiseur MNIST</h1>
         </div>
         <div class="mode-switch">
-            <span id="nn-label" class="mode-label active">Reseau de neurones</span>
+            <span id="nn-label" class="mode-label active">Réseau de neurones</span>
             <label class="switch">
                 <input type="checkbox" id="mode-toggle">
                 <span class="slider"></span>
@@ -24,33 +28,36 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <!-- Left panel: Input -->
         <section class="panel input-panel">
-            <h2>Entree</h2>
+            <h2>Entrée</h2>
             <div class="canvas-wrapper">
                 <canvas id="draw-canvas" width="28" height="28"></canvas>
             </div>
             <div class="btn-group">
-                <button id="btn-sample">Exemple aleatoire</button>
+                <button id="btn-sample">Exemple aléatoire</button>
                 <button id="btn-clear">Effacer</button>
             </div>
-            <div id="true-label" class="info-label"></div>
+            <div id="true-label" class="info-label" aria-live="polite"></div>
+            <p class="hint">Tracez le chiffre en grand, bien centré : c'est ainsi que sont cadrées les images d'entraînement.</p>
+            <div id="api-notice" class="notice" role="alert" hidden></div>
         </section>
 
         <!-- Center: Network Visualization -->
         <section class="panel viz-panel">
-            <h2>Visualisation du reseau</h2>
+            <h2>Visualisation du réseau</h2>
             <div id="viz-container">
-                <svg id="network-svg"></svg>
+                <svg id="network-svg" role="img" aria-label="Activations du réseau, couche par couche"></svg>
+                <p id="viz-empty" class="viz-empty">Dessinez un chiffre dans le cadre noir, ou chargez un exemple : les activations de chaque couche apparaîtront ici.</p>
             </div>
         </section>
 
         <!-- Right panel: Output -->
         <section class="panel output-panel">
-            <h2>Prediction</h2>
-            <div id="prediction-display" class="prediction-number">?</div>
-            <h3>Probabilites</h3>
+            <h2>Prédiction</h2>
+            <div id="prediction-display" class="prediction-number" aria-live="polite">?</div>
+            <h3>Probabilités</h3>
             <div id="prob-chart" class="prob-chart"></div>
         </section>
     </main>

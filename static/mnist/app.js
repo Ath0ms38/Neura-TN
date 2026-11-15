@@ -1,15 +1,29 @@
 // ============ State ============
 let currentModel = "nn";
-let currentImage = null;       // normalized 28x28 array (from MNIST sample)
+let currentImage = null;       // image MNIST normalisée (28x28), ou null si l'utilisateur dessine
+let lastActivations = null;    // dernière réponse du serveur, pour redessiner au redimensionnement
 let isDrawing = false;
 let predictTimer = null;
-let pendingPredict = false;
+let predictInFlight = false;
+let predictQueued = false;
+let requestSerial = 0;         // invalide les réponses arrivées après « Effacer » ou un changement de modèle
 
 const canvas = document.getElementById("draw-canvas");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 const svg = document.getElementById("network-svg");
 const predDisplay = document.getElementById("prediction-display");
 const trueLabel = document.getElementById("true-label");
+const notice = document.getElementById("api-notice");
+const vizEmpty = document.getElementById("viz-empty");
+
+function showError(message) {
+    notice.textContent = message;
+    notice.hidden = false;
+}
+
+function clearError() {
+    notice.hidden = true;
+}
 
 // ============ Canvas Drawing (native 28x28) ============
 ctx.imageSmoothingEnabled = false;
@@ -19,33 +33,29 @@ ctx.fillRect(0, 0, 28, 28);
 function canvasPos(e) {
     const r = canvas.getBoundingClientRect();
     return {
-        x: Math.floor((e.clientX - r.left) / r.width * 28),
-        y: Math.floor((e.clientY - r.top) / r.height * 28),
+        x: Math.min(27, Math.max(0, Math.floor((e.clientX - r.left) / r.width * 28))),
+        y: Math.min(27, Math.max(0, Math.floor((e.clientY - r.top) / r.height * 28))),
     };
 }
 
 function drawDot(px, py) {
-    // Draw a 2x2 block to mimic MNIST stroke width
-    ctx.fillStyle = "#fff";
+    // Pinceau 3x3 adouci, proche de l'épaisseur des traits MNIST.
+    // On garde le maximum : repasser sur un trait ne l'assombrit jamais.
+    const img = ctx.getImageData(0, 0, 28, 28);
     for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
             const nx = px + dx;
             const ny = py + dy;
-            if (nx >= 0 && nx < 28 && ny >= 0 && ny < 28) {
-                // Center pixel full brightness, neighbors dimmer
-                const dist = Math.abs(dx) + Math.abs(dy);
-                if (dist === 0) {
-                    ctx.globalAlpha = 1.0;
-                } else if (dist === 1) {
-                    ctx.globalAlpha = 0.6;
-                } else {
-                    ctx.globalAlpha = 0.25;
-                }
-                ctx.fillRect(nx, ny, 1, 1);
-            }
+            if (nx < 0 || nx >= 28 || ny < 0 || ny >= 28) continue;
+            const dist = Math.abs(dx) + Math.abs(dy);
+            const strength = dist === 0 ? 255 : dist === 1 ? 160 : 70;
+            const i = (ny * 28 + nx) * 4;
+            const v = Math.max(img.data[i], strength);
+            img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+            img.data[i + 3] = 255;
         }
     }
-    ctx.globalAlpha = 1.0;
+    ctx.putImageData(img, 0, 0);
 }
 
 function drawLine(x0, y0, x1, y1) {
@@ -64,10 +74,18 @@ function drawLine(x0, y0, x1, y1) {
 
 let lastPx = null, lastPy = null;
 
-canvas.addEventListener("mousedown", (e) => {
+// Les événements « pointer » couvrent souris, stylet et tactile, et la capture
+// garde le trait actif même si le curseur sort brièvement du canvas.
+canvas.addEventListener("pointerdown", (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
     isDrawing = true;
-    currentImage = null; // user is drawing, discard any loaded sample
-    trueLabel.textContent = "";
+    if (currentImage) {
+        // On dessine par-dessus un exemple : il devient un dessin libre.
+        currentImage = null;
+        trueLabel.textContent = "";
+    }
     const { x, y } = canvasPos(e);
     drawDot(x, y);
     lastPx = x;
@@ -75,118 +93,84 @@ canvas.addEventListener("mousedown", (e) => {
     scheduleLivePredict();
 });
 
-canvas.addEventListener("mousemove", (e) => {
+canvas.addEventListener("pointermove", (e) => {
     if (!isDrawing) return;
     const { x, y } = canvasPos(e);
-    if (lastPx !== null) {
-        drawLine(lastPx, lastPy, x, y);
-    } else {
-        drawDot(x, y);
-    }
+    if (x === lastPx && y === lastPy) return;
+    drawLine(lastPx, lastPy, x, y);
     lastPx = x;
     lastPy = y;
     scheduleLivePredict();
 });
 
-canvas.addEventListener("mouseup", () => {
-    isDrawing = false;
-    lastPx = null;
-    lastPy = null;
-    scheduleLivePredict();
-});
-
-canvas.addEventListener("mouseleave", () => {
-    isDrawing = false;
-    lastPx = null;
-    lastPy = null;
-});
-
-// Touch support
-canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    isDrawing = true;
-    currentImage = null;
-    trueLabel.textContent = "";
-    const t = e.touches[0];
-    const r = canvas.getBoundingClientRect();
-    const x = Math.floor((t.clientX - r.left) / r.width * 28);
-    const y = Math.floor((t.clientY - r.top) / r.height * 28);
-    drawDot(x, y);
-    lastPx = x;
-    lastPy = y;
-    scheduleLivePredict();
-});
-
-canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault();
+function endStroke() {
     if (!isDrawing) return;
-    const t = e.touches[0];
-    const r = canvas.getBoundingClientRect();
-    const x = Math.floor((t.clientX - r.left) / r.width * 28);
-    const y = Math.floor((t.clientY - r.top) / r.height * 28);
-    if (lastPx !== null) {
-        drawLine(lastPx, lastPy, x, y);
-    } else {
-        drawDot(x, y);
-    }
-    lastPx = x;
-    lastPy = y;
-    scheduleLivePredict();
-});
-
-canvas.addEventListener("touchend", (e) => {
-    e.preventDefault();
     isDrawing = false;
     lastPx = null;
     lastPy = null;
     scheduleLivePredict();
-});
+}
+canvas.addEventListener("pointerup", endStroke);
+canvas.addEventListener("pointercancel", endStroke);
 
 // ============ Live Prediction (throttled) ============
 let lastPredictTime = 0;
 
 function scheduleLivePredict() {
-    const now = Date.now();
-    const elapsed = now - lastPredictTime;
-    if (predictTimer) clearTimeout(predictTimer);
+    const elapsed = Date.now() - lastPredictTime;
+    clearTimeout(predictTimer);
+    predictTimer = setTimeout(doPredict, Math.max(0, 150 - elapsed));
+}
 
-    if (elapsed >= 150) {
-        lastPredictTime = now;
-        doPredict();
-    } else {
-        // Schedule for remaining time so we always get a final update
-        predictTimer = setTimeout(() => {
-            lastPredictTime = Date.now();
-            doPredict();
-        }, 150 - elapsed);
-    }
+function isCanvasBlank() {
+    const data = ctx.getImageData(0, 0, 28, 28).data;
+    for (let i = 0; i < data.length; i += 4) if (data[i] > 0) return false;
+    return true;
 }
 
 async function doPredict() {
-    if (pendingPredict) return;
-    pendingPredict = true;
-
-    let image;
-    if (currentImage) {
-        image = currentImage;
-    } else {
-        image = getCanvasNormalized();
+    // Une seule requête à la fois ; si l'image change entre-temps, on en
+    // relance une à la fin pour que l'affichage corresponde toujours au dessin final.
+    if (predictInFlight) {
+        predictQueued = true;
+        return;
     }
+    if (!currentImage && isCanvasBlank()) return;
+
+    predictInFlight = true;
+    lastPredictTime = Date.now();
+    const serial = requestSerial;
+    const model = currentModel;
+    const image = currentImage || getCanvasNormalized();
 
     try {
         const res = await fetch("/api/predict", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: currentModel, image }),
+            body: JSON.stringify({ model, image }),
         });
-        const data = await res.json();
-        predDisplay.textContent = data.prediction;
-        renderProbChart(data.activations.output);
-        renderVisualization(data.activations);
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data) {
+            throw new Error((data && data.error) || `Le serveur a répondu ${res.status}.`);
+        }
+        if (serial === requestSerial) {
+            clearError();
+            lastActivations = { model, activations: data.activations };
+            predDisplay.textContent = data.prediction;
+            renderProbChart(data.activations.output);
+            renderVisualization(data.activations, model);
+        }
     } catch (e) {
-        // ignore network errors during rapid drawing
+        if (serial === requestSerial) {
+            showError(e instanceof TypeError ? "Serveur injoignable. Vérifiez que l'application tourne toujours." : e.message);
+        }
+    } finally {
+        predictInFlight = false;
+        if (predictQueued) {
+            predictQueued = false;
+            scheduleLivePredict();
+        }
     }
-    pendingPredict = false;
 }
 
 function getCanvasNormalized() {
@@ -221,24 +205,42 @@ function drawImageOnCanvas(rawPixels) {
 }
 
 // ============ Buttons ============
+function resetOutput() {
+    requestSerial++;
+    clearTimeout(predictTimer);
+    predictQueued = false;
+    lastActivations = null;
+    predDisplay.textContent = "?";
+    clearProbChart();
+    clearVisualization();
+}
+
 document.getElementById("btn-clear").addEventListener("click", () => {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, 28, 28);
     currentImage = null;
-    predDisplay.textContent = "?";
     trueLabel.textContent = "";
-    clearProbChart();
-    clearVisualization();
+    clearError();
+    resetOutput();
 });
 
-document.getElementById("btn-sample").addEventListener("click", async () => {
-    const res = await fetch("/api/sample");
-    const data = await res.json();
-    currentImage = data.image;
-    drawImageOnCanvas(data.raw_image);
-    trueLabel.textContent = `Vraie etiquette : ${data.label}`;
-    // Immediately predict on the sample
-    scheduleLivePredict();
+const sampleBtn = document.getElementById("btn-sample");
+sampleBtn.addEventListener("click", async () => {
+    sampleBtn.disabled = true;
+    try {
+        const res = await fetch("/api/sample");
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data) throw new Error((data && data.error) || `Le serveur a répondu ${res.status}.`);
+        requestSerial++;
+        currentImage = data.image;
+        drawImageOnCanvas(data.raw_image);
+        trueLabel.textContent = `Vraie étiquette : ${data.label}`;
+        scheduleLivePredict();
+    } catch (e) {
+        showError(e instanceof TypeError ? "Serveur injoignable. Vérifiez que l'application tourne toujours." : e.message);
+    } finally {
+        sampleBtn.disabled = false;
+    }
 });
 
 // Mode toggle
@@ -247,8 +249,19 @@ modeToggle.addEventListener("change", () => {
     currentModel = modeToggle.checked ? "cnn" : "nn";
     document.getElementById("nn-label").classList.toggle("active", !modeToggle.checked);
     document.getElementById("cnn-label").classList.toggle("active", modeToggle.checked);
-    // Re-predict with current canvas content
+    // Les activations affichées appartiennent à l'autre modèle : on repart de zéro.
+    clearError();
+    resetOutput();
     scheduleLivePredict();
+});
+
+// Le schéma est dessiné en pixels réels : on le recalcule quand la fenêtre change.
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (lastActivations) renderVisualization(lastActivations.activations, lastActivations.model);
+    }, 150);
 });
 
 // ============ Probability Chart ============
@@ -295,6 +308,7 @@ function clearProbChart() {
 // ============ Network Visualization ============
 function clearVisualization() {
     svg.innerHTML = "";
+    vizEmpty.hidden = false;
 }
 
 function valToColor(val, minV, maxV) {
@@ -305,9 +319,10 @@ function valToColor(val, minV, maxV) {
     return `rgb(${r},${g},${b})`;
 }
 
-function renderVisualization(activations) {
+function renderVisualization(activations, model = currentModel) {
     svg.innerHTML = "";
-    if (currentModel === "nn") {
+    vizEmpty.hidden = true;
+    if (model === "nn") {
         renderNNVisualization(activations);
     } else {
         renderCNNVisualization(activations);
@@ -327,10 +342,10 @@ function renderNNVisualization(act) {
     svg.appendChild(connGroup);
 
     const layers = [
-        { name: "Input", sublabel: "784 (28x28)", data: flatten2D(act.input), grid: true, gridW: 28, gridH: 28 },
-        { name: "FC + ReLU", sublabel: "128 neurons", data: act.fc1_relu },
-        { name: "FC + ReLU", sublabel: "64 neurons", data: act.fc2_relu },
-        { name: "Output", sublabel: "10 classes", data: act.output },
+        { name: "Entrée", sublabel: "784 (28×28)", data: flatten2D(act.input), grid: true, gridW: 28, gridH: 28 },
+        { name: "FC + ReLU", sublabel: "128 neurones", data: act.fc1_relu },
+        { name: "FC + ReLU", sublabel: "64 neurones", data: act.fc2_relu },
+        { name: "Sortie", sublabel: "10 classes", data: act.output },
     ];
 
     const numLayers = layers.length;
@@ -462,7 +477,7 @@ function renderCNNVisualization(act) {
     const stageGap = W / (stageCount + 1);
     let xPos = stageGap;
 
-    stages.push({ type: "image", x: xPos, data: act.input, label: "Input", sublabel: "1@28x28" });
+    stages.push({ type: "image", x: xPos, data: act.input, label: "Entrée", sublabel: "1@28×28" });
     xPos += stageGap;
 
     if (act.conv1) {
@@ -494,9 +509,9 @@ function renderCNNVisualization(act) {
         xPos += stageGap;
     }
 
-    stages.push({ type: "nodes", x: xPos, data: act.fc1_relu, label: "FC+ReLU", sublabel: "128 neurons" });
+    stages.push({ type: "nodes", x: xPos, data: act.fc1_relu, label: "FC+ReLU", sublabel: "128 neurones" });
     xPos += stageGap;
-    stages.push({ type: "nodes", x: xPos, data: act.output, label: "Output", sublabel: "10 classes" });
+    stages.push({ type: "nodes", x: xPos, data: act.output, label: "Sortie", sublabel: "10 classes" });
 
     const stageAnchors = [];
 

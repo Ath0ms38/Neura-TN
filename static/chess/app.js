@@ -197,14 +197,10 @@ async function makeMove(uciMove) {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
 
-        if (data.error) {
-            showStatus(data.error, true);
-            fenHistory.pop();
-            isThinking = false;
-            document.getElementById("thinking-overlay").style.display = "none";
-            return;
+        if (!data || data.error) {
+            throw new Error((data && data.error) || `Le serveur a répondu ${response.status}.`);
         }
 
         // Update game state
@@ -248,12 +244,14 @@ async function makeMove(uciMove) {
         }
 
     } catch (err) {
-        showStatus("Erreur de connexion au serveur", true);
+        // Le coup n'a pas été joué : on revient exactement à la position précédente.
+        showStatus(err instanceof TypeError ? "Erreur de connexion au serveur" : err.message, true);
         fenHistory.pop();
+    } finally {
+        isThinking = false;
+        document.getElementById("thinking-overlay").style.display = "none";
+        renderBoard();
     }
-
-    isThinking = false;
-    document.getElementById("thinking-overlay").style.display = "none";
 }
 
 // ============================================================
@@ -297,8 +295,8 @@ function showStatus(text, isError) {
 
 function showGameOver(status) {
     const messages = {
-        checkmate_white: "Echec et mat ! Les blancs gagnent.",
-        checkmate_black: "Echec et mat ! Les noirs gagnent.",
+        checkmate_white: "Échec et mat ! Les blancs gagnent.",
+        checkmate_black: "Échec et mat ! Les noirs gagnent.",
         stalemate: "Pat ! Match nul.",
         draw: "Match nul.",
     };
@@ -338,7 +336,8 @@ async function validateEval() {
                 fen: gameState.fen,
             }),
         });
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
+        if (!data) throw new Error("bad response");
         if (data.valid) {
             showEvalStatus(`Valide (score: ${data.score})`, true);
         } else {
@@ -641,7 +640,10 @@ async function newGame(fen) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(fen ? { fen } : {}),
         });
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data || data.error) {
+            throw new Error((data && data.error) || `Le serveur a répondu ${response.status}.`);
+        }
 
         gameState.fen = data.fen;
         gameState.board = data.board;
@@ -657,32 +659,44 @@ async function newGame(fen) {
         if (!fen) {
             moveHistory = [];
             fenHistory = [];
-            // Restore saved eval code, or use default
-            const saved = loadSavedEvalCode();
-            document.getElementById("eval-editor").value = saved || data.default_eval || "";
+            // Au premier chargement seulement : code sauvegardé, sinon fonction par défaut.
+            // Une nouvelle partie ne doit pas écraser le code en cours d'écriture.
+            const editor = document.getElementById("eval-editor");
+            if (!editor.value.trim()) {
+                editor.value = loadSavedEvalCode() || data.default_eval || "";
+            }
         }
 
         renderBoard();
         renderMoveHistory();
-        showStatus("Vous jouez les blancs. A vous de jouer !", false);
+        if (data.status !== "playing") {
+            showGameOver(data.status);
+        } else {
+            showStatus("Vous jouez les blancs. À vous de jouer !", false);
+        }
         document.getElementById("search-stats").style.display = "none";
         document.getElementById("tree-container").innerHTML =
             '<p class="tree-empty">Jouez un coup pour voir l\'arbre de recherche.</p>';
+        return true;
 
     } catch (err) {
-        showStatus("Erreur de connexion au serveur", true);
+        showStatus(err instanceof TypeError ? "Erreur de connexion au serveur" : err.message, true);
+        return false;
     }
 }
 
 async function undoMove() {
     if (fenHistory.length === 0 || isThinking) return;
 
-    const previousFen = fenHistory.pop();
-    // Also remove the last move from history
-    moveHistory.pop();
-
-    await newGame(previousFen);
-    renderMoveHistory();
+    isThinking = true;
+    const previousFen = fenHistory[fenHistory.length - 1];
+    // On ne retire le coup de l'historique que si le serveur a bien restauré la position.
+    if (await newGame(previousFen)) {
+        fenHistory.pop();
+        moveHistory.pop();
+        renderMoveHistory();
+    }
+    isThinking = false;
 }
 
 // ============================================================
@@ -716,7 +730,7 @@ function setupEditor() {
 
 const EVAL_PRESETS = {
     material: `def evaluate(board):
-    """Evaluation simple : comptage du materiel uniquement."""
+    """Évaluation simple : comptage du matériel uniquement."""
     piece_values = {
         chess.PAWN: 100,
         chess.KNIGHT: 320,
@@ -727,7 +741,7 @@ const EVAL_PRESETS = {
     }
 
     score = 0
-    for square, piece in board.piece_map().items():
+    for square, pièce in board.piece_map().items():
         value = piece_values.get(piece.piece_type, 0)
         if piece.color == chess.WHITE:
             score += value
@@ -738,7 +752,7 @@ const EVAL_PRESETS = {
 `,
 
     opening: `def evaluate(board):
-    """Evaluation pour l'ouverture : developpement + centre + roque."""
+    """Évaluation pour l'ouverture : développement + centre + roque."""
     piece_values = {
         chess.PAWN: 100, chess.KNIGHT: 320,
         chess.BISHOP: 330, chess.ROOK: 500,
@@ -747,19 +761,19 @@ const EVAL_PRESETS = {
 
     score = 0
 
-    # Materiel
-    for sq, piece in board.piece_map().items():
+    # Matériel
+    for sq, pièce in board.piece_map().items():
         val = piece_values.get(piece.piece_type, 0)
         if piece.color == chess.WHITE:
             score += val
         else:
             score -= val
 
-    # Controle du centre (e4, d4, e5, d5)
+    # Contrôle du centre (e4, d4, e5, d5)
     center = [chess.E4, chess.D4, chess.E5, chess.D5]
     for sq in center:
-        piece = board.piece_at(sq)
-        if piece:
+        pièce = board.piece_at(sq)
+        if pièce:
             if piece.piece_type == chess.PAWN:
                 bonus = 30
             else:
@@ -769,8 +783,8 @@ const EVAL_PRESETS = {
             else:
                 score -= bonus
 
-    # Developpement : cavaliers et fous hors rangee initiale
-    for sq, piece in board.piece_map().items():
+    # Développement : cavaliers et fous hors rangée initiale
+    for sq, pièce in board.piece_map().items():
         if piece.piece_type in (chess.KNIGHT, chess.BISHOP):
             rank = chess.square_rank(sq)
             if piece.color == chess.WHITE and rank > 0:
@@ -788,10 +802,10 @@ const EVAL_PRESETS = {
     if board.has_queenside_castling_rights(chess.BLACK):
         score -= 5
 
-    # Penalite si dame sort trop tot (avant coup 10)
+    # Pénalité si dame sort trop tôt (avant coup 10)
     if board.fullmove_number < 10:
         queen_sq = None
-        for sq, piece in board.piece_map().items():
+        for sq, pièce in board.piece_map().items():
             if piece.piece_type == chess.QUEEN:
                 rank = chess.square_rank(sq)
                 if piece.color == chess.WHITE and rank > 1:
@@ -803,14 +817,14 @@ const EVAL_PRESETS = {
 `,
 
     middlegame: `def evaluate(board):
-    """Evaluation milieu de partie : materiel + mobilite + securite roi."""
+    """Évaluation milieu de partie : matériel + mobilité + sécurité roi."""
     piece_values = {
         chess.PAWN: 100, chess.KNIGHT: 320,
         chess.BISHOP: 330, chess.ROOK: 500,
         chess.QUEEN: 900, chess.KING: 0,
     }
 
-    # Tables de bonus positionnel (simplifiees, rang 0 = cote blanc)
+    # Tables de bonus positionnel (simplifiées, rang 0 = côté blanc)
     pawn_table = [
          0,  0,  0,  0,  0,  0,  0,  0,
         50, 50, 50, 50, 50, 50, 50, 50,
@@ -835,7 +849,7 @@ const EVAL_PRESETS = {
 
     score = 0
 
-    for sq, piece in board.piece_map().items():
+    for sq, pièce in board.piece_map().items():
         val = piece_values.get(piece.piece_type, 0)
         rank = chess.square_rank(sq)
         file = chess.square_file(sq)
@@ -862,7 +876,7 @@ const EVAL_PRESETS = {
         else:
             score -= bonus
 
-    # Mobilite (nombre de coups legaux)
+    # Mobilité (nombre de coups légaux)
     mobility = len(list(board.legal_moves))
     if board.turn == chess.WHITE:
         score += mobility * 2
@@ -881,7 +895,7 @@ const EVAL_PRESETS = {
 `,
 
     endgame: `def evaluate(board):
-    """Evaluation fin de partie : materiel + roi actif + pions passes."""
+    """Évaluation fin de partie : matériel + roi actif + pions passés."""
     piece_values = {
         chess.PAWN: 120, chess.KNIGHT: 300,
         chess.BISHOP: 310, chess.ROOK: 500,
@@ -891,7 +905,7 @@ const EVAL_PRESETS = {
     score = 0
     total_material = 0
 
-    for sq, piece in board.piece_map().items():
+    for sq, pièce in board.piece_map().items():
         val = piece_values.get(piece.piece_type, 0)
         total_material += val
         if piece.color == chess.WHITE:
@@ -911,7 +925,7 @@ const EVAL_PRESETS = {
         -30,-20,-10,  0,  0,-10,-20,-30,
     ]
 
-    for sq, piece in board.piece_map().items():
+    for sq, pièce in board.piece_map().items():
         if piece.piece_type == chess.KING:
             rank = chess.square_rank(sq)
             file = chess.square_file(sq)
@@ -922,7 +936,7 @@ const EVAL_PRESETS = {
                 idx = rank * 8 + file
                 score -= center_dist_bonus[idx]
 
-    # Pions passes (pas de pion adverse devant)
+    # Pions passés (pas de pion adverse devant)
     for sq in board.pieces(chess.PAWN, chess.WHITE):
         file = chess.square_file(sq)
         rank = chess.square_rank(sq)
@@ -977,7 +991,7 @@ function saveEvalCode() {
     // Visual feedback on the button itself
     const btn = document.getElementById("btn-save");
     const original = btn.textContent;
-    btn.textContent = "Sauvegarde !";
+    btn.textContent = "Sauvegardé !";
     btn.style.background = "var(--success)";
     btn.style.borderColor = "var(--success)";
     btn.style.color = "#fff";
@@ -1011,7 +1025,7 @@ function restoreEvalCode() {
     } else {
         const btn = document.getElementById("btn-load");
         const original = btn.textContent;
-        btn.textContent = "Rien a charger";
+        btn.textContent = "Rien à charger";
         setTimeout(() => { btn.textContent = original; }, 1500);
     }
 }
@@ -1030,7 +1044,7 @@ function toggleDocPanel() {
     if (docVisible) {
         editor.style.display = "none";
         panel.style.display = "";
-        btn.textContent = "Editeur";
+        btn.textContent = "Éditeur";
     } else {
         editor.style.display = "";
         panel.style.display = "none";
@@ -1076,7 +1090,7 @@ document.getElementById("btn-toggle-tree").addEventListener("click", () => {
     const btn = document.getElementById("btn-toggle-tree");
     if (treeCollapsed) {
         container.classList.add("collapsed");
-        btn.textContent = "Deplier";
+        btn.textContent = "Déplier";
     } else {
         container.classList.remove("collapsed");
         btn.textContent = "Replier";

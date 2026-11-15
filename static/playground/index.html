@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bac à sable - Neura'TN</title>
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="stylesheet" href="/static/playground/style.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
+</head>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
+    <header>
+        <div class="header-left">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Démo</span>
+        </div>
+        <h1>Bac à sable</h1>
+        <div class="controls">
+            <button id="btn-start">Entraîner</button>
+            <button id="btn-step" title="Une seule époque">Un pas</button>
+            <button id="btn-reset" title="Nouveaux poids aléatoires">Réinitialiser</button>
+            <div class="speed-group">
+                <label>Vitesse</label>
+                <button class="speed-btn" data-speed="0.2">Lent</button>
+                <button class="speed-btn active" data-speed="1">1x</button>
+                <button class="speed-btn" data-speed="5">5x</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- ============ Colonne gauche : données ============ -->
+        <section class="col" aria-label="Données et entrées">
+            <div class="panel">
+                <h2>Données</h2>
+                <div class="dataset-grid" id="dataset-grid" role="group" aria-label="Jeu de données"></div>
+                <div class="field">
+                    <label for="noise">Bruit <output id="noise-out">10 %</output></label>
+                    <input type="range" id="noise" min="0" max="50" step="5" value="10">
+                </div>
+                <div class="field">
+                    <label for="test-ratio">Part réservée au test <output id="test-out">30 %</output></label>
+                    <input type="range" id="test-ratio" min="10" max="60" step="10" value="30">
+                </div>
+                <button type="button" id="btn-regen" class="btn btn-block">Nouveau tirage</button>
+            </div>
+
+            <div class="panel">
+                <h2>Entrées du réseau</h2>
+                <p class="hint">Ce que le réseau reçoit pour chaque point. Avec les bonnes entrées, un problème difficile devient simple.</p>
+                <div class="feature-list" id="feature-list"></div>
+            </div>
+
+            <div class="panel">
+                <h2>Réglages</h2>
+                <div class="param-row"><label for="activation">Activation</label>
+                    <select id="activation"><option value="tanh">Tanh</option><option value="relu">ReLU</option><option value="sigmoid">Sigmoïde</option><option value="lineaire">Linéaire</option></select></div>
+                <div class="param-row"><label for="lr">Taux d'apprentissage</label>
+                    <select id="lr"><option>0.001</option><option>0.003</option><option>0.01</option><option selected>0.03</option><option>0.1</option><option>0.3</option><option>1</option><option>3</option></select></div>
+                <div class="param-row"><label for="batch">Taille du lot</label>
+                    <select id="batch"><option>1</option><option>8</option><option selected>16</option><option>32</option><option>64</option></select></div>
+                <div class="param-row"><label for="l2">Régularisation L2</label>
+                    <select id="l2"><option selected>0</option><option>0.001</option><option>0.003</option><option>0.01</option><option>0.03</option></select></div>
+            </div>
+        </section>
+
+        <!-- ============ Centre : frontière de décision ============ -->
+        <section class="col col-main" aria-label="Frontière de décision">
+            <div class="panel stage-panel">
+                <div class="stage-head">
+                    <h2 class="panel-title">Ce que le réseau a compris</h2>
+                    <div class="stage-options">
+                        <label class="toggle-label"><input type="checkbox" id="show-test"> Points de test</label>
+                        <label class="toggle-label"><input type="checkbox" id="discretize"> Décision tranchée</label>
+                    </div>
+                </div>
+                <div class="stage">
+                    <canvas id="field" width="100" height="100" aria-hidden="true"></canvas>
+                    <canvas id="points" aria-label="Points d'entraînement sur la frontière de décision du réseau"></canvas>
+                </div>
+                <div class="stage-foot">
+                    <div class="legend">
+                        <span><span class="dot dot-b"></span>Classe bleue</span>
+                        <span class="legend-ramp" aria-hidden="true"></span>
+                        <span><span class="dot dot-a"></span>Classe orange</span>
+                    </div>
+                    <div class="add-points">
+                        <span class="hint">Cliquez dans le graphique pour ajouter un point</span>
+                        <div class="seg" role="group" aria-label="Classe des points ajoutés">
+                            <button type="button" class="seg-btn active" data-class="1"><span class="dot dot-a"></span>Orange</button>
+                            <button type="button" class="seg-btn" data-class="0"><span class="dot dot-b"></span>Bleu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Colonne droite : réseau et mesures ============ -->
+        <section class="col" aria-label="Réseau et mesures">
+            <div class="panel">
+                <h2>Architecture</h2>
+                <svg id="net-svg" viewBox="0 0 340 210" role="img" aria-label="Schéma du réseau"></svg>
+                <div class="layer-controls" id="layer-controls"></div>
+                <div class="arch-actions">
+                    <button type="button" id="btn-add-layer" class="btn">+ Couche</button>
+                    <button type="button" id="btn-del-layer" class="btn">− Couche</button>
+                    <span class="param-count" id="param-count"></span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Mesures</h2>
+                <div class="metrics">
+                    <div><span class="metric-label">Époque</span><span class="metric-value" id="m-epoch">0</span></div>
+                    <div><span class="metric-label">Précision test</span><span class="metric-value" id="m-acc">–</span></div>
+                    <div><span class="metric-label"><span class="swatch swatch-train"></span>Perte entraînement</span><span class="metric-value" id="m-train">–</span></div>
+                    <div><span class="metric-label"><span class="swatch swatch-test"></span>Perte test</span><span class="metric-value" id="m-test">–</span></div>
+                </div>
+                <canvas id="loss-chart" aria-label="Courbes de perte d'entraînement et de test au fil des époques"></canvas>
+                <p class="hint" id="diagnosis" aria-live="polite">Lancez l'entraînement pour voir la perte diminuer.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/nn.js"></script>
+    <script src="/static/playground/app.js"></script>
+</body>
+</html>

@@ -3,207 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neura'TN - Demos de Reseaux de Neurones</title>
+    <title>Neura'TN — Comprendre les réseaux de neurones en les manipulant</title>
+    <meta name="description" content="Démos et cours interactifs pour comprendre les réseaux de neurones : MNIST, neuroévolution NEAT, Q-learning, Alpha-Beta, descente de gradient.">
+    <link rel="preload" href="/static/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/static/site.css">
     <link rel="stylesheet" href="/static/landing.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/nn.js"></script>
+    <script defer src="/static/landing.js"></script>
 </head>
-<body>
-    <header>
-        <div class="header-brand">
-            <img src="/static/logo.png" alt="Neura'TN" class="header-logo">
-            <h1>Neura'TN</h1>
-        </div>
-        <p class="subtitle">Demonstrations interactives de reseaux de neurones</p>
+<body class="landing">
+    <a class="skip-link" href="#demos">Aller au contenu</a>
+
+    <header class="landing-nav">
+        <a href="/" class="brand" aria-label="Neura'TN, accueil">
+            <img src="/static/logo-mark.png" alt="" class="brand-mark" width="34" height="34">
+            <span>Neura'TN</span>
+        </a>
+        <nav aria-label="Sections">
+            <a href="#demos">Démos</a>
+            <a href="#cours">Cours</a>
+            <a href="/playground" class="nav-cta">Bac à sable</a>
+        </nav>
     </header>
 
     <main>
-        <!-- Section Projets -->
-        <section class="landing-section">
-            <h2 class="section-title">
-                <span class="section-icon">&#9881;</span>
-                Projets
-            </h2>
-            <div class="card-grid">
-            <!-- MNIST Visualizer -->
-            <a href="/mnist" class="card">
-                <div class="card-icon">
-                    <svg viewBox="0 0 80 80" width="80" height="80">
-                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#FFAB40" stroke-width="2"/>
-                        <text x="40" y="52" text-anchor="middle" fill="#FFAB40" font-size="36" font-weight="bold">7</text>
-                    </svg>
+        <!-- ============ Hero ============ -->
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Démos &amp; cours interactifs</p>
+                <h1>Les réseaux de neurones, ça se <em>manipule</em>.</h1>
+                <p class="lede">Dessinez un chiffre, tracez un circuit, réglez un taux d'apprentissage, puis regardez ce que la machine en fait. Six démos et cinq cours pour comprendre l'IA avec les mains.</p>
+                <div class="hero-actions">
+                    <a href="/cours/nn" class="btn btn-primary btn-lg">Commencer le premier cours</a>
+                    <a href="#demos" class="btn btn-ghost btn-lg">Voir les démos</a>
                 </div>
-                <h2>Visualiseur MNIST</h2>
-                <p>Dessinez des chiffres et observez un reseau de neurones ou un CNN les classifier en temps reel. Visualisez les activations de chaque couche.</p>
-                <div class="tags">
-                    <span class="tag">PyTorch</span>
-                    <span class="tag">CNN</span>
-                    <span class="tag">Inference en direct</span>
-                </div>
-                <span class="card-btn">Lancer</span>
-            </a>
+            </div>
 
-            <!-- Flappy Bird NEAT -->
-            <a href="/flappy" class="card">
-                <div class="card-icon">
-                    <svg viewBox="0 0 80 80" width="80" height="80">
-                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#85D5E6" stroke-width="2"/>
-                        <ellipse cx="40" cy="38" rx="16" ry="13" fill="#FFAB40"/>
-                        <circle cx="47" cy="34" r="3" fill="#0E2A47"/>
-                        <path d="M52 37 L62 35 L52 39Z" fill="#e85d4a"/>
-                        <path d="M28 32 Q24 22 36 30" fill="#85D5E6" stroke="#85D5E6" stroke-width="1"/>
-                    </svg>
+            <figure class="live" aria-label="Un réseau de neurones en train d'apprendre">
+                <div class="live-head">
+                    <span class="live-dot" aria-hidden="true"></span>
+                    <span>En direct : un réseau apprend à séparer deux classes</span>
                 </div>
-                <h2>Flappy Bird NEAT</h2>
-                <p>Observez des reseaux de neurones evoluer pour jouer a Flappy Bird. 100 oiseaux par generation apprennent par neuroevolution.</p>
-                <div class="tags">
-                    <span class="tag">NEAT</span>
-                    <span class="tag">Evolution</span>
-                    <span class="tag">Temps reel</span>
+                <div class="live-stage">
+                    <canvas id="live-field" width="72" height="72" aria-hidden="true"></canvas>
+                    <canvas id="live-points" aria-hidden="true"></canvas>
                 </div>
-                <span class="card-btn">Lancer</span>
-            </a>
+                <figcaption class="live-foot">
+                    <dl>
+                        <div><dt>Données</dt><dd id="live-name">Lunes</dd></div>
+                        <div><dt>Époque</dt><dd id="live-epoch">0</dd></div>
+                        <div><dt>Perte</dt><dd id="live-loss">0.693</dd></div>
+                        <div><dt>Précision</dt><dd id="live-acc">50 %</dd></div>
+                    </dl>
+                    <button type="button" id="live-next" class="btn">Autre jeu de données</button>
+                </figcaption>
+            </figure>
+        </section>
 
-            <!-- NEAT Car Driving -->
-            <a href="/car" class="card">
-                <div class="card-icon">
-                    <svg viewBox="0 0 80 80" width="80" height="80">
-                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#0097A7" stroke-width="2"/>
-                        <rect x="30" y="25" width="12" height="24" rx="3" fill="#85D5E6" transform="rotate(-30, 36, 37)"/>
-                        <line x1="36" y1="37" x2="56" y2="20" stroke="#FFAB40" stroke-width="1.5" opacity="0.7"/>
-                        <line x1="36" y1="37" x2="58" y2="35" stroke="#FFAB40" stroke-width="1.5" opacity="0.7"/>
-                        <line x1="36" y1="37" x2="50" y2="52" stroke="#FFAB40" stroke-width="1.5" opacity="0.7"/>
-                        <ellipse cx="40" cy="55" rx="25" ry="8" fill="none" stroke="#78909C" stroke-width="4" opacity="0.3"/>
-                    </svg>
-                </div>
-                <h2>Conduite NEAT</h2>
-                <p>Des voitures IA apprennent a naviguer sur un circuit grace au raycasting et a la neuroevolution. Creez votre propre piste.</p>
-                <div class="tags">
-                    <span class="tag">NEAT</span>
-                    <span class="tag">Raycasting</span>
-                    <span class="tag">Physique</span>
-                </div>
-                <span class="card-btn">Lancer</span>
-            </a>
+        <!-- ============ Démos ============ -->
+        <section id="demos" class="block">
+            <div class="block-head">
+                <p class="eyebrow">Démos</p>
+                <h2>Six expériences à lancer tout de suite</h2>
+                <p>Aucune installation côté visiteur : tout tourne dans le navigateur, ou sur le petit serveur PyTorch du projet.</p>
+            </div>
 
-            <!-- Chess AlphaBeta -->
-            <a href="/chess" class="card">
-                <div class="card-icon">
-                    <svg viewBox="0 0 80 80" width="80" height="80">
-                        <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#FFAB40" stroke-width="2"/>
-                        <text x="40" y="55" text-anchor="middle" fill="#FFAB40" font-size="40">&#9812;</text>
-                    </svg>
-                </div>
-                <h2>Echecs AlphaBeta</h2>
-                <p>Jouez aux echecs contre une IA et visualisez l'arbre de recherche Alpha-Beta. Ecrivez votre propre fonction d'evaluation en Python.</p>
-                <div class="tags">
-                    <span class="tag">AlphaBeta</span>
-                    <span class="tag">Elagage</span>
-                    <span class="tag">Python</span>
-                </div>
-                <span class="card-btn">Lancer</span>
-            </a>
+            <div class="demo-grid">
+                <a href="/mnist" class="demo demo-wide">
+                    <div class="demo-art" aria-hidden="true">
+                        <svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet">
+                            <rect x="22" y="31" width="88" height="88" rx="8" fill="#02060f" stroke="#2c4a75"/>
+                            <path d="M46 52h40l-26 50" fill="none" stroke="#f4f7fb" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                            <g stroke="#2c4a75" stroke-width="1">
+                                <path d="M110 75L160 35M110 75L160 62M110 75L160 89M110 75L160 116M160 35L214 48M160 35L214 75M160 35L214 102M160 62L214 48M160 62L214 75M160 62L214 102M160 89L214 48M160 89L214 75M160 89L214 102M160 116L214 48M160 116L214 75M160 116L214 102"/>
+                            </g>
+                            <path d="M110 75L160 62L214 75L262 75" fill="none" stroke="#ffab40" stroke-width="1.6"/>
+                            <g fill="#11264a" stroke="#85d5e6" stroke-width="1.5">
+                                <circle cx="160" cy="35" r="7"/><circle cx="160" cy="62" r="7" fill="#85d5e6"/><circle cx="160" cy="89" r="7"/><circle cx="160" cy="116" r="7"/>
+                                <circle cx="214" cy="48" r="7"/><circle cx="214" cy="75" r="7" fill="#85d5e6"/><circle cx="214" cy="102" r="7"/>
+                            </g>
+                            <rect x="262" y="57" width="36" height="36" rx="8" fill="#ffab40"/>
+                            <text x="280" y="83" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="22" fill="#1a0f00">7</text>
+                        </svg>
+                    </div>
+                    <div class="demo-body">
+                        <h3>Visualiseur MNIST</h3>
+                        <p>Dessinez un chiffre et suivez-le couche après couche : chaque neurone, chaque carte d'activation, jusqu'à la prédiction.</p>
+                        <ul class="tags"><li>PyTorch</li><li>CNN</li><li>Inférence en direct</li></ul>
+                    </div>
+                </a>
+
+                <a href="/playground" class="demo">
+                    <span class="badge">Nouveau</span>
+                    <div class="demo-art" aria-hidden="true">
+                        <svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+                            <rect width="320" height="150" fill="#0d2a4a"/>
+                            <path d="M0 150C60 120 90 40 160 60S260 130 320 20V150Z" fill="#6b4a1f" opacity=".75"/>
+                            <path d="M0 150C60 120 90 40 160 60S260 130 320 20" fill="none" stroke="#f4f7fb" stroke-width="1.5" stroke-dasharray="4 4"/>
+                            <g fill="#3fa7d6" stroke="#02060f"><circle cx="40" cy="40" r="6"/><circle cx="92" cy="26" r="6"/><circle cx="70" cy="74" r="6"/><circle cx="190" cy="30" r="6"/><circle cx="238" cy="52" r="6"/><circle cx="140" cy="28" r="6"/></g>
+                            <g fill="#ffab40" stroke="#02060f"><circle cx="120" cy="112" r="6"/><circle cx="176" cy="96" r="6"/><circle cx="226" cy="124" r="6"/><circle cx="286" cy="92" r="6"/><circle cx="64" cy="134" r="6"/><circle cx="296" cy="130" r="6"/></g>
+                        </svg>
+                    </div>
+                    <div class="demo-body">
+                        <h3>Bac à sable</h3>
+                        <p>Choisissez les couches, l'activation et le taux d'apprentissage, puis regardez la frontière de décision se former.</p>
+                        <ul class="tags"><li>Entraînement</li><li>100 % navigateur</li></ul>
+                    </div>
+                </a>
+
+                <a href="/flappy" class="demo">
+                    <div class="demo-art" aria-hidden="true">
+                        <svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+                            <rect width="320" height="150" fill="#70c5ce"/>
+                            <rect y="128" width="320" height="22" fill="#ded895"/><rect y="124" width="320" height="6" fill="#73bf2e"/>
+                            <g fill="#73bf2e" stroke="#3d6b17" stroke-width="2"><rect x="200" y="-4" width="34" height="48"/><rect x="196" y="40" width="42" height="12"/><rect x="200" y="106" width="34" height="24"/><rect x="196" y="96" width="42" height="12"/></g>
+                            <g opacity=".35"><ellipse cx="70" cy="50" rx="13" ry="10" fill="#f5c542"/><ellipse cx="96" cy="94" rx="13" ry="10" fill="#f5c542"/><ellipse cx="52" cy="104" rx="13" ry="10" fill="#f5c542"/></g>
+                            <ellipse cx="128" cy="72" rx="15" ry="12" fill="#f5c542" stroke="#3d2a00" stroke-width="2"/>
+                            <circle cx="134" cy="68" r="3.5" fill="#fff" stroke="#3d2a00"/><path d="M141 73l11 2-11 4z" fill="#e85d4a"/>
+                            <path d="M143 72L212 74" stroke="#02060f" stroke-width="1.2" stroke-dasharray="3 3"/>
+                        </svg>
+                    </div>
+                    <div class="demo-body">
+                        <h3>Flappy Bird NEAT</h3>
+                        <p>Cent oiseaux par génération, chacun piloté par son propre réseau. Les meilleurs se reproduisent, les autres disparaissent.</p>
+                        <ul class="tags"><li>NEAT</li><li>Évolution</li></ul>
+                    </div>
+                </a>
+
+                <a href="/car" class="demo">
+                    <div class="demo-art" aria-hidden="true">
+                        <svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+                            <rect width="320" height="150" fill="#1f6b3a"/>
+                            <path d="M-10 118C70 126 96 44 168 48S262 112 330 38" fill="none" stroke="#5b6472" stroke-width="44" stroke-linecap="round"/>
+                            <path d="M-10 118C70 126 96 44 168 48S262 112 330 38" fill="none" stroke="#f4f7fb" stroke-width="1.5" stroke-dasharray="8 8" opacity=".5"/>
+                            <g stroke="#ffab40" stroke-width="1.5"><path d="M118 74L150 30M118 74L166 56M118 74L160 92M118 74L100 46"/></g>
+                            <g fill="#ffab40"><circle cx="150" cy="30" r="3"/><circle cx="166" cy="56" r="3"/><circle cx="160" cy="92" r="3"/><circle cx="100" cy="46" r="3"/></g>
+                            <rect x="104" y="65" width="28" height="16" rx="4" fill="#85d5e6" stroke="#02060f" stroke-width="1.5" transform="rotate(-38 118 74)"/>
+                        </svg>
+                    </div>
+                    <div class="demo-body">
+                        <h3>Conduite NEAT</h3>
+                        <p>Dessinez votre propre circuit. Des voitures équipées de capteurs à rayons apprennent à le parcourir sans jamais l'avoir vu.</p>
+                        <ul class="tags"><li>NEAT</li><li>Raycasting</li><li>Éditeur de piste</li></ul>
+                    </div>
+                </a>
+
+                <a href="/gridworld" class="demo">
+                    <span class="badge">Nouveau</span>
+                    <div class="demo-art" aria-hidden="true">
+                        <svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+                            <rect width="320" height="150" fill="#0a1930"/>
+                            <g stroke="#1d3558"><path d="M40 0V150M80 0V150M120 0V150M160 0V150M200 0V150M240 0V150M280 0V150M0 30H320M0 60H320M0 90H320M0 120H320"/></g>
+                            <g fill="#2c4a75"><rect x="120" y="30" width="40" height="60"/><rect x="200" y="60" width="40" height="60"/><rect x="40" y="90" width="40" height="30"/></g>
+                            <rect x="240" y="30" width="40" height="30" fill="#2cc4a5"/><rect x="240" y="90" width="40" height="30" fill="#f0624d"/>
+                            <path d="M60 75H100V15H180V105H260V52" fill="none" stroke="#ffab40" stroke-width="3" stroke-linejoin="round" stroke-dasharray="1 7" stroke-linecap="round"/>
+                            <circle cx="60" cy="75" r="9" fill="#ffab40" stroke="#02060f" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="demo-body">
+                        <h3>Labyrinthe Q-learning</h3>
+                        <p>Un agent sans carte ni consigne découvre le chemin vers la récompense, uniquement par essais et erreurs.</p>
+                        <ul class="tags"><li>Renforcement</li><li>Q-learning</li></ul>
+                    </div>
+                </a>
+
+                <a href="/chess" class="demo demo-full">
+                    <div class="demo-art" aria-hidden="true">
+                        <svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet">
+                            <g>
+                                <rect x="22" y="27" width="96" height="96" fill="#d9b991"/>
+                                <path d="M46 27h24v24H46zM94 27h24v24H94zM22 51h24v24H22zM70 51h24v24H70zM46 75h24v24H46zM94 75h24v24H94zM22 99h24v24H22zM70 99h24v24H70z" fill="#8a5a3c"/>
+                                <text x="58" y="71" text-anchor="middle" font-size="22" fill="#02060f">♞</text>
+                                <text x="82" y="119" text-anchor="middle" font-size="22" fill="#fff" stroke="#02060f" stroke-width=".6">♔</text>
+                            </g>
+                            <g stroke="#2c4a75" stroke-width="1.4" fill="none"><path d="M224 34L176 76M224 34L224 76M224 34L272 76M176 76L160 118M176 76L192 118M224 76L212 118M224 76L236 118"/><path d="M272 76L262 118M272 76L284 118" stroke-dasharray="3 4" opacity=".6"/></g>
+                            <path d="M224 34L176 76L192 118" fill="none" stroke="#ffab40" stroke-width="2.2"/>
+                            <g stroke-width="1.5"><circle cx="224" cy="34" r="9" fill="#11264a" stroke="#ffab40"/><circle cx="176" cy="76" r="8" fill="#11264a" stroke="#85d5e6"/><circle cx="224" cy="76" r="8" fill="#11264a" stroke="#85d5e6"/><circle cx="272" cy="76" r="8" fill="#11264a" stroke="#85d5e6"/>
+                            <circle cx="160" cy="118" r="6" fill="#11264a" stroke="#ffab40"/><circle cx="192" cy="118" r="6" fill="#ffab40" stroke="#ffab40"/><circle cx="212" cy="118" r="6" fill="#11264a" stroke="#ffab40"/><circle cx="236" cy="118" r="6" fill="#11264a" stroke="#ffab40"/>
+                            <circle cx="262" cy="118" r="6" fill="#0a1930" stroke="#64799a" stroke-dasharray="2 2"/><circle cx="284" cy="118" r="6" fill="#0a1930" stroke="#64799a" stroke-dasharray="2 2"/></g>
+                        </svg>
+                    </div>
+                    <div class="demo-body">
+                        <h3>Échecs Alpha-Beta</h3>
+                        <p>Affrontez une IA dont vous écrivez vous-même la fonction d'évaluation en Python, et explorez son arbre de recherche, coupures comprises.</p>
+                        <ul class="tags"><li>Alpha-Beta</li><li>Élagage</li><li>Python</li></ul>
+                    </div>
+                </a>
             </div>
         </section>
 
-        <!-- Section Cours -->
-        <section class="landing-section">
-            <h2 class="section-title">
-                <span class="section-icon">&#128218;</span>
-                Cours
-            </h2>
-            <div class="card-grid">
-                <!-- Neural Networks Course -->
-                <a href="/cours/nn" class="card">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 80 80" width="80" height="80">
-                            <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#85D5E6" stroke-width="2"/>
-                            <circle cx="22" cy="24" r="5" fill="#85D5E6" opacity="0.8"/>
-                            <circle cx="22" cy="40" r="5" fill="#85D5E6" opacity="0.8"/>
-                            <circle cx="22" cy="56" r="5" fill="#85D5E6" opacity="0.8"/>
-                            <circle cx="42" cy="32" r="5" fill="#FFAB40" opacity="0.9"/>
-                            <circle cx="42" cy="48" r="5" fill="#FFAB40" opacity="0.9"/>
-                            <circle cx="58" cy="40" r="6" fill="#FFAB40"/>
-                            <line x1="27" y1="24" x2="37" y2="32" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
-                            <line x1="27" y1="40" x2="37" y2="32" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
-                            <line x1="27" y1="56" x2="37" y2="48" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
-                            <line x1="27" y1="40" x2="37" y2="48" stroke="#85D5E6" stroke-width="1" opacity="0.4"/>
-                            <line x1="47" y1="32" x2="53" y2="40" stroke="#FFAB40" stroke-width="1" opacity="0.5"/>
-                            <line x1="47" y1="48" x2="53" y2="40" stroke="#FFAB40" stroke-width="1" opacity="0.5"/>
-                        </svg>
-                    </div>
-                    <h2>Reseaux de Neurones</h2>
-                    <p>Decouvrez comment fonctionnent les reseaux de neurones : neurones, poids, fonctions d'activation, couches et propagation avant. Avec des animations interactives et des defis.</p>
-                    <div class="tags">
-                        <span class="tag">Interactif</span>
-                        <span class="tag">Animations</span>
-                        <span class="tag">Fondamentaux</span>
-                    </div>
-                    <span class="card-btn">Decouvrir</span>
-                </a>
-
-                <!-- CNN Course -->
-                <a href="/cours/cnn" class="card">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 80 80" width="80" height="80">
-                            <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#FFAB40" stroke-width="2"/>
-                            <rect x="18" y="18" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
-                            <rect x="34" y="18" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.8"/>
-                            <rect x="50" y="18" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
-                            <rect x="18" y="34" width="12" height="12" rx="2" fill="#FFAB40" opacity="0.8"/>
-                            <rect x="34" y="34" width="12" height="12" rx="2" fill="#FFAB40"/>
-                            <rect x="50" y="34" width="12" height="12" rx="2" fill="#FFAB40" opacity="0.8"/>
-                            <rect x="18" y="50" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
-                            <rect x="34" y="50" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.8"/>
-                            <rect x="50" y="50" width="12" height="12" rx="2" fill="#85D5E6" opacity="0.6"/>
-                        </svg>
-                    </div>
-                    <h2>Reseaux Convolutifs (CNN)</h2>
-                    <p>Explorez les reseaux convolutifs : pixels, convolution, filtres, pooling et architecture complete. Des demos interactives pour comprendre comment un CNN voit les images.</p>
-                    <div class="tags">
-                        <span class="tag">Interactif</span>
-                        <span class="tag">Vision</span>
-                        <span class="tag">Convolution</span>
-                    </div>
-                    <span class="card-btn">Decouvrir</span>
-                </a>
-
-                <!-- NEAT Course -->
-                <a href="/cours/neat" class="card">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 80 80" width="80" height="80">
-                            <rect x="5" y="5" width="70" height="70" rx="8" fill="#0E2A47" stroke="#0097A7" stroke-width="2"/>
-                            <!-- Input layer (3 nodes) -->
-                            <circle cx="18" cy="25" r="4" fill="#85D5E6" opacity="0.8"/>
-                            <circle cx="18" cy="40" r="4" fill="#85D5E6" opacity="0.8"/>
-                            <circle cx="18" cy="55" r="4" fill="#85D5E6" opacity="0.8"/>
-                            <!-- Hidden layer (varying nodes - evolution!) -->
-                            <circle cx="38" cy="30" r="4" fill="#FFAB40" opacity="0.7"/>
-                            <circle cx="38" cy="45" r="4" fill="#FFAB40" opacity="0.7"/>
-                            <circle cx="38" cy="60" r="3" fill="#FFAB40" opacity="0.5"/>
-                            <!-- Output layer (1 node) -->
-                            <circle cx="58" cy="40" r="5" fill="#0097A7"/>
-                            <!-- Connections (showing evolving topology) -->
-                            <line x1="22" y1="25" x2="34" y2="30" stroke="#85D5E6" stroke-width="1" opacity="0.3"/>
-                            <line x1="22" y1="40" x2="34" y2="30" stroke="#85D5E6" stroke-width="1.5" opacity="0.5"/>
-                            <line x1="22" y1="40" x2="34" y2="45" stroke="#85D5E6" stroke-width="1" opacity="0.3"/>
-                            <line x1="22" y1="55" x2="34" y2="60" stroke="#85D5E6" stroke-width="1" opacity="0.3"/>
-                            <line x1="42" y1="30" x2="54" y2="40" stroke="#FFAB40" stroke-width="1.5" opacity="0.5"/>
-                            <line x1="42" y1="45" x2="54" y2="40" stroke="#FFAB40" stroke-width="1" opacity="0.3"/>
-                            <line x1="42" y1="60" x2="54" y2="40" stroke="#FFAB40" stroke-width="0.5" opacity="0.2"/>
-                            <!-- Evolution indicator (mutation symbol) -->
-                            <text x="63" y="20" fill="#FFAB40" font-size="18" opacity="0.6">⚡</text>
-                        </svg>
-                    </div>
-                    <h2>Neuroevolution NEAT</h2>
-                    <p>Decouvrez comment l'evolution peut creer des reseaux de neurones : mutations, crossover, speciation et innovation. Observez des reseaux evoluer pour resoudre des problemes complexes.</p>
-                    <div class="tags">
-                        <span class="tag">Evolution</span>
-                        <span class="tag">Topologie</span>
-                        <span class="tag">Genetique</span>
-                    </div>
-                    <span class="card-btn">Decouvrir</span>
-                </a>
+        <!-- ============ Cours ============ -->
+        <section id="cours" class="block">
+            <div class="block-head">
+                <p class="eyebrow">Cours</p>
+                <h2>Un parcours en cinq étapes</h2>
+                <p>Chaque cours avance par petites manipulations et se termine par des défis. Suivez-les dans l'ordre, ou piochez celui qui vous intrigue.</p>
             </div>
+
+            <ol class="path">
+                <li>
+                    <a href="/cours/nn" class="step">
+                        <span class="step-num">01</span>
+                        <div class="step-main">
+                            <h3>Réseaux de neurones</h3>
+                            <p>Du neurone biologique au perceptron multicouche : poids, biais, fonctions d'activation et propagation avant.</p>
+                        </div>
+                        <span class="step-meta">Fondamentaux · 6 défis</span>
+                        <span class="step-go" aria-hidden="true">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/cours/apprentissage" class="step">
+                        <span class="step-num">02</span>
+                        <div class="step-main">
+                            <h3>Descente de gradient <span class="badge badge-inline">Nouveau</span></h3>
+                            <p>Fonction de perte, taux d'apprentissage, rétropropagation et surapprentissage : comment un réseau corrige ses propres erreurs.</p>
+                        </div>
+                        <span class="step-meta">Entraînement · 4 défis</span>
+                        <span class="step-go" aria-hidden="true">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/cours/cnn" class="step">
+                        <span class="step-num">03</span>
+                        <div class="step-main">
+                            <h3>Réseaux convolutifs</h3>
+                            <p>Pixels, filtres, convolution et pooling : ce qu'un CNN regarde vraiment dans une image.</p>
+                        </div>
+                        <span class="step-meta">Vision · 6 défis</span>
+                        <span class="step-go" aria-hidden="true">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/cours/neat" class="step">
+                        <span class="step-num">04</span>
+                        <div class="step-main">
+                            <h3>Neuroévolution NEAT</h3>
+                            <p>Mutations, croisement, spéciation : faire évoluer la structure d'un réseau plutôt que de l'entraîner.</p>
+                        </div>
+                        <span class="step-meta">Évolution · 6 défis</span>
+                        <span class="step-go" aria-hidden="true">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/cours/rl" class="step">
+                        <span class="step-num">05</span>
+                        <div class="step-main">
+                            <h3>Apprentissage par renforcement <span class="badge badge-inline">Nouveau</span></h3>
+                            <p>Agent, récompense, exploration contre exploitation, et la mise à jour de Q-learning expliquée pas à pas.</p>
+                        </div>
+                        <span class="step-meta">Décision · 3 défis</span>
+                        <span class="step-go" aria-hidden="true">→</span>
+                    </a>
+                </li>
+            </ol>
         </section>
     </main>
+
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <span>Neura'TN · démos et cours sur les réseaux de neurones</span>
+            <span><a href="#demos">Démos</a> · <a href="#cours">Cours</a></span>
+        </div>
+    </footer>
 </body>
 </html>

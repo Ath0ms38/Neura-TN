@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labyrinthe Q-learning - Neura'TN</title>
+    <link rel="stylesheet" href="/static/site.css">
+    <link rel="stylesheet" href="/static/gridworld/style.css">
+    <link rel="icon" href="/static/logo-mark.png">
+    <script defer src="/static/site.js"></script>
+</head>
+<body class="lab-page">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
+    <header>
+        <div class="header-left">
+            <a href="/" class="brand" aria-label="Neura'TN, retour à l'accueil"><img src="/static/logo-mark.png" alt="" class="header-logo"><span>Neura'TN</span></a>
+            <span class="crumb">Démo</span>
+        </div>
+        <h1>Labyrinthe Q-learning</h1>
+        <div class="controls">
+            <button id="btn-start">Démarrer</button>
+            <button id="btn-step" title="Un seul déplacement de l'agent">Un pas</button>
+            <button id="btn-reset" title="L'agent oublie tout ce qu'il a appris">Tout oublier</button>
+            <div class="speed-group">
+                <label>Vitesse</label>
+                <button class="speed-btn" data-speed="1">1x</button>
+                <button class="speed-btn active" data-speed="10">10x</button>
+                <button class="speed-btn" data-speed="200">Max</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <section class="stage-col" aria-label="Labyrinthe">
+            <div class="panel">
+                <div class="toolbar">
+                    <div class="seg" role="group" aria-label="Outil d'édition">
+                        <span class="seg-label">Dessiner</span>
+                        <button type="button" class="seg-btn tool active" data-tool="wall">Mur</button>
+                        <button type="button" class="seg-btn tool" data-tool="trap">Piège</button>
+                        <button type="button" class="seg-btn tool" data-tool="goal">Trésor</button>
+                        <button type="button" class="seg-btn tool" data-tool="start">Départ</button>
+                        <button type="button" class="seg-btn tool" data-tool="empty">Gomme</button>
+                    </div>
+                    <div class="seg" role="group" aria-label="Affichage">
+                        <span class="seg-label">Afficher</span>
+                        <button type="button" class="seg-btn view active" data-view="policy">Politique</button>
+                        <button type="button" class="seg-btn view" data-view="q">Valeurs Q</button>
+                        <button type="button" class="seg-btn view" data-view="none">Rien</button>
+                    </div>
+                </div>
+                <div class="grid-wrap">
+                    <canvas id="grid" aria-label="Labyrinthe : l'agent, les murs, les pièges et le trésor"></canvas>
+                </div>
+                <div class="legend">
+                    <span><i class="sw sw-agent"></i>Agent</span>
+                    <span><i class="sw sw-goal"></i>Trésor (+10)</span>
+                    <span><i class="sw sw-trap"></i>Piège (−10)</span>
+                    <span><i class="sw sw-wall"></i>Mur</span>
+                    <span class="legend-scale"><i class="ramp"></i>Valeur apprise de la case : mauvaise → bonne</span>
+                </div>
+            </div>
+
+            <div class="panel presets">
+                <h2>Labyrinthes prêts à l'emploi</h2>
+                <div class="preset-row">
+                    <button type="button" class="btn" data-preset="couloir">Le détour</button>
+                    <button type="button" class="btn" data-preset="falaise">La falaise</button>
+                    <button type="button" class="btn" data-preset="dedale">Le dédale</button>
+                    <button type="button" class="btn" data-preset="vide">Terrain vide</button>
+                </div>
+                <p class="hint" id="preset-note"></p>
+            </div>
+        </section>
+
+        <section class="side-col" aria-label="Réglages et mesures">
+            <div class="stats">
+                <h2>Mesures</h2>
+                <div class="stat-row"><span class="stat-label">Épisode</span><span id="s-episode" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Pas dans l'épisode</span><span id="s-steps" class="stat-value">0</span></div>
+                <div class="stat-row"><span class="stat-label">Dernier score</span><span id="s-last" class="stat-value">–</span></div>
+                <div class="stat-row"><span class="stat-label">Moyenne (20 épisodes)</span><span id="s-avg" class="stat-value">–</span></div>
+                <div class="stat-row"><span class="stat-label">Trésor atteint (20 derniers)</span><span id="s-success" class="stat-value">–</span></div>
+                <canvas id="chart" aria-label="Score obtenu à chaque épisode"></canvas>
+            </div>
+
+            <div class="panel">
+                <h2>Réglages de l'apprentissage</h2>
+                <div class="field">
+                    <label for="p-epsilon">Exploration ε <output id="o-epsilon">0.20</output></label>
+                    <input type="range" id="p-epsilon" min="0" max="1" step="0.05" value="0.2">
+                    <p class="hint">Probabilité de tenter un coup au hasard plutôt que le meilleur coup connu.</p>
+                </div>
+                <div class="field">
+                    <label for="p-alpha">Taux d'apprentissage α <output id="o-alpha">0.30</output></label>
+                    <input type="range" id="p-alpha" min="0.05" max="1" step="0.05" value="0.3">
+                    <p class="hint">À quel point une nouvelle expérience remplace ce que l'agent croyait.</p>
+                </div>
+                <div class="field">
+                    <label for="p-gamma">Vision à long terme γ <output id="o-gamma">0.95</output></label>
+                    <input type="range" id="p-gamma" min="0" max="0.99" step="0.01" value="0.95">
+                    <p class="hint">Proche de 0 : seule compte la récompense immédiate. Proche de 1 : l'agent anticipe.</p>
+                </div>
+                <div class="field">
+                    <label for="p-slip">Sol glissant <output id="o-slip">0 %</output></label>
+                    <input type="range" id="p-slip" min="0" max="40" step="5" value="0">
+                    <p class="hint">Chance que l'agent dérape dans une direction au hasard.</p>
+                </div>
+                <div class="field">
+                    <label for="p-cost">Coût d'un pas <output id="o-cost">−0.10</output></label>
+                    <input type="range" id="p-cost" min="0" max="1" step="0.05" value="0.1">
+                    <p class="hint">Petite pénalité à chaque déplacement : elle pousse à prendre le chemin le plus court.</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Case survolée</h2>
+                <div id="cell-info" class="cell-info">Survolez une case pour lire ses quatre valeurs Q : ce que l'agent espère gagner en partant dans chaque direction.</div>
+            </div>
+
+            <div class="info-text">
+                <h2>Comment ça marche</h2>
+                <p>L'agent ne connaît ni la carte ni la règle du jeu. Il tient un tableau, la <strong>table Q</strong>, qui estime pour chaque case et chaque direction le gain total à espérer.</p>
+                <p>Après chaque pas, il corrige une seule valeur :</p>
+                <p class="formula">Q(s,a) ← Q(s,a) + α · [ r + γ · max Q(s′,·) − Q(s,a) ]</p>
+                <p>La récompense du trésor se propage ainsi de case en case, à rebours, jusqu'au départ.</p>
+                <p><a href="/cours/rl">Suivre le cours sur l'apprentissage par renforcement →</a></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/gridworld/app.js"></script>
+</body>
+</html>

@@ -149,14 +149,14 @@ function updateCounter() {
     if (el) el.textContent = `${count}/${challengeState.total}`;
 
     const scoreText = document.getElementById("final-score-text");
-    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} defis completes`;
+    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} défis complétés`;
 
     const msg = document.getElementById("score-message");
     if (msg) {
-        if (count === 6) msg.textContent = "Parfait ! Vous maitrisez NEAT !";
-        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques defis a relever.";
-        else if (count >= 1) msg.textContent = "Bon debut ! N'hesitez pas a revenir completer les defis.";
-        else msg.textContent = "Remontez et tentez les defis pour tester vos connaissances !";
+        if (count === 6) msg.textContent = "Parfait ! Vous maîtrisez NEAT !";
+        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques défis à relever.";
+        else if (count >= 1) msg.textContent = "Bon début ! N'hésitez pas à revenir compléter les défis.";
+        else msg.textContent = "Remontez et tentez les défis pour tester vos connaissances !";
     }
 
     document.querySelectorAll(".recap-card[data-challenge]").forEach(card => {
@@ -380,7 +380,7 @@ function initEvolution() {
 
     // Draw neuroevo diagram (population of networks)
     neuroevoSvg.innerHTML = `
-        <!-- Generation 1: Simple networks (faded) -->
+        <!-- Génération 1: Simple networks (faded) -->
         <g opacity="0.3">
             <circle cx="30" cy="50" r="6" fill="#85D5E6" />
             <circle cx="55" cy="50" r="6" fill="#F44336" />
@@ -397,7 +397,7 @@ function initEvolution() {
             <line x1="136" y1="55" x2="149" y2="55" stroke="#666" stroke-width="1.5" />
         </g>
 
-        <!-- Generation 2: More complex (medium opacity) -->
+        <!-- Génération 2: More complex (medium opacity) -->
         <g opacity="0.5">
             <circle cx="25" cy="95" r="5" fill="#85D5E6" />
             <circle cx="45" cy="85" r="4" fill="#FFAB40" />
@@ -419,7 +419,7 @@ function initEvolution() {
             <line x1="109" y1="109" x2="120" y2="103" stroke="#666" stroke-width="1" />
         </g>
 
-        <!-- Generation 3: Best evolved (highlighted) -->
+        <!-- Génération 3: Best evolved (highlighted) -->
         <g opacity="1">
             <circle cx="40" cy="150" r="6" fill="#85D5E6" stroke="#4CAF50" stroke-width="2" />
             <circle cx="65" cy="135" r="5" fill="#FFAB40" stroke="#4CAF50" stroke-width="1.5" />
@@ -694,7 +694,7 @@ function initGenome() {
                 feedback.style.color = "#4CAF50";
                 completeChallenge(1);
             } else {
-                feedback.textContent = `✗ Incorrect. Comptez uniquement les connexions activees vers les neurones de sortie.`;
+                feedback.textContent = `✗ Incorrect. Comptez uniquement les connexions activées vers les neurones de sortie.`;
                 feedback.style.color = "#F44336";
             }
         });
@@ -738,7 +738,7 @@ function initMutations() {
 
     document.getElementById("btn-mutate-weight").addEventListener("click", () => {
         currentGenome.mutateWeights();
-        log.textContent = "Mutation de poids appliquee";
+        log.textContent = "Mutation de poids appliquée";
         render();
     });
 
@@ -747,9 +747,9 @@ function initMutations() {
         currentGenome.mutateAddConnection();
         const after = currentGenome.connections.length;
         if (after > before) {
-            log.textContent = "Nouvelle connexion ajoutee";
+            log.textContent = "Nouvelle connexion ajoutée";
         } else {
-            log.textContent = "Impossible d'ajouter une connexion (cycle evite)";
+            log.textContent = "Impossible d'ajouter une connexion (cycle évite)";
         }
         render();
     });
@@ -759,9 +759,9 @@ function initMutations() {
         currentGenome.mutateAddNode();
         const after = currentGenome.nodes.filter(n => n.type === "hidden").length;
         if (after > before) {
-            log.textContent = "Nouveau noeud cache ajoute";
+            log.textContent = "Nouveau nœud caché ajouté";
         } else {
-            log.textContent = "Impossible d'ajouter un noeud";
+            log.textContent = "Impossible d'ajouter un nœud";
         }
         render();
     });
@@ -769,7 +769,7 @@ function initMutations() {
     document.getElementById("btn-reset-mutation").addEventListener("click", () => {
         NEAT.resetInnovation();
         currentGenome = NEAT.Genome.create(2, 1);
-        log.textContent = "Reseau reinitialise";
+        log.textContent = "Réseau réinitialise";
         document.getElementById("ch2-check-hidden").querySelector(".check-icon").textContent = "◯";
         document.getElementById("ch2-check-connections").querySelector(".check-icon").textContent = "◯";
         document.getElementById("ch2-check-hidden").style.color = "";
@@ -1101,7 +1101,7 @@ function initSpeciation() {
     const controls = document.createElement("div");
     controls.style.cssText = "text-align:center;margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center;";
     controls.innerHTML = `
-        <button id="btn-spec-prev" class="ctrl-btn" disabled>&#8592; Precedent</button>
+        <button id="btn-spec-prev" class="ctrl-btn" disabled>&#8592; Précédent</button>
         <button id="btn-spec-next" class="ctrl-btn accent">Suivant &#8594;</button>
         <button id="btn-spec-auto" class="ctrl-btn secondary">&#9654; Auto</button>
         <div id="spec-step-text" style="width:100%;margin-top:8px;color:#CCC;font-size:13px;min-height:20px;"></div>
@@ -1135,7 +1135,7 @@ function initSpeciation() {
 
     const N = genomeData.length; // 6
     const speciesColors = ["#F44336", "#4CAF50", "#2196F3"];
-    const speciesNames = ["Espece A", "Espece B", "Espece C"];
+    const speciesNames = ["Espèce A", "Espèce B", "Espèce C"];
     const GRAY = "#666";
     const THRESHOLD = 3.0;
 
@@ -1172,7 +1172,7 @@ function initSpeciation() {
         comparedTo: -1,
         compDist: 0,
         result: "",
-        text: "6 genomes non assignes. Seuil de compatibilite : δ < " + THRESHOLD.toFixed(1)
+        text: "6 génomes non assignés. Seuil de compatibilité : δ < " + THRESHOLD.toFixed(1)
     });
 
     // Simulate speciation
@@ -1226,7 +1226,7 @@ function initSpeciation() {
                 comparedTo: bestCompare,
                 compDist: bestDist,
                 result: "new",
-                text: compText + `G${i+1} cree ${speciesNames[specId]}`
+                text: compText + `G${i+1} crée ${speciesNames[specId]}`
             });
         }
     }
@@ -1239,7 +1239,7 @@ function initSpeciation() {
         comparedTo: -1,
         compDist: 0,
         result: "done",
-        text: `Speciation terminee ! ${nextSpecies} especes creees a partir de 6 genomes.`
+        text: `Spéciation terminée ! ${nextSpecies} espèces créées à partir de 6 génomes.`
     });
 
     let currentStep = 0;
@@ -1391,13 +1391,13 @@ function initSpeciation() {
         ctx.font = "bold 14px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillText(`Etape ${currentStep} / ${steps.length - 1}`, W / 2, 8);
+        ctx.fillText(`Étape ${currentStep} / ${steps.length - 1}`, W / 2, 8);
 
         // Legend
         ctx.fillStyle = "#888";
         ctx.font = "11px sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText("★ = Representant", 8, H - 8);
+        ctx.fillText("★ = Représentant", 8, H - 8);
     }
 
     function animateToStep(targetStep) {
@@ -1499,9 +1499,9 @@ function initFitness() {
 
     // Interactive species data
     let speciesData = [
-        { name: "Espece 1", members: 10, fitness: [45, 42, 50, 38, 55, 40, 48, 35, 52, 44] },
-        { name: "Espece 2", members: 3, fitness: [60, 55, 65] },
-        { name: "Espece 3", members: 15, fitness: [40, 35, 42, 38, 30, 45, 33, 37, 41, 36, 39, 34, 43, 32, 44] }
+        { name: "Espèce 1", members: 10, fitness: [45, 42, 50, 38, 55, 40, 48, 35, 52, 44] },
+        { name: "Espèce 2", members: 3, fitness: [60, 55, 65] },
+        { name: "Espèce 3", members: 15, fitness: [40, 35, 42, 38, 30, 45, 33, 37, 41, 36, 39, 34, 43, 32, 44] }
     ];
 
     const barColors = ["#F44336", "#4CAF50", "#2196F3"];
@@ -1512,7 +1512,7 @@ function initFitness() {
     const slidersDiv = document.getElementById("fitness-sliders");
     if (slidersDiv) {
         slidersDiv.innerHTML = `
-            <div style="font-size:12px;color:#FFAB40;margin-bottom:8px;font-weight:bold;">Ajustez la taille des especes :</div>
+            <div style="font-size:12px;color:#FFAB40;margin-bottom:8px;font-weight:bold;">Ajustez la taille des espèces :</div>
             ${speciesData.map((sp, i) => `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     <span style="color:${barColors[i]};font-size:12px;width:70px;">${sp.name}</span>
@@ -1574,7 +1574,7 @@ function initFitness() {
         ctx.save();
         ctx.translate(12, h / 2);
         ctx.rotate(-Math.PI / 2);
-        ctx.fillText(isAdjusted ? "Fitness ajustee" : "Fitness brute totale", 0, 0);
+        ctx.fillText(isAdjusted ? "Fitness ajustée" : "Fitness brute totale", 0, 0);
         ctx.restore();
 
         speciesData.forEach((sp, i) => {
@@ -1604,7 +1604,7 @@ function initFitness() {
             ctx.fillStyle = barColors[i];
             ctx.font = "bold 11px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(sp.name.replace("Espece ", "Sp"), x + barWidth / 2, h - 5);
+            ctx.fillText(sp.name.replace("Espèce ", "Sp"), x + barWidth / 2, h - 5);
 
             // Value
             if (progress > 0.5) {
@@ -1623,7 +1623,7 @@ function initFitness() {
         ctx.fillStyle = "#FFAB40";
         ctx.font = "bold 12px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(isAdjusted ? "Apres fitness sharing" : "Avant fitness sharing", w / 2, 15);
+        ctx.fillText(isAdjusted ? "Après fitness sharing" : "Avant fitness sharing", w / 2, 15);
     }
 
     function startAnimation() {
@@ -1650,7 +1650,7 @@ function initFitness() {
 
     const explanation = document.getElementById("fitness-explanation");
     if (explanation) {
-        explanation.innerHTML = '<span style="color:#FFAB40;">→</span> Le fitness sharing divise la fitness par la taille de l\'espece. <strong style="color:#4CAF50;">L\'Espece 2</strong> (petite, innovante) obtient le meilleur score ajuste !';
+        explanation.innerHTML = '<span style="color:#FFAB40;">→</span> Le fitness sharing divise la fitness par la taille de l\'espèce. <strong style="color:#4CAF50;">L\'Espèce 2</strong> (petite, innovante) obtient le meilleur score ajusté !';
     }
 
     // Challenge 5
@@ -1668,7 +1668,7 @@ function initFitness() {
                 feedback.style.color = "#4CAF50";
                 completeChallenge(5);
             } else {
-                feedback.textContent = "✗ Incorrect. Rappelez-vous : fitness ajustee = fitness brute / taille espece";
+                feedback.textContent = "✗ Incorrect. Rappelez-vous : fitness ajustée = fitness brute / taille espèce";
                 feedback.style.color = "#F44336";
             }
         });
@@ -1683,11 +1683,11 @@ function initEvolutionCycle() {
 
     // Flowchart step data
     const flowSteps = [
-        { label: "Evaluation", color: "#2196F3", desc: "Chaque genome est teste et recoit un score de fitness" },
-        { label: "Speciation", color: "#4CAF50", desc: "Les genomes sont regroupes en especes par similarite" },
-        { label: "Selection", color: "#FF9800", desc: "Les meilleurs genomes de chaque espece sont selectionnes" },
-        { label: "Crossover", color: "#9C27B0", desc: "Deux parents sont combines pour creer un enfant" },
-        { label: "Mutation", color: "#F44336", desc: "L'enfant subit des mutations aleatoires" }
+        { label: "Évaluation", color: "#2196F3", desc: "Chaque génome est testé et reçoit un score de fitness" },
+        { label: "Spéciation", color: "#4CAF50", desc: "Les génomes sont regroupés en espèces par similarité" },
+        { label: "Sélection", color: "#FF9800", desc: "Les meilleurs génomes de chaque espèce sont sélectionnés" },
+        { label: "Crossover", color: "#9C27B0", desc: "Deux parents sont combinés pour créer un enfant" },
+        { label: "Mutation", color: "#F44336", desc: "L'enfant subit des mutations aléatoires" }
     ];
     let activeFlowStep = -1;
 
@@ -1940,7 +1940,7 @@ function initEvolutionCycle() {
         ctx.fillStyle = "#999";
         ctx.font = "11px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("Generation", w / 2, h - 5);
+        ctx.fillText("Génération", w / 2, h - 5);
 
         ctx.save();
         ctx.translate(12, h / 2);
@@ -1952,7 +1952,7 @@ function initEvolutionCycle() {
             ctx.fillStyle = "#666";
             ctx.font = "14px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("Cliquez sur un bouton pour lancer l'evolution", w / 2, h / 2);
+            ctx.fillText("Cliquez sur un bouton pour lancer l'évolution", w / 2, h / 2);
             return;
         }
 
@@ -2112,84 +2112,84 @@ function initConclusion() {
             name: "Taille Population",
             value: "50-500",
             influence: "Performance vs Temps",
-            desc: "Plus la population est grande, plus l'exploration est large mais plus l'evolution est lente. Commencer avec 100-150.",
+            desc: "Plus la population est grande, plus l'exploration est large mais plus l'évolution est lente. Commencer avec 100-150.",
             icon: "👥"
         },
         {
             name: "Taux Mutation Poids",
             value: "0.7-0.9",
             influence: "Adaptation Continue",
-            desc: "Probabilite de modifier les poids existants. Haute valeur (80%) permet ajustement fin sans changer la topologie.",
+            desc: "Probabilité de modifier les poids existants. Haute valeur (80%) permet ajustement fin sans changer la topologie.",
             icon: "⚖️"
         },
         {
             name: "Taux Mutation Connexion",
             value: "0.03-0.10",
-            influence: "Complexite Reseau",
-            desc: "Probabilite d'ajouter une nouvelle connexion. 5% est un bon equilibre. Trop haut cree des reseaux trop denses.",
+            influence: "Complexité Réseau",
+            desc: "Probabilité d'ajouter une nouvelle connexion. 5% est un bon équilibre. Trop haut crée des réseaux trop denses.",
             icon: "🔗"
         },
         {
-            name: "Taux Mutation Noeud",
+            name: "Taux Mutation Nœud",
             value: "0.01-0.05",
-            influence: "Profondeur Reseau",
-            desc: "Probabilite d'ajouter un noeud cache. Commencer bas (3%) car augmente beaucoup la complexite.",
+            influence: "Profondeur Réseau",
+            desc: "Probabilité d'ajouter un nœud caché. Commencer bas (3%) car augmente beaucoup la complexité.",
             icon: "🔵"
         },
         {
-            name: "Seuil Speciation (δt)",
+            name: "Seuil Spéciation (δt)",
             value: "2.0-4.0",
-            influence: "Nombre Especes",
-            desc: "Distance max pour appartenir a meme espece. 3.0 est standard. Reduire = plus d'especes = plus de diversite.",
+            influence: "Nombre Espèces",
+            desc: "Distance max pour appartenir à même espèce. 3.0 est standard. Réduire = plus d'espèces = plus de diversité.",
             icon: "🌳"
         },
         {
             name: "Coefficient c1 (Excess)",
             value: "1.0",
             influence: "Distance Topologique",
-            desc: "Poids des genes excess dans calcul distance. Standard: 1.0. Augmenter penalise plus les differences structurelles.",
+            desc: "Poids des gènes excess dans calcul distance. Standard: 1.0. Augmenter pénalise plus les différences structurelles.",
             icon: "📊"
         },
         {
             name: "Coefficient c2 (Disjoint)",
             value: "1.0",
             influence: "Distance Topologique",
-            desc: "Poids des genes disjoint. Standard: 1.0. Similaire a c1 mais pour genes au milieu de la structure.",
+            desc: "Poids des gènes disjoint. Standard: 1.0. Similaire a c1 mais pour gènes au milieu de la structure.",
             icon: "📊"
         },
         {
             name: "Coefficient c3 (Weights)",
             value: "0.3-0.5",
             influence: "Distance Poids",
-            desc: "Importance difference poids vs topologie. 0.4 standard. Reduire si topologie plus importante que poids.",
+            desc: "Importance différence poids vs topologie. 0.4 standard. Réduire si topologie plus importante que poids.",
             icon: "📊"
         },
         {
             name: "Taux Survie",
             value: "0.2-0.4",
-            influence: "Pression Selection",
-            desc: "Proportion qui se reproduit. 20-30% cree forte selection. 40%+ preserve plus de diversite mais ralentit evolution.",
+            influence: "Pression Sélection",
+            desc: "Proportion qui se reproduit. 20-30% crée forte sélection. 40%+ préserve plus de diversité mais ralentit évolution.",
             icon: "🏆"
         },
         {
             name: "Taux Crossover",
             value: "0.7-0.8",
-            influence: "Innovation Combinee",
-            desc: "Probabilite de reproduction sexuee vs clonage. 75% permet combinaison innovations tout en gardant elites.",
+            influence: "Innovation Combinée",
+            desc: "Probabilité de reproduction sexuée vs clonage. 75% permet combinaison innovations tout en gardant élites.",
             icon: "🧬"
         },
         {
             name: "Stagnation Max",
             value: "15-20",
-            influence: "Elimination Especes",
-            desc: "Generations sans amelioration avant extinction espece. 15 gen standard. Permet reallocation ressources.",
+            influence: "Élimination Espèces",
+            desc: "Générations sans amélioration avant extinction espèce. 15 gen standard. Permet réallocation ressources.",
             icon: "⏱️"
         },
         {
-            name: "Elite par Espece",
+            name: "Élite par Espèce",
             value: "1-2",
-            influence: "Conservation Progres",
-            desc: "Meilleurs genomes copies sans modification. 1 suffit generalement. Garantit pas de regression.",
+            influence: "Conservation Progrès",
+            desc: "Meilleurs génomes copies sans modification. 1 suffit généralement. Garantit pas de régression.",
             icon: "⭐"
         }
     ];
@@ -2245,19 +2245,19 @@ function initConclusion() {
     const scoreMessage = document.getElementById("score-message");
     const completedCount = challengeState.completed.size;
 
-    finalScoreText.textContent = `${completedCount}/${challengeState.total} defis completes`;
+    finalScoreText.textContent = `${completedCount}/${challengeState.total} défis complétés`;
 
     if (completedCount === challengeState.total) {
-        scoreMessage.textContent = "🎉 Excellent ! Vous maitrisez NEAT !";
+        scoreMessage.textContent = "🎉 Excellent ! Vous maîtrisez NEAT !";
         scoreMessage.style.color = "#4CAF50";
     } else if (completedCount >= 4) {
-        scoreMessage.textContent = "👍 Bon travail ! Continuez pour tout completer.";
+        scoreMessage.textContent = "👍 Bon travail ! Continuez pour tout compléter.";
         scoreMessage.style.color = "#2196F3";
     } else if (completedCount >= 2) {
-        scoreMessage.textContent = "💪 Vous progressez ! Essayez les defis restants.";
+        scoreMessage.textContent = "💪 Vous progressez ! Essayez les défis restants.";
         scoreMessage.style.color = "#FF9800";
     } else {
-        scoreMessage.textContent = "🎯 Relevez les defis pour tester vos connaissances !";
+        scoreMessage.textContent = "🎯 Relevez les défis pour tester vos connaissances !";
         scoreMessage.style.color = "#FFC107";
     }
 

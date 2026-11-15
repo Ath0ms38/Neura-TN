@@ -26,12 +26,12 @@ function updateCounter() {
     const count = challengeState.completed.size;
     document.getElementById("counter-text").textContent = `${count}/${challengeState.total}`;
     const scoreText = document.getElementById("final-score-text");
-    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} defis completes`;
+    if (scoreText) scoreText.textContent = `${count}/${challengeState.total} défis complétés`;
     const msg = document.getElementById("score-message");
     if (msg) {
-        if (count === 6) msg.textContent = "Parfait ! Vous maitrisez les bases des CNN !";
-        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques defis a relever.";
-        else if (count >= 2) msg.textContent = "Bon debut ! Continuez a explorer les sections.";
+        if (count === 6) msg.textContent = "Parfait ! Vous maîtrisez les bases des CNN !";
+        else if (count >= 4) msg.textContent = "Excellent travail ! Encore quelques défis à relever.";
+        else if (count >= 2) msg.textContent = "Bon début ! Continuez à explorer les sections.";
         else msg.textContent = "";
     }
     document.querySelectorAll(".recap-card[data-challenge]").forEach(card => {
@@ -559,7 +559,7 @@ function initConvolution() {
         if (autoAnimId) { clearInterval(autoAnimId); autoAnimId = null; }
         currentStep++;
         if (currentStep >= outSize * outSize) {
-            document.getElementById("conv-step-text").innerHTML = "Convolution terminee ! La grille de sortie <strong>4&times;4</strong> est complete.";
+            document.getElementById("conv-step-text").innerHTML = "Convolution terminée ! La grille de sortie <strong>4&times;4</strong> est complète.";
             drawAll();
             return;
         }
@@ -576,7 +576,7 @@ function initConvolution() {
             if (currentStep >= outSize * outSize) {
                 clearInterval(autoAnimId);
                 autoAnimId = null;
-                document.getElementById("conv-step-text").innerHTML = "Convolution terminee ! La grille de sortie <strong>4&times;4</strong> est complete.";
+                document.getElementById("conv-step-text").innerHTML = "Convolution terminée ! La grille de sortie <strong>4&times;4</strong> est complète.";
                 drawAll();
                 return;
             }
@@ -589,7 +589,7 @@ function initConvolution() {
         if (autoAnimId) { clearInterval(autoAnimId); autoAnimId = null; }
         currentStep = -1;
         outputGrid = Array.from({ length: outSize }, () => Array(outSize).fill(null));
-        document.getElementById("conv-step-text").textContent = 'Cliquez sur "Etape suivante" pour demarrer';
+        document.getElementById("conv-step-text").textContent = 'Cliquez sur "Étape suivante" pour démarrer';
         drawAll();
     }
 
@@ -647,11 +647,11 @@ function initFilters() {
     const imgSize = 12;
 
     const filters = {
-        identity: { name: "Identite", kernel: [[0, 0, 0], [0, 1, 0], [0, 0, 0]] },
+        identity: { name: "Identité", kernel: [[0, 0, 0], [0, 1, 0], [0, 0, 0]] },
         blur: { name: "Flou", kernel: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], scale: 1 / 9 },
         "edge-h": { name: "Bord H", kernel: [[-1, -1, -1], [0, 0, 0], [1, 1, 1]] },
         "edge-v": { name: "Bord V", kernel: [[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]] },
-        sharpen: { name: "Nettete", kernel: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]] },
+        sharpen: { name: "Netteté", kernel: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]] },
     };
 
     let currentFilter = "identity";
@@ -741,9 +741,9 @@ function initFilters() {
     function initFilterQuiz() {
         const container = document.getElementById("filter-quiz");
         const quizData = [
-            { question: "Cette image a des contours horizontaux mis en evidence :", answer: "Bord H", options: ["Flou", "Bord H", "Nettete"] },
-            { question: "Cette image est lissee, les details sont attenues :", answer: "Flou", options: ["Identite", "Bord V", "Flou"] },
-            { question: "Cette image a des contrastes accentues, plus nets :", answer: "Nettete", options: ["Nettete", "Bord H", "Identite"] },
+            { question: "Cette image a des contours horizontaux mis en évidence :", answer: "Bord H", options: ["Flou", "Bord H", "Netteté"] },
+            { question: "Cette image est lissée, les détails sont atténués :", answer: "Flou", options: ["Identité", "Bord V", "Flou"] },
+            { question: "Cette image a des contrastes accentués, plus nets :", answer: "Netteté", options: ["Netteté", "Bord H", "Identité"] },
         ];
         let correct = 0;
 
@@ -981,7 +981,7 @@ function initFeatureMaps() {
     const filterDefs = [
         { name: "Bords Horizontaux", kernel: [[-1, -1, -1], [0, 0, 0], [1, 1, 1]], color: "#FFAB40" },
         { name: "Bords Verticaux", kernel: [[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], color: "#85D5E6" },
-        { name: "Nettete", kernel: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]], color: "#0097A7" },
+        { name: "Netteté", kernel: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]], color: "#0097A7" },
     ];
 
     let activeMap = -1;
@@ -1089,7 +1089,7 @@ function initFeatureMaps() {
                 showKernel(idx);
                 const f = filterDefs[idx];
                 document.getElementById("feature-info").innerHTML =
-                    `Filtre <strong style="color:${f.color}">${f.name}</strong> : chaque filtre detecte un type de motif different`;
+                    `Filtre <strong style="color:${f.color}">${f.name}</strong> : chaque filtre détecte un type de motif différent`;
             }
         });
     });
@@ -1408,7 +1408,7 @@ function initRealExample() {
                 }
             }
 
-            digitInfo.innerHTML = `Label reel : <strong>${sampleData.label}</strong>`;
+            digitInfo.innerHTML = `Label réel : <strong>${sampleData.label}</strong>`;
 
             // Predict with CNN
             const predictResp = await fetch("/api/predict", {
@@ -1452,7 +1452,7 @@ function initRealExample() {
             ch6Result.className = "calc-result correct";
             completeChallenge(6);
         } else {
-            ch6Result.textContent = "\u2718 Regardez les filtres avec des valeurs negatives a gauche et positives a droite";
+            ch6Result.textContent = "\u2718 Regardez les filtres avec des valeurs négatives à gauche et positives à droite";
             ch6Result.className = "calc-result wrong";
         }
     }

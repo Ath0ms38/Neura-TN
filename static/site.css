@@ -1,0 +1,867 @@
+/* ==========================================================================
+   Neura'TN — design system partagé
+   Chargé APRÈS la feuille de style de chaque page : il redéfinit les tokens
+   (--bg-primary, --accent, …) que toutes les pages utilisent déjà, puis
+   fournit les composants communs (barre de navigation, boutons, panneaux,
+   formulaires, statistiques).
+   ========================================================================== */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/static/fonts/bricolage-grotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/static/fonts/instrument-sans.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/static/fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces : une encre bleu nuit, du plus profond au plus proche */
+  --bg-primary: #040d21;
+  --bg-secondary: #0a1930;
+  --bg-card: #11264a;
+  --bg-raised: #17305a;
+  --border: #1d3558;
+  --border-strong: #2c4a75;
+
+  /* Texte */
+  --text-primary: #f4f7fb;
+  --text-secondary: #9bb0c9;
+  --text-muted: #64799a;
+
+  /* Couleurs de marque (issues du logo) */
+  --accent: #ffab40;
+  --accent-strong: #ff8f1f;
+  --accent-glow: rgba(255, 171, 64, 0.22);
+  --accent2: #85d5e6;
+  --accent2-glow: rgba(133, 213, 230, 0.18);
+  --success: #2cc4a5;
+  --success-glow: rgba(44, 196, 165, 0.25);
+  --danger: #f0624d;
+  --indigo: #4a44a8;
+
+  /* Typographie */
+  --font-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Formes */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px rgba(0, 0, 0, 0.25);
+  --topbar-h: 60px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--topbar-h) + 16px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+}
+
+code,
+pre,
+kbd,
+textarea.code {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Barres de défilement discrètes */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 12px;
+  z-index: 9999;
+  transform: translateY(-200%);
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Barre supérieure (toutes les pages intérieures)
+   ========================================================================== */
+
+body.lab-page {
+  background:
+    radial-gradient(900px 500px at 100% -10%, rgba(74, 68, 168, 0.16), transparent 60%),
+    radial-gradient(700px 420px at -10% 0%, rgba(133, 213, 230, 0.06), transparent 60%),
+    var(--bg-primary);
+  background-attachment: fixed;
+}
+
+.lab-page > header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px 18px;
+  min-height: var(--topbar-h);
+  padding: 10px 20px;
+  background: rgba(6, 16, 36, 0.86);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid var(--border);
+}
+
+.lab-page .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border-radius: 10px;
+}
+.brand .header-logo,
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  padding: 3px;
+  object-fit: contain;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #ffffff, #dfe9f7);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 4px 14px rgba(0, 0, 0, 0.35);
+  filter: none;
+  transition: transform 0.25s ease;
+}
+.brand:hover .header-logo,
+.brand:hover .brand-mark {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+.crumb::before {
+  content: "";
+  width: 1px;
+  height: 20px;
+  background: var(--border-strong);
+}
+
+.lab-page > header h1 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lab-page .header-left h1 {
+  flex: 0 1 auto;
+}
+.lab-page .header-left:has(h1) {
+  flex: 1 1 auto;
+}
+
+.lab-page .header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Menu « Explorer » injecté par site.js */
+.site-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 7px 12px;
+  font: 600 0.8rem/1 var(--font-body);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.lab-page > header > :is(.controls, .header-right, .mode-switch) ~ .site-menu-btn {
+  margin-left: 0;
+}
+.site-menu-btn:hover,
+.site-menu-btn[aria-expanded="true"] {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  background: var(--bg-card);
+}
+.site-menu-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.site-menu {
+  position: fixed;
+  top: calc(var(--topbar-h) + 6px);
+  right: 14px;
+  z-index: 300;
+  width: min(560px, calc(100vw - 28px));
+  max-height: calc(100vh - var(--topbar-h) - 24px);
+  overflow-y: auto;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 18px;
+  background: #0b1b36;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation: menu-in 0.18s ease;
+}
+.site-menu[hidden] {
+  display: none;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.site-menu h2 {
+  margin: 0 0 6px;
+  padding: 0 10px;
+  font: 600 0.66rem/1.6 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.site-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-menu a {
+  display: block;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+.site-menu a small {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+.site-menu a:hover {
+  background: var(--bg-card);
+}
+.site-menu a[aria-current="page"] {
+  background: rgba(255, 171, 64, 0.1);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.site-menu a[aria-current="page"] {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   Boutons
+   ========================================================================== */
+
+.lab-page :is(button, .btn) {
+  font-family: var(--font-body);
+}
+
+.btn,
+.lab-page .controls button,
+.lab-page .btn-group button,
+.lab-page .editor-actions button,
+.lab-page :is(.tool-btn, .ctrl-btn, .toggle-btn, .preset-btn, .data-btn, .func-btn, .filter-btn, .pool-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s, box-shadow 0.18s;
+}
+.btn:hover,
+.lab-page .controls button:hover:not(:disabled),
+.lab-page .btn-group button:hover:not(:disabled),
+.lab-page .editor-actions button:hover:not(:disabled),
+.lab-page :is(.tool-btn, .ctrl-btn, .toggle-btn, .preset-btn, .data-btn, .func-btn, .filter-btn, .pool-btn):hover:not(:disabled) {
+  background: var(--bg-raised);
+  border-color: var(--accent2);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+.lab-page button:active:not(:disabled),
+.btn:active {
+  transform: translateY(1px);
+}
+.lab-page button:disabled,
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Action principale */
+.btn-primary,
+.lab-page #btn-start,
+.lab-page .launch-btn,
+.lab-page .controls button.primary {
+  color: #1a0f00;
+  background: linear-gradient(180deg, #ffbe66, var(--accent));
+  border-color: var(--accent);
+  font-weight: 700;
+  box-shadow: 0 6px 20px -6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-primary:hover,
+.lab-page #btn-start:hover:not(:disabled),
+.lab-page .launch-btn:hover:not(:disabled),
+.lab-page .controls button.primary:hover:not(:disabled) {
+  color: #1a0f00;
+  background: linear-gradient(180deg, #ffc97f, #ffb655);
+  border-color: #ffc97f;
+  box-shadow: 0 8px 26px -6px rgba(255, 171, 64, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+}
+.btn-lg {
+  padding: 13px 22px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+}
+
+/* État actif des bascules */
+.lab-page :is(.tool-btn, .ctrl-btn, .toggle-btn, .preset-btn, .data-btn, .func-btn, .filter-btn, .pool-btn, .seg-btn).active,
+.lab-page .controls button.active {
+  color: var(--accent) !important;
+  background: rgba(255, 171, 64, 0.12) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Groupes segmentés (vitesse, profondeur…) */
+.lab-page :is(.speed-group, .depth-group, .seg) {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.lab-page :is(.speed-group, .depth-group, .seg) label,
+.lab-page .seg-label {
+  margin: 0 6px 0 8px;
+  font: 500 0.66rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.lab-page :is(.speed-group, .depth-group, .seg) button {
+  padding: 6px 10px !important;
+  font: 600 0.74rem/1 var(--font-mono) !important;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+.lab-page :is(.speed-group, .depth-group, .seg) button:hover:not(:disabled) {
+  background: var(--bg-card);
+  border-color: transparent;
+}
+.lab-page :is(.speed-group, .depth-group, .seg) button.active {
+  color: #1a0f00 !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.lab-page .controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lab-page .toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Panneaux, statistiques, paramètres
+   ========================================================================== */
+
+.lab-page :is(.panel, .stats, .nn-viz, .param-section, .info-text, .visual-container, .card-panel) {
+  background: linear-gradient(180deg, rgba(17, 38, 74, 0.55), rgba(10, 25, 48, 0.75));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.card-panel {
+  padding: 18px;
+}
+
+/* Petits intertitres de panneau, façon étiquette d'instrument */
+.lab-page :is(.info-panel, .panel, .stats, .nn-viz, .info-text, .board-panel, .editor-panel, .tree-header, .card-panel) > :is(h2, h3),
+.lab-page .eval-editor-wrapper > h2,
+.lab-page .param-section > summary,
+.panel-title {
+  margin: 0 0 12px;
+  font: 600 0.68rem/1.4 var(--font-mono);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.lab-page .param-section > summary {
+  margin: 0;
+  padding-block: 2px;
+  cursor: pointer;
+}
+.lab-page .param-section > summary:hover {
+  color: var(--accent);
+}
+
+.lab-page .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.lab-page .stat-row:last-child {
+  border-bottom: 0;
+}
+.lab-page .stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.lab-page .stat-value {
+  font: 600 0.92rem/1.2 var(--font-mono);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.lab-page .info-text p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.lab-page .info-text strong {
+  color: var(--text-primary);
+}
+.lab-page .hint {
+  opacity: 1;
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.lab-page :is(input, select, textarea) {
+  accent-color: var(--accent);
+  font-family: inherit;
+}
+.lab-page .param-row label {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+.lab-page :is(input[type="number"], select) {
+  padding: 6px 8px;
+  font: 500 0.8rem/1.2 var(--font-mono);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+.lab-page :is(input[type="number"], select, textarea):focus {
+  outline: none;
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 3px var(--accent2-glow);
+}
+.lab-page input[type="range"] {
+  height: 22px;
+  cursor: pointer;
+}
+
+.lab-page code {
+  padding: 2px 6px;
+  font-size: 0.85em;
+  color: var(--accent2);
+  background: rgba(133, 213, 230, 0.08);
+  border-radius: 4px;
+}
+
+/* Messages d'état (erreur réseau, modèle manquant…) */
+.notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+  background: rgba(240, 98, 77, 0.1);
+  border: 1px solid rgba(240, 98, 77, 0.45);
+  border-radius: var(--radius);
+}
+.notice[hidden] {
+  display: none;
+}
+.notice::before {
+  content: "!";
+  flex: 0 0 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  font: 700 0.75rem/1 var(--font-mono);
+  color: var(--bg-primary);
+  background: var(--danger);
+  border-radius: 50%;
+}
+
+/* ==========================================================================
+   Pages de cours (structure commune aux anciens et nouveaux cours)
+   ========================================================================== */
+
+.lab-page .course-section {
+  scroll-margin-top: var(--topbar-h);
+}
+.lab-page .section-text h2 {
+  font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  flex-wrap: wrap;
+}
+.lab-page .section-number {
+  flex-basis: 100%;
+  margin-bottom: 6px;
+  font: 500 0.78rem/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  opacity: 1;
+}
+.lab-page .section-number::before {
+  content: "Chapitre ";
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.lab-page .section-text p,
+.lab-page .concept-list li {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.lab-page .section-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.lab-page .section-text em {
+  color: var(--accent2);
+  font-style: normal;
+}
+.lab-page .hero-content h2 {
+  font-size: clamp(2.4rem, 6.5vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(120deg, #ffd9a3 0%, var(--accent) 45%, #ff7a45 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.lab-page .hero-subtitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  font-weight: 500;
+  color: var(--accent2);
+}
+.lab-page .hero-intro {
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.lab-page :is(.scroll-hint, .cta-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  font-weight: 700;
+  color: #1a0f00;
+  background: linear-gradient(180deg, #ffbe66, var(--accent));
+  border: 0;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 10px 30px -8px rgba(255, 171, 64, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.lab-page .formula-display {
+  max-width: 100%;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  border-radius: var(--radius);
+}
+.lab-page .challenge-box {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.lab-page .challenge-counter {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: rgba(255, 171, 64, 0.1);
+  border-color: rgba(255, 171, 64, 0.35);
+}
+.lab-page .section-nav {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px;
+}
+.lab-page .nav-dot {
+  flex-shrink: 0;
+  padding: 0;
+}
+.lab-page :is(.section-text, .section-visual, .editor-panel, .board-panel, main) {
+  min-width: 0;
+}
+.lab-page .value-display,
+.lab-page .output-value {
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   Pied de page
+   ========================================================================== */
+
+.site-footer {
+  margin-top: 64px;
+  padding: 28px 24px 40px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.site-footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  align-items: center;
+  justify-content: space-between;
+}
+.site-footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.site-footer a:hover {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   Adaptation mobile
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .lab-page > header {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+  }
+  .lab-page .controls {
+    order: 5;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+  .lab-page .course-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 56px 20px;
+    min-height: 0;
+  }
+  .lab-page .hero-section {
+    min-height: calc(100vh - var(--topbar-h));
+    padding: 0;
+  }
+  .lab-page .section-visual {
+    max-width: 100%;
+  }
+  .site-menu {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .brand > span {
+    display: none;
+  }
+  .crumb {
+    display: none;
+  }
+  .site-menu-btn span {
+    display: none;
+  }
+  .site-menu-btn {
+    padding: 8px;
+  }
+  .lab-page > header h1 {
+    font-size: 0.98rem;
+  }
+  .lab-page .header-right .section-nav {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Sur petit écran, le titre cède la place : la barre reste sur une seule ligne
+   tant qu'elle ne porte pas de barre d'outils. */
+@media (max-width: 900px) {
+  .lab-page .header-left,
+  .lab-page .header-left:has(h1) {
+    flex: 1 1 0;
+  }
+  .lab-page > header > h1 {
+    flex: 1 1 0;
+  }
+  .lab-page .header-right,
+  .lab-page .mode-switch {
+    flex: 0 0 auto;
+  }
+  .lab-page > header > .site-menu-btn {
+    margin-left: 0;
+  }
+  .lab-page > header:has(> .controls) > .site-menu-btn {
+    order: 4;
+  }
+}
+
+/* Les anciens cours empilaient leur barre en colonne et alignaient leurs
+   boutons sur une ligne rigide : on garde une barre horizontale et on laisse
+   les rangées de boutons passer à la ligne. */
+.lab-page > header {
+  flex-direction: row;
+}
+.lab-page .visual-container div[style*="display: flex"] {
+  flex-wrap: wrap;
+}

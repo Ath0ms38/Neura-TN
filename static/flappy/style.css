@@ -347,3 +347,20 @@ main {
     .game-panel { border-right: none; border-bottom: 1px solid var(--border); }
     #game-canvas { max-height: 50vh; }
 }
+
+/* ---- Ajustements liés au design system partagé ---- */
+main { height: calc(100vh - var(--topbar-h)); }
+.game-panel { background: transparent; }
+#game-canvas {
+    max-height: calc(100vh - var(--topbar-h) - 24px);
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 0 0 1px var(--border-strong), 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.lab-page :is(.stats, .nn-viz, .param-section, .info-text) { padding: 16px; }
+#nn-svg { background: var(--bg-primary); border-radius: 8px; }
+@media (max-width: 900px) {
+    main { height: auto; }
+    #game-canvas { max-height: 62vh; }
+    .info-panel { overflow: visible; }
+}

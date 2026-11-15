@@ -1,13 +1,36 @@
-# Neura-TN: MNIST Neural Network Visualizer
+# Neura-TN
 
-A web application for visualizing and interacting with neural networks trained on the MNIST dataset. Features both a fully connected neural network and a convolutional neural network (CNN) architecture.
+Interactive demos and courses (in French) for understanding neural networks by manipulating them.
+A small Flask + PyTorch backend serves the MNIST models and the chess engine; everything else runs in the browser.
 
-## Features
+## What's inside
 
-- **Interactive MNIST Visualization**: Test different neural network architectures on handwritten digits
-- **Two Model Types**: Compare fully connected neural networks with CNNs
-- **Real-time Inference**: See predictions and activations in real-time
-- **Additional Demos**: Includes Flappy Bird and Car simulation demos
+**Demos**
+
+| Route | Demo | Runs |
+| --- | --- | --- |
+| `/mnist` | Draw a digit and watch a fully connected network or a CNN classify it, layer by layer | server (PyTorch) |
+| `/playground` | Train a small network on 2D datasets: layers, activation, learning rate, decision boundary | browser |
+| `/flappy` | NEAT neuroevolution learning to play Flappy Bird | browser |
+| `/car` | Draw a track, cars with ray sensors learn to drive it with NEAT | browser |
+| `/gridworld` | Tabular Q-learning in an editable maze | browser |
+| `/chess` | Play against Alpha-Beta with your own Python evaluation function, and inspect the search tree | server |
+
+**Courses** (each with interactive challenges)
+
+| Route | Course |
+| --- | --- |
+| `/cours/nn` | Neural networks: neurons, weights, activations, forward propagation |
+| `/cours/apprentissage` | Gradient descent: loss, learning rate, momentum, backpropagation, overfitting |
+| `/cours/cnn` | Convolutional networks: filters, convolution, pooling |
+| `/cours/neat` | NEAT neuroevolution: mutations, crossover, speciation |
+| `/cours/rl` | Reinforcement learning: exploration, discounting, the Q-learning update |
+
+The app starts even if a model file is missing: the affected pages show a message asking you to run `python train.py`.
+
+> **Security note.** The chess demo executes Python written by the visitor. The code is screened
+> (no imports, no underscore names, restricted builtins, time limit) but this is not a real sandbox:
+> do not expose the server to untrusted users on the open internet without extra isolation.
 
 ## Running with Docker
 
@@ -135,7 +158,7 @@ uv run python app.py
 
 Using pip:
 ```bash
-pip install -r requirements.txt
+pip install .
 python train.py
 python app.py
 ```
@@ -146,23 +169,29 @@ Visit http://localhost:5000 to access the application.
 
 ```
 .
-├── app.py                 # Flask application
-├── train.py              # Model training script
-├── static/               # Static web assets
-│   ├── mnist/           # MNIST visualizer
-│   ├── flappy/          # Flappy Bird demo
-│   ├── car/             # Car simulation demo
-│   └── index.html       # Landing page
-├── models/               # Trained model weights (generated)
-├── data/                 # MNIST dataset (downloaded)
-├── Dockerfile            # Docker image definition
-├── docker-compose.yml    # Docker Compose configuration
-├── pyproject.toml        # Python project configuration
-└── requirements.txt      # Python dependencies
+├── app.py                 # Flask application (pages + API)
+├── chess_engine.py        # Alpha-Beta search with tree recording
+├── train.py               # Model training script
+├── static/
+│   ├── index.html         # Landing page (landing.css, landing.js)
+│   ├── site.css, site.js  # Shared design system and navigation menu
+│   ├── nn.js              # Tiny MLP library (landing page, playground)
+│   ├── neat.js            # NEAT library (flappy, car)
+│   ├── fonts/             # Self-hosted fonts (OFL)
+│   ├── mnist/ playground/ flappy/ car/ gridworld/ chess/
+│   └── cours/             # nn/ apprentissage/ cnn/ neat/ rl/ + shared course.css, course.js
+├── models/                # Trained model weights (generated)
+├── data/                  # MNIST dataset (downloaded)
+├── Dockerfile
+├── docker-compose.yml
+└── pyproject.toml
 ```
+
+To add a page: create a folder with an `index.html` under `static/`, register its URL in `PAGES`
+in `app.py`, and add it to the `PAGES` list in `static/site.js` so it appears in the menu.
 
 ## Technologies
 
 - **Backend**: Flask, PyTorch
 - **Frontend**: HTML, CSS, JavaScript
-- **ML**: Neural Networks (FC and CNN) for MNIST classification
+- **ML**: PyTorch models for MNIST (FC and CNN); NEAT, Q-learning and a small MLP in plain JavaScript
